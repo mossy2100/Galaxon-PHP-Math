@@ -1,12 +1,13 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
-namespace Galaxon\Numbers\Tests;
+namespace Galaxon\Math\Tests\Complex;
 
 use DomainException;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Complex::class)]
@@ -113,27 +114,36 @@ class ComplexParseTest extends TestCase
     }
 
     /**
-     * Test error cases that should throw InvalidArgumentException
+     * Data provider for invalid input strings.
+     *
+     * @return array<string, string[]>
      */
-    public function testParseInvalidInput(): void
+    public static function invalidInputProvider(): array
     {
-        $invalid_inputs = [
-            '',           // Empty string
-            'abc',        // Random text
-            '3+',         // Incomplete expression
-            '++i',        // Double signs
-            '3+4',        // Missing imaginary unit
-            'i+',         // Incomplete
-            '3+4k',       // Wrong imaginary unit
-            '3.4.5',      // Multiple decimal points
-            '3e',         // Incomplete scientific notation
-            '3ee4',       // Double e
+        return [
+            'empty string' => [''],
+            'random text' => ['abc'],
+            'incomplete expression' => ['3+'],
+            'double signs' => ['++i'],
+            'missing imaginary unit' => ['3+4'],
+            'incomplete imaginary' => ['i+'],
+            'wrong imaginary unit' => ['3+4k'],
+            'multiple decimal points' => ['3.4.5'],
+            'incomplete scientific notation' => ['3e'],
+            'double e' => ['3ee4'],
         ];
+    }
 
-        foreach ($invalid_inputs as $input) {
-            $this->expectException(DomainException::class);
-            Complex::parse($input);
-        }
+    /**
+     * Test parsing invalid input throws DomainException.
+     *
+     * @param string $input The invalid input string.
+     */
+    #[DataProvider('invalidInputProvider')]
+    public function testParseInvalidInput(string $input): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::parse($input);
     }
 
     /**
@@ -162,7 +172,7 @@ class ComplexParseTest extends TestCase
     /**
      * Data provider for comprehensive format testing
      *
-     * @return array
+     * @return array<array{string, float, float}>
      */
     public static function complexNumberProvider(): array
     {
@@ -186,9 +196,7 @@ class ComplexParseTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider complexNumberProvider
-     */
+    #[DataProvider('complexNumberProvider')]
     public function testParseComprehensive(string $input, float $expected_real, float $expected_imag): void
     {
         $result = Complex::parse($input);
@@ -196,6 +204,6 @@ class ComplexParseTest extends TestCase
 
         $this->assertEquals($expected, $result);
         $this->assertEqualsWithDelta($expected_real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected_imag, $result->imag, 1e-10);
+        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, 1e-10);
     }
 }

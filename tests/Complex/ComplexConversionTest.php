@@ -1,0 +1,237 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Galaxon\Math\Tests\Complex;
+
+use Galaxon\Math\Complex;
+use LogicException;
+use OutOfRangeException;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+
+#[CoversClass(Complex::class)]
+class ComplexConversionTest extends TestCase
+{
+    /**
+     * Test isReal for real numbers.
+     */
+    public function testIsRealTrue(): void
+    {
+        $z1 = new Complex(5, 0);
+        $this->assertTrue($z1->isReal());
+
+        $z2 = new Complex(-3.14, 0);
+        $this->assertTrue($z2->isReal());
+
+        $z3 = new Complex(0, 0);
+        $this->assertTrue($z3->isReal());
+    }
+
+    /**
+     * Test isReal for complex numbers.
+     */
+    public function testIsRealFalse(): void
+    {
+        $z1 = new Complex(3, 4);
+        $this->assertFalse($z1->isReal());
+
+        $z2 = new Complex(0, 1);
+        $this->assertFalse($z2->isReal());
+
+        $z3 = new Complex(5, 0.0000001);
+        $this->assertFalse($z3->isReal());
+    }
+
+    /**
+     * Test equals with same complex numbers.
+     */
+    public function testEqualsTrue(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(3, 4);
+
+        $this->assertTrue($z1->equals($z2));
+    }
+
+    /**
+     * Test equals with different complex numbers.
+     */
+    public function testEqualsFalse(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(3, 5);
+
+        $this->assertFalse($z1->equals($z2));
+
+        $z3 = new Complex(4, 4);
+        $this->assertFalse($z1->equals($z3));
+    }
+
+    /**
+     * Test equals with real number.
+     */
+    public function testEqualsReal(): void
+    {
+        $z = new Complex(5, 0);
+
+        $this->assertTrue($z->equals(5));
+        $this->assertTrue($z->equals(5.0));
+        $this->assertFalse($z->equals(6));
+    }
+
+    /**
+     * Test equals with epsilon tolerance.
+     */
+    public function testEqualsWithEpsilon(): void
+    {
+        $z1 = new Complex(3.00000000001, 4.00000000001);
+        $z2 = new Complex(3, 4);
+
+        // Should be equal with default epsilon
+        $this->assertTrue($z1->equals($z2));
+
+        // Should not be equal with very small epsilon
+        $this->assertFalse($z1->equals($z2, 1e-15));
+    }
+
+    /**
+     * Test equals with zero.
+     */
+    public function testEqualsZero(): void
+    {
+        $z = new Complex(0, 0);
+
+        $this->assertTrue($z->equals(0));
+        $this->assertTrue($z->equals(new Complex(0, 0)));
+    }
+
+    /**
+     * Test __toString for real numbers.
+     */
+    public function testToStringReal(): void
+    {
+        $z = new Complex(5, 0);
+        $this->assertSame('5', (string)$z);
+
+        $z2 = new Complex(-3.14, 0);
+        $this->assertSame('-3.14', (string)$z2);
+
+        $z3 = new Complex(0, 0);
+        $this->assertSame('0', (string)$z3);
+    }
+
+    /**
+     * Test __toString for pure imaginary numbers.
+     */
+    public function testToStringPureImaginary(): void
+    {
+        $z1 = new Complex(0, 1);
+        $this->assertSame('i', (string)$z1);
+
+        $z2 = new Complex(0, -1);
+        $this->assertSame('-i', (string)$z2);
+
+        $z3 = new Complex(0, 5);
+        $this->assertSame('5i', (string)$z3);
+
+        $z4 = new Complex(0, -3.5);
+        $this->assertSame('-3.5i', (string)$z4);
+    }
+
+    /**
+     * Test __toString for complex numbers.
+     */
+    public function testToStringComplex(): void
+    {
+        $z1 = new Complex(3, 4);
+        $this->assertSame('3 + 4i', (string)$z1);
+
+        $z2 = new Complex(3, -4);
+        $this->assertSame('3 - 4i', (string)$z2);
+
+        $z3 = new Complex(-3, 4);
+        $this->assertSame('-3 + 4i', (string)$z3);
+
+        $z4 = new Complex(-3, -4);
+        $this->assertSame('-3 - 4i', (string)$z4);
+
+        // Test with coefficient of 1
+        $z5 = new Complex(5, 1);
+        $this->assertSame('5 + i', (string)$z5);
+
+        $z6 = new Complex(5, -1);
+        $this->assertSame('5 - i', (string)$z6);
+    }
+
+    /**
+     * Test toArray.
+     */
+    public function testToArray(): void
+    {
+        $z = new Complex(3, 4);
+        $array = $z->toArray();
+
+        $this->assertIsArray($array); // @phpstan-ignore method.alreadyNarrowedType
+        $this->assertCount(2, $array);
+        $this->assertSame(3.0, $array[0]);
+        $this->assertSame(4.0, $array[1]);
+    }
+
+    /**
+     * Test ArrayAccess offsetExists.
+     */
+    public function testOffsetExists(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue(isset($z[0]));
+        $this->assertTrue(isset($z[1]));
+        $this->assertFalse(isset($z[2]));
+        $this->assertFalse(isset($z[-1]));
+    }
+
+    /**
+     * Test ArrayAccess offsetGet.
+     */
+    public function testOffsetGet(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertSame(3.0, $z[0]);
+        $this->assertSame(4.0, $z[1]);
+    }
+
+    /**
+     * Test ArrayAccess offsetGet with invalid offset throws exception.
+     */
+    public function testOffsetGetInvalid(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->expectException(OutOfRangeException::class);
+        $value = $z[2];
+    }
+
+    /**
+     * Test ArrayAccess offsetSet throws exception (immutable).
+     */
+    public function testOffsetSetThrows(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->expectException(LogicException::class);
+        $z[0] = 5;
+    }
+
+    /**
+     * Test ArrayAccess offsetUnset throws exception (immutable).
+     */
+    public function testOffsetUnsetThrows(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->expectException(LogicException::class);
+        unset($z[0]);
+    }
+}
