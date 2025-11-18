@@ -75,10 +75,16 @@ final class Rational implements Stringable
         $num2 = 0;
         $den2 = 1;
 
-        // Check to see if either argument was provided as a float but could have been an int.
+        // Check to see if either argument was provided as a float, but could have been an int.
         // This might enable a call to simplify(), which is preferable to floatToRational().
-        Floats::tryConvertToInt($num);
-        Floats::tryConvertToInt($den);
+        if (is_float($num) && Floats::tryConvertToInt($num, $inum)) {
+            /** @var int $inum */
+            $num = $inum;
+        }
+        if (is_float($den) && Floats::tryConvertToInt($den, $iden)) {
+            /** @var int $iden */
+            $den = $iden;
+        }
 
         // Check if we got two valid integers.
         $convert_float = false;

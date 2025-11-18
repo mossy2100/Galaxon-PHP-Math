@@ -15,6 +15,8 @@ use Stringable;
 use ValueError;
 
 /**
+ * Encapsulates a complex number and provides a number of useful methods.
+ *
  * @implements ArrayAccess<int, float>
  */
 final class Complex implements Stringable, ArrayAccess
@@ -653,9 +655,50 @@ final class Complex implements Stringable, ArrayAccess
     }
 
     /**
+     * Calculate the secant of this complex number.
+     *
+     * @return self A new complex number representing the secant of this complex number.
+     * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
+     */
+    public function sec(): self
+    {
+        // sec(z) = 1 / cos(z)
+        return $this->cos()->inv();
+    }
+
+    /**
+     * Calculate the cosecant of this complex number.
+     *
+     * @return self A new complex number representing the cosecant of this complex number.
+     * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
+     */
+    public function csc(): self
+    {
+        // csc(z) = 1 / sin(z)
+        return $this->sin()->inv();
+    }
+
+    /**
+     * Calculate the cotangent of this complex number.
+     *
+     * @return self A new complex number representing the cotangent of this complex number.
+     * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
+     */
+    public function cot(): self
+    {
+        // cot(z) = cos(z) / sin(z)
+        return $this->cos()->div($this->sin());
+    }
+
+    // endregion
+
+    // region Inverse trigonometric functions
+
+    /**
      * Calculate the inverse sine of this complex number.
      *
      * @return self A new complex number representing the inverse sine of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function asin(): self
     {
@@ -673,6 +716,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the inverse cosine of this complex number.
      *
      * @return self A new complex number representing the inverse cosine of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function acos(): self
     {
@@ -688,6 +732,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the inverse tangent of this complex number.
      *
      * @return self A new complex number representing the inverse tangent this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function atan(): self
     {
@@ -700,6 +745,42 @@ final class Complex implements Stringable, ArrayAccess
         $c = $i->add($this);
         // = (-i/2)·ln((i-z)/(i+z))
         return $b->div($c)->ln()->mul($a);
+    }
+
+    /**
+     * Calculate the inverse secant of this complex number.
+     *
+     * @return self A new complex number representing the inverse secant this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
+     */
+    public function asec(): self
+    {
+        // asec(z) = acos(1/z)
+        return $this->inv()->acos();
+    }
+
+    /**
+     * Calculate the inverse cosecant of this complex number.
+     *
+     * @return self A new complex number representing the inverse cosecant this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
+     */
+    public function acsc(): self
+    {
+        // acsc(z) = asin(1/z)
+        return $this->inv()->asin();
+    }
+
+    /**
+     * Calculate the inverse cotangent of this complex number.
+     *
+     * @return self A new complex number representing the inverse cotangent this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
+     */
+    public function acot(): self
+    {
+        // acot(z) = atan(1/z)
+        return $this->inv()->atan();
     }
 
     // endregion
