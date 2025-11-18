@@ -2,13 +2,4 @@ parameters:
     paths:
         - src
         - tests
-    ignoreErrors:
-        -
-            message: '#will always evaluate to true#'
-            paths:
-                - tests/*
-        -
-            message: '#Parameter .* expects#'
-            paths:
-                - tests/*
     treatPhpDocTypesAsCertain: false
