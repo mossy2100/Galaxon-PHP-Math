@@ -1,12 +1,13 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Math;
 
 use ArrayAccess;
 use DomainException;
 use Galaxon\Core\Angle;
+use Galaxon\Core\Stringify;
 use LogicException;
 use OutOfRangeException;
 use Override;
@@ -14,7 +15,7 @@ use Stringable;
 use ValueError;
 
 /**
- * TODO Complete tests.
+ * @implements ArrayAccess<int, float>
  */
 final class Complex implements Stringable, ArrayAccess
 {
@@ -32,54 +33,46 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @var float
      */
-    private(set) float $imag;
+    private(set) float $imaginary;
 
-    /**
-     * The backing field for the mag property.
-     *
-     * @var ?float
-     */
-    private ?float $_mag = null;
-
+    // PHPCS doesn't know property hooks yet.
+    // phpcs:disable
     /**
      * The magnitude (a.k.a. absolute value or modulus) of this complex number.
      *
-     * @var float
+     * @var null|float
      */
-    public float $mag {
+    public ?float $magnitude = null {
         get {
-            // Compute if necessary.
-            if ($this->_mag === null) {
-                $this->_mag = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imag);
+            // Compute and cache if necessary.
+            if ($this->magnitude === null) {
+                $this->magnitude = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imaginary);
             }
 
-            return $this->_mag;
+            return $this->magnitude;
         }
     }
-
-    /**
-     * The backing field for the phase property.
-     *
-     * @var ?float
-     */
-    private ?float $_phase = null;
 
     /**
      * The phase (a.k.a. argument) of this complex number in radians.
      *
-     * @var float
+     * @var null|float
      */
-    public float $phase {
+    public ?float $phase = null {
         get {
-            // Compute if necessary.
-            if ($this->_phase === null) {
-                $real_angle = $this->real < 0 ? M_PI : 0;
-                $this->_phase = $this->isReal() ? $real_angle : atan2($this->imag, $this->real);
+            // Compute and cache if necessary.
+            if ($this->phase === null) {
+                if ($this->isReal()) {
+                    $this->phase = $this->real < 0 ? M_PI : 0;
+                } else {
+                    $this->phase = atan2($this->imaginary, $this->real);
+                }
             }
 
-            return $this->_phase;
+            return $this->phase;
         }
     }
+    // phpcs:enable
 
     // endregion
 
@@ -94,12 +87,24 @@ final class Complex implements Stringable, ArrayAccess
     public function __construct(int|float $real = 0, int|float $imag = 0)
     {
         $this->real = $real;
-        $this->imag = $imag;
+        $this->imaginary = $imag;
     }
 
     // endregion
 
     // region Factory methods
+
+    /**
+     * Get a complex number representing the imaginary unit.
+     *
+     * @return self A complex number representing the imaginary unit.
+     */
+    public static function i(): self
+    {
+        // Cache the result to avoid recreating it every time.
+        static $i = null;
+        return $i ??= new self(0, 1);
+    }
 
     /**
      * Convert the input value to a complex number, if not already.
@@ -131,8 +136,8 @@ final class Complex implements Stringable, ArrayAccess
         $z = new self($mag * cos($phase), $mag * sin($phase));
 
         // We may as well remember the magnitude and phase since we know them already.
-        $z->_mag = $mag;
-        $z->_phase = $phase;
+        $z->magnitude = $mag;
+        $z->phase = $phase;
 
         return $z;
     }
@@ -154,6 +159,7 @@ final class Complex implements Stringable, ArrayAccess
     public static function parse(string $str): self
     {
         // Remove all whitespace
+        /** @var string $str */
         $str = preg_replace('/\s+/', '', $str);
 
         // Handle empty string
@@ -188,11 +194,9 @@ final class Complex implements Stringable, ArrayAccess
 
         if (preg_match($pattern_real_first, $str, $matches)) {
             [, $real_sign, $real_val, $imag_sign, $imag_val] = $matches;
-        }
-        elseif (preg_match($pattern_imag_first, $str, $matches)) {
+        } elseif (preg_match($pattern_imag_first, $str, $matches)) {
             [, $imag_sign, $imag_val, $real_sign, $real_val] = $matches;
-        }
-        else {
+        } else {
             throw new DomainException("Cannot parse '$str' as complex number.");
         }
 
@@ -224,7 +228,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function neg(): self
     {
-        return new self(-$this->real, -$this->imag);
+        return new self(-$this->real, -$this->imaginary);
     }
 
     /**
@@ -239,7 +243,7 @@ final class Complex implements Stringable, ArrayAccess
         $other = self::toComplex($other);
 
         // Do the addition.
-        return new self($this->real + $other->real, $this->imag + $other->imag);
+        return new self($this->real + $other->real, $this->imaginary + $other->imaginary);
     }
 
     /**
@@ -254,7 +258,7 @@ final class Complex implements Stringable, ArrayAccess
         $other = self::toComplex($other);
 
         // Do the subtraction.
-        return new self($this->real - $other->real, $this->imag - $other->imag);
+        return new self($this->real - $other->real, $this->imaginary - $other->imaginary);
     }
 
     /**
@@ -271,9 +275,9 @@ final class Complex implements Stringable, ArrayAccess
 
         // Do the multiplication.
         $a = $this->real;
-        $b = $this->imag;
+        $b = $this->imaginary;
         $c = $other->real;
-        $d = $other->imag;
+        $d = $other->imaginary;
         return new self($a * $c - $b * $d, $a * $d + $b * $c);
     }
 
@@ -291,15 +295,15 @@ final class Complex implements Stringable, ArrayAccess
         $other = self::toComplex($other);
 
         // Check for divide by zero.
-        if ($other->eq(0)) {
+        if ($other->equals(0)) {
             throw new DomainException("Cannot divide by 0.");
         }
 
         // Do the division.
         $a = $this->real;
-        $b = $this->imag;
+        $b = $this->imaginary;
         $c = $other->real;
-        $d = $other->imag;
+        $d = $other->imaginary;
         $f = ($c * $c) + ($d * $d);
         return new self(($a * $c + $b * $d) / $f, ($b * $c - $a * $d) / $f);
     }
@@ -321,7 +325,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function conj(): self
     {
-        return new self($this->real, -$this->imag);
+        return new self($this->real, -$this->imaginary);
     }
 
     // endregion
@@ -337,33 +341,37 @@ final class Complex implements Stringable, ArrayAccess
     public function ln(): self
     {
         // Check for ln(0), which is undefined.
-        if ($this->eq(0)) {
+        if ($this->equals(0)) {
             throw new ValueError('The logarithm of 0 is undefined.');
         }
 
         // Use shortcuts where possible.
-        if ($this->eq(1)) {
+        if ($this->equals(1)) {
             return new self(0);
         }
 
-        if ($this->eq(2)) {
+        if ($this->equals(2)) {
             return new self(M_LN2);
         }
 
-        if ($this->eq(M_E)) {
+        if ($this->equals(M_E)) {
             return new self(1);
         }
 
-        if ($this->eq(M_PI)) {
+        if ($this->equals(M_PI)) {
             return new self(M_LNPI);
         }
 
-        if ($this->eq(10)) {
+        if ($this->equals(10)) {
             return new self(M_LN10);
         }
 
         // Calculate ln(z) = ln|z| + i*arg(z)
-        return new self(log($this->mag), $this->phase);
+        /** @var float $mag */
+        $mag = $this->magnitude;
+        /** @var float $phase */
+        $phase = $this->phase;
+        return new self(log($mag), $phase);
     }
 
     /**
@@ -380,25 +388,25 @@ final class Complex implements Stringable, ArrayAccess
         $base = self::toComplex($base);
 
         // Check for invalid base values.
-        if ($base->eq(0)) {
+        if ($base->equals(0)) {
             throw new DomainException('Logarithm base cannot be 0.');
         }
-        if ($base->eq(1)) {
+        if ($base->equals(1)) {
             throw new DomainException('Logarithm base cannot be 1.');
         }
 
         // Check for natural logarithm.
-        if ($base->eq(M_E)) {
+        if ($base->equals(M_E)) {
             return $this->ln();
         }
 
         // Use built-in constants for log_2(e) and log_10(e).
-        if ($this->eq(M_E)) {
-            if ($base->eq(2)) {
+        if ($this->equals(M_E)) {
+            if ($base->equals(2)) {
                 return new self(M_LOG2E);
             }
 
-            if ($base->eq(10)) {
+            if ($base->equals(10)) {
                 return new self(M_LOG10E);
             }
         }
@@ -420,33 +428,33 @@ final class Complex implements Stringable, ArrayAccess
     public function exp(): self
     {
         // Use shortcuts where possible.
-        if ($this->eq(0)) {
+        if ($this->equals(0)) {
             return new self(1);
         }
 
-        if ($this->eq(M_LN2)) {
+        if ($this->equals(M_LN2)) {
             return new self(2);
         }
 
-        if ($this->eq(1)) {
+        if ($this->equals(1)) {
             return new self(M_E);
         }
 
-        if ($this->eq(M_LNPI)) {
+        if ($this->equals(M_LNPI)) {
             return new self(M_PI);
         }
 
-        if ($this->eq(M_LN10)) {
+        if ($this->equals(M_LN10)) {
             return new self(10);
         }
 
         // Check for Euler's identity e^iπ = -1
-        if ($this->eq(new self(0, M_PI))) {
+        if ($this->equals(new self(0, M_PI))) {
             return new self(-1);
         }
 
         // Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b))
-        return self::fromPolar(exp($this->real), $this->imag);
+        return self::fromPolar(exp($this->real), $this->imaginary);
     }
 
     /**
@@ -473,7 +481,7 @@ final class Complex implements Stringable, ArrayAccess
         $other = self::toComplex($other);
 
         // Handle special cases.
-        if ($this->eq(0)) {
+        if ($this->equals(0)) {
             // Check for complex exponent.
             if (!$other->isReal()) {
                 throw new DomainException('Cannot raise 0 to a complex number.');
@@ -485,7 +493,7 @@ final class Complex implements Stringable, ArrayAccess
             }
 
             // Check for 0 exponent.
-            if ($other->eq(0)) {
+            if ($other->equals(0)) {
                 // Although mathematically 0^0 is undefined, return 1 for consistency with pow(0, 0).
                 // This is a common result in many programming languages.
                 // (Principle of least astonishment.)
@@ -498,22 +506,22 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Handle exponent = 0. Any non-zero number to power 0 is 1.
-        if ($other->eq(0)) {
+        if ($other->equals(0)) {
             return new self(1);
         }
 
         // Handle exponent = 1. Any number to power 1 is itself.
-        if ($other->eq(1)) {
+        if ($other->equals(1)) {
             return $this;
         }
 
         // Handle i^2 = -1.
-        if ($this->eq(i) && $other->eq(2)) {
+        if ($this->equals(self::i()) && $other->equals(2)) {
             return new self(-1);
         }
 
         // Handle e^w. Skip unnecessary calls to ln() and mul().
-        if ($this->eq(M_E)) {
+        if ($this->equals(M_E)) {
             return $other->exp();
         }
 
@@ -537,12 +545,12 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Handle special case of 0.
-        if ($this->eq(0)) {
+        if ($this->equals(0)) {
             return [new self()];
         }
 
         // Calculate the magnitude of the roots.
-        $root_mag = $this->mag ** (1.0 / $n);
+        $root_mag = $this->magnitude ** (1.0 / $n);
 
         // Calculate all n roots.
         $roots = [];
@@ -559,7 +567,7 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the square of this complex number.
      *
-     * @return $this
+     * @return self
      */
     public function sqr(): self
     {
@@ -570,7 +578,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the square root of this complex number.
      * Only the principal value is returned. For both square roots, call roots(2).
      *
-     * @return $this
+     * @return self
      */
     public function sqrt(): self
     {
@@ -580,7 +588,7 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the cube of this complex number.
      *
-     * @return $this
+     * @return self
      */
     public function cube(): self
     {
@@ -591,7 +599,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the cube root of this complex number.
      * Only the principal value is returned. For all cube roots, call roots(3).
      *
-     * @return $this
+     * @return self
      */
     public function cbrt(): self
     {
@@ -608,11 +616,12 @@ final class Complex implements Stringable, ArrayAccess
      * @return self A new complex number representing the sine of this complex number.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
-    public function sin(): self {
+    public function sin(): self
+    {
         // sin(z) = sin(x)cosh(y) + i·cos(x)sinh(y)
         // where z = x + iy
         $x = $this->real;
-        $y = $this->imag;
+        $y = $this->imaginary;
         return new self(sin($x) * cosh($y), cos($x) * sinh($y));
     }
 
@@ -622,11 +631,12 @@ final class Complex implements Stringable, ArrayAccess
      * @return self A new complex number representing the cosine of this complex number.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
-    public function cos(): self {
+    public function cos(): self
+    {
         // cos(z) = cos(x)cosh(y) - i·sin(x)sinh(y)
         // where z = x + iy
         $x = $this->real;
-        $y = $this->imag;
+        $y = $this->imaginary;
         return new self(cos($x) * cosh($y), -sin($x) * sinh($y));
     }
 
@@ -636,7 +646,8 @@ final class Complex implements Stringable, ArrayAccess
      * @return self A new complex number representing the tangent of this complex number.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
-    public function tan(): self {
+    public function tan(): self
+    {
         // tan(z) = sin(z) / cos(z)
         return $this->sin()->div($this->cos());
     }
@@ -646,13 +657,14 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @return self A new complex number representing the inverse sine of this complex number.
      */
-    public function asin(): self {
+    public function asin(): self
+    {
         // a = -i
         $a = new self(0, -1);
         // b = √(1-z²)
         $b = new self(1)->sub($this->pow(2))->sqrt();
         // c = iz
-        $c = i->mul($this);
+        $c = self::i()->mul($this);
         // = -i·ln(√(1-z²) + iz)
         return $b->add($c)->ln()->mul($a);
     }
@@ -662,7 +674,8 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @return self A new complex number representing the inverse cosine of this complex number.
      */
-    public function acos(): self {
+    public function acos(): self
+    {
         // a = π/2
         $a = new self(M_PI / 2);
         // b = arcsin(z)
@@ -676,13 +689,15 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @return self A new complex number representing the inverse tangent this complex number.
      */
-    public function atan(): self {
+    public function atan(): self
+    {
         // a = -i/2
         $a = new self(0, -0.5);
         // b = i - z
-        $b = i->sub($this);
+        $i = self::i();
+        $b = $i->sub($this);
         // c = i + z
-        $c = i->add($this);
+        $c = $i->add($this);
         // = (-i/2)·ln((i-z)/(i+z))
         return $b->div($c)->ln()->mul($a);
     }
@@ -698,7 +713,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function isReal(): bool
     {
-        return $this->imag === 0.0;
+        return $this->imaginary === 0.0;
     }
 
     /**
@@ -708,14 +723,14 @@ final class Complex implements Stringable, ArrayAccess
      * @param float $epsilon The tolerance for floating-point comparison.
      * @return bool True if the numbers are equal within the tolerance.
      */
-    public function eq(self|int|float $other, float $epsilon = 1E-10): bool
+    public function equals(self|int|float $other, float $epsilon = 1E-10): bool
     {
         // Make sure $other is Complex.
         $other = self::toComplex($other);
 
         // Compare real and imaginary parts.
         return abs($this->real - $other->real) < $epsilon &&
-               abs($this->imag - $other->imag) < $epsilon;
+               abs($this->imaginary - $other->imaginary) < $epsilon;
     }
 
     // endregion
@@ -737,18 +752,18 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle case for 0 real part and non-zero imaginary part.
         if ($this->real === 0.0) {
-            if ($this->imag === 1.0) {
+            if ($this->imaginary === 1.0) {
                 return 'i';
             }
-            if ($this->imag === -1.0) {
+            if ($this->imaginary === -1.0) {
                 return '-i';
             }
-            return $this->imag . 'i';
+            return $this->imaginary . 'i';
         }
 
         // Construct the string for the a + bi or a - bi form.
-        $op = $this->imag > 0 ? ' + ' : ' - ';
-        $abs = abs($this->imag);
+        $op = $this->imaginary > 0 ? ' + ' : ' - ';
+        $abs = abs($this->imaginary);
         $imag = $abs === 1.0 ? '' : $abs;
         return $this->real . $op . $imag . 'i';
     }
@@ -756,11 +771,11 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Convert the complex number to an array.
      *
-     * @return array An array containing the real and imaginary parts of the complex number.
+     * @return float[] An array containing the real and imaginary parts of the complex number.
      */
     public function toArray(): array
     {
-        return [$this->real, $this->imag];
+        return [$this->real, $this->imaginary];
     }
 
     // endregion
@@ -783,19 +798,19 @@ final class Complex implements Stringable, ArrayAccess
      * Get the value of the complex number at the given offset. Only 0 and 1 are valid offsets.
      *
      * @param mixed $offset The offset to retrieve.
-     * @return int|float The value at the given offset.
+     * @return float The value at the given offset.
      * @throws OutOfRangeException If the offset is invalid.
      */
     #[Override]
-    public function offsetGet(mixed $offset): int|float
+    public function offsetGet(mixed $offset): float
     {
         // Guard.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException("Invalid offset: $offset");
+            throw new OutOfRangeException('Invalid offset: ' . Stringify::abbrev($offset));
         }
 
         // Return the appropriate value.
-        return $offset === 0 ? $this->real : $this->imag;
+        return $offset === 0 ? $this->real : $this->imaginary;
     }
 
     /**
@@ -803,8 +818,8 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @param mixed $offset The offset to set.
      * @param mixed $value The value to set.
-     * @throws LogicException If called.
      * @return void
+     * @throws LogicException If called.
      */
     #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
@@ -816,8 +831,8 @@ final class Complex implements Stringable, ArrayAccess
      * Unsupported as this class is immutable.
      *
      * @param mixed $offset The offset to unset.
-     * @throws LogicException If called.
      * @return void
+     * @throws LogicException If called.
      */
     #[Override]
     public function offsetUnset(mixed $offset): void
@@ -825,10 +840,3 @@ final class Complex implements Stringable, ArrayAccess
         throw new LogicException("Complex values are immutable.");
     }
 }
-
-/**
- * The imaginary unit.
- *
- * @var Complex
- */
-const i = new Complex(0, 1);

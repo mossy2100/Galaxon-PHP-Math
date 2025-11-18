@@ -1,15 +1,17 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Galaxon\Math;
 
 use DomainException;
+use Galaxon\Core\Floats;
+use Galaxon\Core\Integers;
+use Galaxon\Core\Numbers;
 use OverflowException;
 use Override;
 use RangeException;
 use Stringable;
-use Galaxon\Core\{Numbers, Integers};
 
 /**
  * A rational number, represented as a ratio of two PHP integers, signifying the numerator and denominator.
@@ -51,136 +53,60 @@ final class Rational implements Stringable
     /**
      * Constructor.
      *
-     * @param int $num The numerator. Defaults to 0.
-     * @param int $den The denominator. Defaults to 1.
+     * @param int|float $num The numerator. Defaults to 0.
+     * @param int|float $den The denominator. Defaults to 1.
+     * @throws DomainException If the denominator is zero.
+     * @throws DomainException If a float argument is infinite or NaN.
+     * @throws RangeException If the value is outside the valid convertible range.
      */
-    public function __construct(int $num = 0, int $den = 1)
+    public function __construct(int|float $num = 0, int|float $den = 1)
     {
-        // Check for zero denominator.
-        if ($den === 0) {
-            throw new DomainException('Denominator cannot be zero.');
+        // Check for zero denominator. The double-equals is deliberate, to check for int 0 or float 0.0.
+        if ($den == 0) {
+            throw new DomainException('The denominator cannot be zero.');
         }
 
-        // Simplify the fraction.
-        [$num, $den] = self::simplify($num, $den);
+        // Check for infinite or NaN.
+        if ((is_float($num) && !is_finite($num)) || (is_float($den) && !is_finite($den))) {
+            throw new DomainException('Cannot convert an infinity or NaN to a rational number.');
+        }
+
+        // Initialize result variables
+        $num2 = 0;
+        $den2 = 1;
+
+        // Check to see if either argument was provided as a float but could have been an int.
+        // This might enable a call to simplify(), which is preferable to floatToRational().
+        Floats::tryConvertToInt($num);
+        Floats::tryConvertToInt($den);
+
+        // Check if we got two valid integers.
+        $convert_float = false;
+        if (is_int($num) && is_int($den)) {
+            try {
+                // Simplify the ratio.
+                [$num2, $den2] = self::simplify($num, $den);
+            } catch (RangeException) {
+                // If either the numerator or denominator is out of range, try converting from float.
+                $convert_float = true;
+            }
+        } else {
+            $convert_float = true;
+        }
+
+        // Convert from float if necessary.
+        if ($convert_float) {
+            [$num2, $den2] = self::floatToRational($num / $den);
+        }
 
         // Set the properties.
-        $this->num = $num;
-        $this->den = $den;
+        $this->num = $num2;
+        $this->den = $den2;
     }
 
     // endregion
 
     // region Factory methods
-
-    /**
-     * Create a rational number from a real number using continued fractions.
-     * This finds the simplest rational that equals the provided number (or is as close as is practical).
-     *
-     * If an exact match is not found, the method will return the closest approximation with a denominator less than
-     * or equal to $max_den. This is likely to be a more useful result than an exception and limits the time spent
-     * in the method.
-     *
-     * The valid range for the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
-     * This method will throw an exception if the given value is outside that range.
-     *
-     * If you find the method to be slow in your environment, reduce the value of $max_den, but it should be OK.
-     * In development the method runs superfast, but that was done on a high-end gaming laptop.
-     * Tests indicate a $max_den of 200 million is sufficient for exact round-trip conversion between float and
-     * Rational for e, π, τ, and common square roots and fractions.
-     *
-     * Float representation limits can cause inexact round-trip conversions for values very close to integers.
-     *
-     * This method accepts ints as well as floats because most integers larger than 2^53 cannot be represented
-     * exactly as floats, and we want it to work correctly with those numbers, too. Float conversion would cause a
-     * loss of precision. This problem only exists on a 64-bit platform where integer magnitude is up to 2^63.
-     *
-     * @param float|int $value The real number value.
-     * @return self The equivalent rational number.
-     * @throws DomainException If the value is infinite or NaN.
-     * @throws RangeException If the value is outside the valid convertible range.
-     */
-    public static function fromNumber(float|int $value): self
-    {
-        // Check for infinite or NaN.
-        if (!is_finite($value)) {
-            throw new DomainException('Cannot convert an infinity or NaN to a rational number.');
-        }
-
-        // Shortcut. Handle integers.
-        if ((is_int($value) || $value === (float)(int)$value) && $value > PHP_INT_MIN) {
-            return new self((int)$value);
-        }
-
-        // Set up.
-        $max_den = PHP_INT_MAX;
-        $sign = Math::sign($value, false);
-        $abs_value = abs($value);
-
-        // Check for values outside the valid range.
-        if ($abs_value < 1 / PHP_INT_MAX || $abs_value > PHP_INT_MAX) {
-            throw new RangeException('The value is outside the valid range for representation as a rational number.');
-        }
-
-        // Initialize convergents.
-        $h0 = 1;
-        $h1 = 0;
-        $k0 = 0;
-        $k1 = 1;
-
-        // Set the initial approximation.
-        $x = (float)$abs_value;
-
-        // Track the best approximation found so far.
-        $h_best = $abs_value < 0.5 ? 0 : 1;
-        $k_best = 1;
-        $min_err = (float)abs($h_best - $abs_value);
-
-        // Loop until done.
-        while (true) {
-            // Extract integer part.
-            $a = (int)floor($x);
-
-            // Calculate next convergent
-            $h_new = $a * $h0 + $h1;
-            $k_new = $a * $k0 + $k1;
-
-            // If denominator exceeds limit, return the best approximation found so far.
-            if ($k_new > $max_den) {
-                return new self($sign * $h_best, $k_best);
-            }
-
-            // Check if we've found an exact representation.
-            $err = (float)abs($h_new / $k_new - $abs_value);
-            if ($err === 0.0) {
-                return new self($sign * $h_new, $k_new);
-            }
-
-            // Check if this convergent is better than the best so far.
-            if ($err < $min_err) {
-                $h_best = $h_new;
-                $k_best = $k_new;
-                $min_err = $err;
-            }
-
-            // Update convergents.
-            $h1 = $h0;
-            $h0 = $h_new;
-            $k1 = $k0;
-            $k0 = $k_new;
-
-            // Calculate remainder.
-            $rem = $x - $a;
-
-            // If the remainder is 0, we're done.
-            if ($rem === 0.0) {
-                return new self($sign * $h0, $k0);
-            }
-
-            // Calculate next approximation.
-            $x = 1.0 / $rem;
-        }
-    }
 
     /**
      * Parse a string into a rational number.
@@ -205,22 +131,19 @@ final class Rational implements Stringable
      */
     public static function parse(string $s): self
     {
-        // Check for string that looks like an integer.
+        // Check for a string that looks like an integer.
         $n = filter_var($s, FILTER_VALIDATE_INT);
         if (is_int($n)) {
-            if ($n === PHP_INT_MIN) {
-                throw new RangeException('The value is outside the valid range for representation as a rational number.');
-            }
             return new self($n);
         }
 
-        // Check for string that looks like a float.
+        // Check for a string that looks like a float.
         $n = filter_var($s, FILTER_VALIDATE_FLOAT);
         if (is_float($n)) {
-            return self::fromNumber($n);
+            return new self($n);
         }
 
-        // Check for string that looks like a fraction (int/int).
+        // Check for a string that looks like a fraction (int/int).
         $parts = explode('/', $s);
         if (count($parts) === 2) {
             $n = filter_var($parts[0], FILTER_VALIDATE_INT);
@@ -234,14 +157,14 @@ final class Rational implements Stringable
     }
 
     /**
-     * Convert a number or string into a Rational, if it isn't one already.
+     * Convert a number or string into a Rational if it isn't one already.
      *
      * This serves as a helper method used by many of the arithmetic methods in this class, but may have utility
      * as a general-purpose conversion method elsewhere.
      *
      * @param int|float|string|self $value The number to convert.
      * @return self The equivalent Rational.
-     * @throws DomainException If the number is NaN or infinite, or if the input string does not represent a valid rational.
+     * @throws DomainException If the number is NaN or infinite, or the input string doesn't represent a valid rational.
      * @throws RangeException If the value is outside the valid convertible range.
      */
     public static function toRational(int|float|string|self $value): self
@@ -252,12 +175,12 @@ final class Rational implements Stringable
         }
 
         // Check for string.
-        if  (is_string($value)) {
+        if (is_string($value)) {
             return self::parse($value);
         }
 
         // Must be int or float.
-        return self::fromNumber($value);
+        return new self($value);
     }
 
     // endregion
@@ -463,7 +386,8 @@ final class Rational implements Stringable
      *
      * @return int The floored value.
      */
-    public function floor(): int {
+    public function floor(): int
+    {
         if ($this->den === 1) {
             return $this->num;
         }
@@ -476,7 +400,8 @@ final class Rational implements Stringable
      *
      * @return int The ceiling value.
      */
-    public function ceil(): int {
+    public function ceil(): int
+    {
         if ($this->den === 1) {
             return $this->num;
         }
@@ -492,7 +417,8 @@ final class Rational implements Stringable
      *
      * @return int The closest integer.
      */
-    public function round(): int {
+    public function round(): int
+    {
         if ($this->den === 1) {
             return $this->num;
         }
@@ -501,7 +427,13 @@ final class Rational implements Stringable
         $r = $this->num % $this->den;
 
         // Round away from zero if remainder ≥ half denominator.
-        return (abs($r) * 2 >= $this->den) ? ($this->num > 0 ? $q + 1 : $q - 1) : $q;
+        if (abs($r) * 2 >= $this->den) {
+            $result = $this->num > 0 ? $q + 1 : $q - 1;
+        } else {
+            $result = $q;
+        }
+
+        return $result;
     }
 
     // endregion
@@ -514,7 +446,7 @@ final class Rational implements Stringable
      * @param int|float|self $other The number to compare with.
      * @return int Returns -1 if this < other, 0 if equal, 1 if this > other.
      */
-    public function cmp(int|float|self $other): int
+    public function compare(int|float|self $other): int
     {
         $other = self::toRational($other);
 
@@ -522,8 +454,7 @@ final class Rational implements Stringable
         if ($this->den === $other->den) {
             $left = $this->num;
             $right = $other->num;
-        }
-        else {
+        } else {
             try {
                 // Cross multiply: compare a*d with b*c for a/b vs c/d.
                 $left = Integers::mul($this->num, $other->den);
@@ -540,7 +471,7 @@ final class Rational implements Stringable
 
         // The spaceship operator's contract only guarantees sign, not specific values. Normalize to -1, 0, or 1 for
         // predictable behavior used by other comparison methods.
-        return Math::sign($left <=> $right);
+        return Numbers::sign($left <=> $right);
     }
 
     /**
@@ -549,9 +480,9 @@ final class Rational implements Stringable
      * @param int|float|self $other The number to compare with.
      * @return bool True if equal, false otherwise.
      */
-    public function eq(int|float|self $other): bool
+    public function equals(int|float|self $other): bool
     {
-        return $this->cmp($other) === 0;
+        return $this->compare($other) === 0;
     }
 
     /**
@@ -560,9 +491,9 @@ final class Rational implements Stringable
      * @param int|float|self $other The number to compare with.
      * @return bool True if less than, false otherwise.
      */
-    public function lt(int|float|self $other): bool
+    public function isLessThan(int|float|self $other): bool
     {
-        return $this->cmp($other) === -1;
+        return $this->compare($other) === -1;
     }
 
     /**
@@ -571,9 +502,9 @@ final class Rational implements Stringable
      * @param int|float|self $other The number to compare with.
      * @return bool True if greater than, false otherwise.
      */
-    public function gt(int|float|self $other): bool
+    public function isGreaterThan(int|float|self $other): bool
     {
-        return $this->cmp($other) === 1;
+        return $this->compare($other) === 1;
     }
 
     /**
@@ -582,9 +513,9 @@ final class Rational implements Stringable
      * @param int|float|self $other The number to compare with.
      * @return bool True if less than or equal to, false otherwise.
      */
-    public function lte(int|float|self $other): bool
+    public function isLessThanOrEquals(int|float|self $other): bool
     {
-        return $this->cmp($other) !== 1;
+        return $this->compare($other) !== 1;
     }
 
     /**
@@ -593,9 +524,9 @@ final class Rational implements Stringable
      * @param int|float|self $other The number to compare with.
      * @return bool True if greater than or equal to, false otherwise.
      */
-    public function gte(int|float|self $other): bool
+    public function isGreaterThanOrEquals(int|float|self $other): bool
     {
-        return $this->cmp($other) !== -1;
+        return $this->compare($other) !== -1;
     }
 
     // endregion
@@ -612,22 +543,17 @@ final class Rational implements Stringable
      */
     private static function simplify(int $num, int $den): array
     {
-        // Check for PHP_INT_MIN.
-        if ($num === PHP_INT_MIN || $den === PHP_INT_MIN) {
-            throw new RangeException("A numerator or denominator equal to PHP_INT_MIN (" .PHP_INT_MIN . ") is not supported.");
-        }
-
-        // Check for 0.
+        // Check for a numerator of zero.
         if ($num === 0) {
             return [0, 1];
         }
 
-        // Check for 1.
+        // Check if the numerator and denominator are equal to each other.
         if ($num === $den) {
             return [1, 1];
         }
 
-        // Check for -1.
+        // Check for a numerator equal to the negative of the denominator.
         if ($num === -$den) {
             return [-1, 1];
         }
@@ -637,12 +563,134 @@ final class Rational implements Stringable
 
         // Reduce the fraction if necessary.
         if ($gcd > 1) {
+            // Neither of these calls to intdiv() will throw an exception because $gcd cannot be 0 or -1.
             $num = intdiv($num, $gcd);
             $den = intdiv($den, $gcd);
         }
 
+        // Check if either the numerator or denominator is PHP_INT_MIN, which is invalid.
+        if ($num === PHP_INT_MIN || $den === PHP_INT_MIN) {
+            throw new RangeException(
+                'The numerator and denominator must both be greater than PHP_INT_MIN (' . PHP_INT_MIN . ').'
+            );
+        }
+
         // Return the simplified fraction, ensuring the denominator is positive.
         return $den < 0 ? [-$num, -$den] : [$num, $den];
+    }
+
+    /**
+     * Convert a float into a pair of integers representing a numerator and denominator.
+     *
+     * The method uses continued fractions.
+     * This finds the simplest rational that equals the provided number (or is as close as is practical).
+     *
+     * If an exact match is not found, the method will return the closest approximation with a denominator less than
+     * or equal to $max_den. This is likely to be a more useful result than an exception and limits the time spent
+     * in the method.
+     *
+     * The valid range for the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
+     * This method will throw an exception if the given value is outside that range.
+     *
+     * If you find the method to be slow in your environment, reduce the value of $max_den, but it should be OK.
+     * In development the method runs superfast, but that was done on a high-end gaming laptop.
+     * Tests indicate a $max_den of 200 million is sufficient for exact round-trip conversion between float and
+     * Rational for e, π, τ, and common square roots and fractions.
+     *
+     * Float representation limits can cause inexact round-trip conversions for values very close to integers.
+     *
+     * This method accepts ints as well as floats because most integers larger than 2^53 cannot be represented
+     * exactly as floats, and we want it to work correctly with those numbers, too. Float conversion would cause a
+     * loss of precision. This problem only exists on a 64-bit platform where integer magnitude is up to 2^63.
+     *
+     * @param float $value The real number value.
+     * @return int[] Two integers representing the equivalent rational number.
+     * @throws DomainException If the value is infinite or NaN.
+     * @throws RangeException If the value is outside the valid convertible range.
+     */
+    public static function floatToRational(float $value): array
+    {
+        // Check for infinite or NaN.
+        if (!is_finite($value)) {
+            throw new DomainException('Cannot convert an infinity or NaN to a rational number.');
+        }
+
+        // Check if the float equals a valid integer.
+        if ($value === (float)(int)$value) {
+            $num = (int)$value;
+            if ($num > PHP_INT_MIN) {
+                return [$num, 1];
+            }
+        }
+
+        // Set up.
+        $max_den = PHP_INT_MAX;
+        $sign = Numbers::sign($value, false);
+        $abs_value = abs($value);
+
+        // Check for values outside the valid range.
+        if ($abs_value < 1 / PHP_INT_MAX || $abs_value > PHP_INT_MAX) {
+            throw new RangeException('The value is outside the valid range for representation as a rational number.');
+        }
+
+        // Initialize convergents.
+        $h0 = 1;
+        $h1 = 0;
+        $k0 = 0;
+        $k1 = 1;
+
+        // Set the initial approximation.
+        $x = (float)$abs_value;
+
+        // Track the best approximation found so far.
+        $h_best = $abs_value < 0.5 ? 0 : 1;
+        $k_best = 1;
+        $min_err = (float)abs($h_best - $abs_value);
+
+        // Loop until done.
+        while (true) {
+            // Extract integer part.
+            $a = (int)floor($x);
+
+            // Calculate next convergent
+            $h_new = $a * $h0 + $h1;
+            $k_new = $a * $k0 + $k1;
+
+            // If denominator exceeds limit, return the best approximation found so far.
+            if ($k_new > $max_den) {
+                return [$sign * $h_best, $k_best];
+            }
+
+            // Check if we've found an exact representation.
+            $err = (float)abs($h_new / $k_new - $abs_value);
+            if ($err === 0.0) {
+                return [$sign * $h_new, $k_new];
+            }
+
+            // Check if this convergent is better than the best so far.
+            if ($err < $min_err) {
+                $h_best = $h_new;
+                $k_best = $k_new;
+                $min_err = $err;
+            }
+
+            // Update convergents.
+            $h1 = $h0;
+            $h0 = $h_new;
+            $k1 = $k0;
+            $k0 = $k_new;
+
+            // Calculate remainder.
+            $rem = $x - $a;
+
+            // If the remainder is 0, we're done.
+            if ($rem === 0.0) {
+                return [$sign * $h0, $k0];
+            }
+
+            // Calculate next approximation.
+            $x = 1.0 / $rem;
+        }
     }
 
     // endregion
