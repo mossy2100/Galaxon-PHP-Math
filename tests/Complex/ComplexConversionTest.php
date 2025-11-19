@@ -9,6 +9,7 @@ use LogicException;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 #[CoversClass(Complex::class)]
 class ComplexConversionTest extends TestCase
@@ -104,6 +105,15 @@ class ComplexConversionTest extends TestCase
 
         $this->assertTrue($z->equals(0));
         $this->assertTrue($z->equals(new Complex(0, 0)));
+    }
+
+    /**
+     * Test equals returns false when Complex is compared with a non-number.
+     */
+    public function testEqualsFalseWithInvalidType(): void
+    {
+        $z = new Complex(3, 4);
+        $this->assertFalse($z->equals('apple'));
     }
 
     /**

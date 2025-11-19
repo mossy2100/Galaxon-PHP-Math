@@ -7,11 +7,14 @@ namespace Galaxon\Math;
 use ArrayAccess;
 use DomainException;
 use Galaxon\Core\Angle;
+use Galaxon\Core\Equatable;
 use Galaxon\Core\Stringify;
+use Galaxon\Core\Types;
 use LogicException;
 use OutOfRangeException;
 use Override;
 use Stringable;
+use TypeError;
 use ValueError;
 
 /**
@@ -19,7 +22,7 @@ use ValueError;
  *
  * @implements ArrayAccess<int, float>
  */
-final class Complex implements Stringable, ArrayAccess
+final class Complex implements Stringable, ArrayAccess, Equatable
 {
     // region Properties
 
@@ -48,7 +51,7 @@ final class Complex implements Stringable, ArrayAccess
         get {
             // Compute and cache if necessary.
             if ($this->magnitude === null) {
-                $this->magnitude = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imaginary);
+        $this->magnitude = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imaginary);
             }
 
             return $this->magnitude;
@@ -64,11 +67,11 @@ final class Complex implements Stringable, ArrayAccess
         get {
             // Compute and cache if necessary.
             if ($this->phase === null) {
-                if ($this->isReal()) {
-                    $this->phase = $this->real < 0 ? M_PI : 0;
-                } else {
-                    $this->phase = atan2($this->imaginary, $this->real);
-                }
+        if ($this->isReal()) {
+            $this->phase = $this->real < 0 ? M_PI : 0;
+        } else {
+            $this->phase = atan2($this->imaginary, $this->real);
+        }
             }
 
             return $this->phase;
@@ -702,14 +705,13 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function asin(): self
     {
-        // a = -i
-        $a = new self(0, -1);
-        // b = √(1-z²)
-        $b = new self(1)->sub($this->pow(2))->sqrt();
-        // c = iz
-        $c = self::i()->mul($this);
-        // = -i·ln(√(1-z²) + iz)
-        return $b->add($c)->ln()->mul($a);
+        // asin(z) = -i·ln(iz + √(1-z²))
+        // iz = -y + ix (multiply by i directly)
+        $iz = new self(-$this->imaginary, $this->real);
+        // 1 - z² (use sqr() instead of pow(2) for efficiency)
+        $one_minus_z2 = (new self(1))->sub($this->sqr());
+        // -i·ln(iz + √(1-z²))
+        return $iz->add($one_minus_z2->sqrt())->ln()->mul(new self(0, -1));
     }
 
     /**
@@ -720,37 +722,37 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function acos(): self
     {
-        // a = π/2
-        $a = new self(M_PI / 2);
-        // b = arcsin(z)
-        $b = $this->asin();
-        // = π/2 - arcsin(z)
-        return $a->sub($b);
+        // acos(z) = -i·ln(z + i·√(1-z²))
+        // 1 - z² (use sqr() instead of pow(2) for efficiency)
+        $one_minus_z2 = (new self(1))->sub($this->sqr());
+        // i·√(1-z²) - multiply √(1-z²) by i directly
+        $sqrt = $one_minus_z2->sqrt();
+        $i_sqrt = new self(-$sqrt->imaginary, $sqrt->real);
+        // -i·ln(z + i·√(1-z²))
+        return $this->add($i_sqrt)->ln()->mul(new self(0, -1));
     }
 
     /**
      * Calculate the inverse tangent of this complex number.
      *
-     * @return self A new complex number representing the inverse tangent this complex number.
+     * @return self A new complex number representing the inverse tangent of this complex number.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function atan(): self
     {
-        // a = -i/2
-        $a = new self(0, -0.5);
-        // b = i - z
-        $i = self::i();
-        $b = $i->sub($this);
-        // c = i + z
-        $c = $i->add($this);
-        // = (-i/2)·ln((i-z)/(i+z))
-        return $b->div($c)->ln()->mul($a);
+        // atan(z) = (-i/2)·ln((i-z)/(i+z))
+        // i - z = -x + (1-y)i (calculate directly)
+        $i_minus_z = new self(-$this->real, 1 - $this->imaginary);
+        // i + z = x + (1+y)i (calculate directly)
+        $i_plus_z = new self($this->real, 1 + $this->imaginary);
+        // (-i/2)·ln((i-z)/(i+z))
+        return $i_minus_z->div($i_plus_z)->ln()->mul(new self(0, -0.5));
     }
 
     /**
      * Calculate the inverse secant of this complex number.
      *
-     * @return self A new complex number representing the inverse secant this complex number.
+     * @return self A new complex number representing the inverse secant of this complex number.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function asec(): self
@@ -762,7 +764,7 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the inverse cosecant of this complex number.
      *
-     * @return self A new complex number representing the inverse cosecant this complex number.
+     * @return self A new complex number representing the inverse cosecant of this complex number.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function acsc(): self
@@ -774,7 +776,7 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the inverse cotangent of this complex number.
      *
-     * @return self A new complex number representing the inverse cotangent this complex number.
+     * @return self A new complex number representing the inverse cotangent of this complex number.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function acot(): self
@@ -800,14 +802,19 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Check if this complex number equals another.
      *
-     * @param self|int|float $other The real or complex number to compare with.
+     * @param mixed $other The real or complex number to compare with.
      * @param float $epsilon The tolerance for floating-point comparison.
      * @return bool True if the numbers are equal within the tolerance.
      */
-    public function equals(self|int|float $other, float $epsilon = 1E-10): bool
+    #[Override]
+    public function equals(mixed $other, float $epsilon = 1E-10): bool
     {
-        // Make sure $other is Complex.
-        $other = self::toComplex($other);
+        // Convert int or float to Complex.
+        if (is_int($other) || is_float($other)) {
+            $other = self::toComplex($other);
+        } elseif (!$other instanceof self) { // Check if other is Complex.
+            return false;
+        }
 
         // Compare real and imaginary parts.
         return abs($this->real - $other->real) < $epsilon &&

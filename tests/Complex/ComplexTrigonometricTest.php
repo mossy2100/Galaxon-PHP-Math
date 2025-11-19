@@ -231,4 +231,207 @@ class ComplexTrigonometricTest extends TestCase
         $this->assertEqualsWithDelta($z->real, $atan->real, 1e-10);
         $this->assertEqualsWithDelta($z->imaginary, $atan->imaginary, 1e-10);
     }
+
+    /**
+     * Test sec (secant).
+     */
+    public function testSec(): void
+    {
+        // sec(0) = 1
+        $result = (new Complex(0))->sec();
+        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+
+        // sec(π/3) = 2
+        $result2 = (new Complex(M_PI / 3))->sec();
+        $this->assertEqualsWithDelta(2.0, $result2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+    }
+
+    /**
+     * Test sec(z) = 1/cos(z) identity.
+     */
+    public function testSecIdentity(): void
+    {
+        $z = new Complex(1, 1);
+
+        $sec = $z->sec();
+        $invCos = $z->cos()->inv();
+
+        $this->assertEqualsWithDelta($invCos->real, $sec->real, 1e-10);
+        $this->assertEqualsWithDelta($invCos->imaginary, $sec->imaginary, 1e-10);
+    }
+
+    /**
+     * Test csc (cosecant).
+     */
+    public function testCsc(): void
+    {
+        // csc(π/2) = 1
+        $result = (new Complex(M_PI / 2))->csc();
+        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+
+        // csc(π/6) = 2
+        $result2 = (new Complex(M_PI / 6))->csc();
+        $this->assertEqualsWithDelta(2.0, $result2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+    }
+
+    /**
+     * Test csc(z) = 1/sin(z) identity.
+     */
+    public function testCscIdentity(): void
+    {
+        $z = new Complex(1, 1);
+
+        $csc = $z->csc();
+        $invSin = $z->sin()->inv();
+
+        $this->assertEqualsWithDelta($invSin->real, $csc->real, 1e-10);
+        $this->assertEqualsWithDelta($invSin->imaginary, $csc->imaginary, 1e-10);
+    }
+
+    /**
+     * Test cot (cotangent).
+     */
+    public function testCot(): void
+    {
+        // cot(π/4) = 1
+        $result = (new Complex(M_PI / 4))->cot();
+        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+
+        // cot(π/6) = √3
+        $result2 = (new Complex(M_PI / 6))->cot();
+        $this->assertEqualsWithDelta(sqrt(3), $result2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+    }
+
+    /**
+     * Test cot(z) = 1/tan(z) identity.
+     */
+    public function testCotIdentity(): void
+    {
+        $z = new Complex(1, 1);
+
+        $cot = $z->cot();
+        $invTan = $z->tan()->inv();
+
+        $this->assertEqualsWithDelta($invTan->real, $cot->real, 1e-10);
+        $this->assertEqualsWithDelta($invTan->imaginary, $cot->imaginary, 1e-10);
+    }
+
+    /**
+     * Test asec (inverse secant).
+     */
+    public function testAsec(): void
+    {
+        // asec(1) = 0
+        $result = (new Complex(1))->asec();
+        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+
+        // asec(2) = π/3
+        $result2 = (new Complex(2))->asec();
+        $this->assertEqualsWithDelta(M_PI / 3, $result2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+    }
+
+    /**
+     * Test asec(sec(z)) = z for principal values.
+     */
+    public function testAsecSecIdentity(): void
+    {
+        $z = new Complex(0.5, 0.3);
+
+        $sec = $z->sec();
+        $asec = $sec->asec();
+
+        $this->assertEqualsWithDelta($z->real, $asec->real, 1e-10);
+        $this->assertEqualsWithDelta($z->imaginary, $asec->imaginary, 1e-10);
+    }
+
+    /**
+     * Test acsc (inverse cosecant).
+     */
+    public function testAcsc(): void
+    {
+        // acsc(1) = π/2
+        $result = (new Complex(1))->acsc();
+        $this->assertEqualsWithDelta(M_PI / 2, $result->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+
+        // acsc(2) = π/6
+        $result2 = (new Complex(2))->acsc();
+        $this->assertEqualsWithDelta(M_PI / 6, $result2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+    }
+
+    /**
+     * Test acsc(csc(z)) = z for principal values.
+     */
+    public function testAcscCscIdentity(): void
+    {
+        $z = new Complex(0.5, 0.3);
+
+        $csc = $z->csc();
+        $acsc = $csc->acsc();
+
+        $this->assertEqualsWithDelta($z->real, $acsc->real, 1e-10);
+        $this->assertEqualsWithDelta($z->imaginary, $acsc->imaginary, 1e-10);
+    }
+
+    /**
+     * Test acot (inverse cotangent).
+     */
+    public function testAcot(): void
+    {
+        // acot(1) = π/4
+        $result = (new Complex(1))->acot();
+        $this->assertEqualsWithDelta(M_PI / 4, $result->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+
+        // acot(√3) = π/6
+        $result2 = (new Complex(sqrt(3)))->acot();
+        $this->assertEqualsWithDelta(M_PI / 6, $result2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+    }
+
+    /**
+     * Test acot(cot(z)) = z for principal values.
+     */
+    public function testAcotCotIdentity(): void
+    {
+        $z = new Complex(0.5, 0.3);
+
+        $cot = $z->cot();
+        $acot = $cot->acot();
+
+        $this->assertEqualsWithDelta($z->real, $acot->real, 1e-10);
+        $this->assertEqualsWithDelta($z->imaginary, $acot->imaginary, 1e-10);
+    }
+
+    /**
+     * Test reciprocal identities for complex numbers.
+     */
+    public function testReciprocalIdentitiesComplex(): void
+    {
+        $z = new Complex(2, 3);
+
+        // sec(z) * cos(z) = 1
+        $product1 = $z->sec()->mul($z->cos());
+        $this->assertEqualsWithDelta(1.0, $product1->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product1->imaginary, 1e-10);
+
+        // csc(z) * sin(z) = 1
+        $product2 = $z->csc()->mul($z->sin());
+        $this->assertEqualsWithDelta(1.0, $product2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product2->imaginary, 1e-10);
+
+        // cot(z) * tan(z) = 1
+        $product3 = $z->cot()->mul($z->tan());
+        $this->assertEqualsWithDelta(1.0, $product3->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product3->imaginary, 1e-10);
+    }
 }
