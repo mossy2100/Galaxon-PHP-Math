@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763521789">
-  <project timestamp="1763521789" name="Clover Coverage">
+<coverage generated="1763522003">
+  <project timestamp="1763522003" name="Clover Coverage">
     <package name="Galaxon\Math">
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Math\src\Complex.php">
         <class name="Galaxon\Math\Complex" namespace="Galaxon\Math">
@@ -58,9 +58,9 @@
         <line num="256" type="stmt" count="15"/>
         <line num="268" type="method" name="neg" visibility="public" complexity="1" crap="1" count="2"/>
         <line num="270" type="stmt" count="2"/>
-        <line num="279" type="method" name="add" visibility="public" complexity="1" crap="1" count="25"/>
-        <line num="282" type="stmt" count="25"/>
-        <line num="285" type="stmt" count="25"/>
+        <line num="279" type="method" name="add" visibility="public" complexity="1" crap="1" count="24"/>
+        <line num="282" type="stmt" count="24"/>
+        <line num="285" type="stmt" count="24"/>
         <line num="294" type="method" name="sub" visibility="public" complexity="1" crap="1" count="20"/>
         <line num="297" type="stmt" count="20"/>
         <line num="300" type="stmt" count="20"/>
@@ -128,8 +128,8 @@
         <line num="483" type="stmt" count="1"/>
         <line num="486" type="stmt" count="24"/>
         <line num="487" type="stmt" count="1"/>
-        <line num="491" type="stmt" count="24"/>
-        <line num="492" type="stmt" count="2"/>
+        <line num="491" type="stmt" count="23"/>
+        <line num="492" type="stmt" count="1"/>
         <line num="496" type="stmt" count="23"/>
         <line num="497" type="stmt" count="3"/>
         <line num="501" type="stmt" count="21"/>
@@ -245,7 +245,7 @@
         <line num="1010" type="method" name="equals" visibility="public" complexity="5" crap="5" count="79"/>
         <line num="1014" type="stmt" count="79"/>
         <line num="1015" type="stmt" count="75"/>
-        <line num="1016" type="stmt" count="33"/>
+        <line num="1016" type="stmt" count="32"/>
         <line num="1017" type="stmt" count="1"/>
         <line num="1021" type="stmt" count="78"/>
         <line num="1022" type="stmt" count="78"/>

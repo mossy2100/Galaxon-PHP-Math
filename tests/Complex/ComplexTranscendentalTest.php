@@ -171,7 +171,13 @@ class ComplexTranscendentalTest extends TestCase
         $result5 = new Complex(M_LNPI)->exp();
         $this->assertEqualsWithDelta(M_PI, $result5->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
+    }
 
+    /**
+     * Test Euler's identity, both forms.
+     */
+    public function testEulersIdentity(): void
+    {
         // e^πi = -1
         $result5 = new Complex(0, M_PI)->exp();
         $this->assertEqualsWithDelta(-1, $result5->real, Complex::EPSILON);
@@ -181,18 +187,6 @@ class ComplexTranscendentalTest extends TestCase
         $result5 = new Complex(0, Angle::TAU)->exp();
         $this->assertEqualsWithDelta(1, $result5->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
-    }
-
-    /**
-     * Test Euler's identity alternate form: e^(iπ) + 1 = 0
-     */
-    public function testEulersIdentityAlternateForm(): void
-    {
-        $z = new Complex(0, M_PI);
-        $result = $z->exp()->add(1);
-
-        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
