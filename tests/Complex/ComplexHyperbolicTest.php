@@ -22,14 +22,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testSinh(): void
     {
         // sinh(0) = 0
-        $result = (new Complex(0))->sinh();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->sinh();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // sinh(1) ≈ 1.1752
-        $result2 = (new Complex(1))->sinh();
-        $this->assertEqualsWithDelta(sinh(1), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->sinh();
+        $this->assertEqualsWithDelta(sinh(1), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -43,8 +43,8 @@ class ComplexHyperbolicTest extends TestCase
         $expected_real = sinh(1) * cos(1);
         $expected_imag = cosh(1) * sin(1);
 
-        $this->assertEqualsWithDelta($expected_real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expected_real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -53,14 +53,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testCosh(): void
     {
         // cosh(0) = 1
-        $result = (new Complex(0))->cosh();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->cosh();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // cosh(1) ≈ 1.5431
-        $result2 = (new Complex(1))->cosh();
-        $this->assertEqualsWithDelta(cosh(1), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->cosh();
+        $this->assertEqualsWithDelta(cosh(1), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -74,8 +74,8 @@ class ComplexHyperbolicTest extends TestCase
         $expected_real = cosh(1) * cos(1);
         $expected_imag = sinh(1) * sin(1);
 
-        $this->assertEqualsWithDelta($expected_real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expected_real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -84,14 +84,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testTanh(): void
     {
         // tanh(0) = 0
-        $result = (new Complex(0))->tanh();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->tanh();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // tanh(1) ≈ 0.7616
-        $result2 = (new Complex(1))->tanh();
-        $this->assertEqualsWithDelta(tanh(1), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->tanh();
+        $this->assertEqualsWithDelta(tanh(1), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -104,8 +104,8 @@ class ComplexHyperbolicTest extends TestCase
         $tanh = $z->tanh();
         $ratio = $z->sinh()->div($z->cosh());
 
-        $this->assertEqualsWithDelta($ratio->real, $tanh->real, 1e-10);
-        $this->assertEqualsWithDelta($ratio->imaginary, $tanh->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($ratio->real, $tanh->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($ratio->imaginary, $tanh->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -114,14 +114,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testSech(): void
     {
         // sech(0) = 1
-        $result = (new Complex(0))->sech();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->sech();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // sech(1) = 1/cosh(1)
-        $result2 = (new Complex(1))->sech();
-        $this->assertEqualsWithDelta(1 / cosh(1), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->sech();
+        $this->assertEqualsWithDelta(1 / cosh(1), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -134,8 +134,8 @@ class ComplexHyperbolicTest extends TestCase
         $sech = $z->sech();
         $inv_cosh = $z->cosh()->inv();
 
-        $this->assertEqualsWithDelta($inv_cosh->real, $sech->real, 1e-10);
-        $this->assertEqualsWithDelta($inv_cosh->imaginary, $sech->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($inv_cosh->real, $sech->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($inv_cosh->imaginary, $sech->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -144,9 +144,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testCsch(): void
     {
         // csch(1) = 1/sinh(1)
-        $result = (new Complex(1))->csch();
-        $this->assertEqualsWithDelta(1 / sinh(1), $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->csch();
+        $this->assertEqualsWithDelta(1 / sinh(1), $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -159,8 +159,8 @@ class ComplexHyperbolicTest extends TestCase
         $csch = $z->csch();
         $inv_sinh = $z->sinh()->inv();
 
-        $this->assertEqualsWithDelta($inv_sinh->real, $csch->real, 1e-10);
-        $this->assertEqualsWithDelta($inv_sinh->imaginary, $csch->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($inv_sinh->real, $csch->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($inv_sinh->imaginary, $csch->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -169,9 +169,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testCoth(): void
     {
         // coth(1) = cosh(1)/sinh(1)
-        $result = (new Complex(1))->coth();
-        $this->assertEqualsWithDelta(cosh(1) / sinh(1), $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->coth();
+        $this->assertEqualsWithDelta(cosh(1) / sinh(1), $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -184,8 +184,8 @@ class ComplexHyperbolicTest extends TestCase
         $coth = $z->coth();
         $ratio = $z->cosh()->div($z->sinh());
 
-        $this->assertEqualsWithDelta($ratio->real, $coth->real, 1e-10);
-        $this->assertEqualsWithDelta($ratio->imaginary, $coth->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($ratio->real, $coth->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($ratio->imaginary, $coth->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -199,8 +199,8 @@ class ComplexHyperbolicTest extends TestCase
         $sinh2 = $z->sinh()->sqr();
         $result = $cosh2->sub($sinh2);
 
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     // endregion
@@ -213,14 +213,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testAsinh(): void
     {
         // asinh(0) = 0
-        $result = (new Complex(0))->asinh();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->asinh();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // asinh(1) ≈ 0.8814
-        $result2 = (new Complex(1))->asinh();
-        $this->assertEqualsWithDelta(asinh(1), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->asinh();
+        $this->assertEqualsWithDelta(asinh(1), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -232,8 +232,8 @@ class ComplexHyperbolicTest extends TestCase
 
         $result = $z->sinh()->asinh();
 
-        $this->assertEqualsWithDelta($z->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -242,14 +242,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testAcosh(): void
     {
         // acosh(1) = 0
-        $result = (new Complex(1))->acosh();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->acosh();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // acosh(2) ≈ 1.3170
-        $result2 = (new Complex(2))->acosh();
-        $this->assertEqualsWithDelta(acosh(2), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(2)->acosh();
+        $this->assertEqualsWithDelta(acosh(2), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -261,8 +261,8 @@ class ComplexHyperbolicTest extends TestCase
 
         $result = $z->cosh()->acosh();
 
-        $this->assertEqualsWithDelta($z->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -271,14 +271,14 @@ class ComplexHyperbolicTest extends TestCase
     public function testAtanh(): void
     {
         // atanh(0) = 0
-        $result = (new Complex(0))->atanh();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->atanh();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // atanh(0.5) ≈ 0.5493
-        $result2 = (new Complex(0.5))->atanh();
-        $this->assertEqualsWithDelta(atanh(0.5), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(0.5)->atanh();
+        $this->assertEqualsWithDelta(atanh(0.5), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -290,8 +290,8 @@ class ComplexHyperbolicTest extends TestCase
 
         $result = $z->tanh()->atanh();
 
-        $this->assertEqualsWithDelta($z->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -300,9 +300,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testAsech(): void
     {
         // asech(1) = 0
-        $result = (new Complex(1))->asech();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->asech();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -314,8 +314,8 @@ class ComplexHyperbolicTest extends TestCase
 
         $result = $z->sech()->asech();
 
-        $this->assertEqualsWithDelta($z->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -324,9 +324,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testAcsch(): void
     {
         // acsch(1) = asinh(1)
-        $result = (new Complex(1))->acsch();
-        $this->assertEqualsWithDelta(asinh(1), $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->acsch();
+        $this->assertEqualsWithDelta(asinh(1), $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -338,8 +338,8 @@ class ComplexHyperbolicTest extends TestCase
 
         $result = $z->csch()->acsch();
 
-        $this->assertEqualsWithDelta($z->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -348,9 +348,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testAcoth(): void
     {
         // acoth(2) = atanh(0.5)
-        $result = (new Complex(2))->acoth();
-        $this->assertEqualsWithDelta(atanh(0.5), $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(2)->acoth();
+        $this->assertEqualsWithDelta(atanh(0.5), $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -362,8 +362,8 @@ class ComplexHyperbolicTest extends TestCase
 
         $result = $z->coth()->acoth();
 
-        $this->assertEqualsWithDelta($z->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -375,18 +375,18 @@ class ComplexHyperbolicTest extends TestCase
 
         // sech(z) × cosh(z) = 1
         $product1 = $z->sech()->mul($z->cosh());
-        $this->assertEqualsWithDelta(1.0, $product1->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product1->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product1->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product1->imaginary, Complex::EPSILON);
 
         // csch(z) × sinh(z) = 1
         $product2 = $z->csch()->mul($z->sinh());
-        $this->assertEqualsWithDelta(1.0, $product2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product2->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product2->imaginary, Complex::EPSILON);
 
         // coth(z) × tanh(z) = 1
         $product3 = $z->coth()->mul($z->tanh());
-        $this->assertEqualsWithDelta(1.0, $product3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product3->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product3->imaginary, Complex::EPSILON);
     }
 
     // endregion

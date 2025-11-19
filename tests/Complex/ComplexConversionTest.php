@@ -9,7 +9,6 @@ use LogicException;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use TypeError;
 
 #[CoversClass(Complex::class)]
 class ComplexConversionTest extends TestCase

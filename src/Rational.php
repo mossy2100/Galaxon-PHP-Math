@@ -10,7 +10,6 @@ use Galaxon\Core\Equatable;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Integers;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Stringify;
 use Galaxon\Core\Types;
 use OverflowException;
 use Override;
@@ -287,7 +286,7 @@ final class Rational implements Stringable, Equatable
     {
         // Guard.
         if ($this->num === 0) {
-            throw new DomainException("Cannot take reciprocal of zero.");
+            throw new DomainException('Cannot take reciprocal of zero.');
         }
 
         // Preserve sign: if num is negative, swap and negate.
@@ -338,7 +337,7 @@ final class Rational implements Stringable, Equatable
         // Guard.
         $other = self::toRational($other);
         if ($other->num === 0) {
-            throw new DomainException("Cannot divide by zero.");
+            throw new DomainException('Cannot divide by zero.');
         }
 
         return $this->mul($other->inv());
@@ -364,7 +363,7 @@ final class Rational implements Stringable, Equatable
         if ($this->num === 0) {
             // 0 to the power of a negative exponent is invalid (effectively division by zero).
             if ($exponent < 0) {
-                throw new DomainException("Cannot raise zero to a negative power.");
+                throw new DomainException('Cannot raise zero to a negative power.');
             }
 
             // 0 to the power of a positive exponent is 0.

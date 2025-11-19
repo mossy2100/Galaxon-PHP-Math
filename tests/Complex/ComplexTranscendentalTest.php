@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Math\Tests\Complex;
 
 use DomainException;
+use Galaxon\Core\Angle;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -19,29 +20,29 @@ class ComplexTranscendentalTest extends TestCase
     public function testLnSpecialValues(): void
     {
         // ln(1) = 0
-        $result = (new Complex(1))->ln();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->ln();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // ln(e) = 1
-        $result2 = (new Complex(M_E))->ln();
-        $this->assertEqualsWithDelta(1.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_E)->ln();
+        $this->assertEqualsWithDelta(1.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // ln(2) = M_LN2
-        $result3 = (new Complex(2))->ln();
-        $this->assertEqualsWithDelta(M_LN2, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, 1e-10);
+        $result3 = new Complex(2)->ln();
+        $this->assertEqualsWithDelta(M_LN2, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, Complex::EPSILON);
 
         // ln(10) = M_LN10
-        $result4 = (new Complex(10))->ln();
-        $this->assertEqualsWithDelta(M_LN10, $result4->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result4->imaginary, 1e-10);
+        $result4 = new Complex(10)->ln();
+        $this->assertEqualsWithDelta(M_LN10, $result4->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result4->imaginary, Complex::EPSILON);
 
         // ln(π) = M_LNPI
-        $result5 = (new Complex(M_PI))->ln();
-        $this->assertEqualsWithDelta(M_LNPI, $result5->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result5->imaginary, 1e-10);
+        $result5 = new Complex(M_PI)->ln();
+        $this->assertEqualsWithDelta(M_LNPI, $result5->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -59,8 +60,8 @@ class ComplexTranscendentalTest extends TestCase
         $expectedReal = log($mag);
         $expectedImag = $z->phase;
 
-        $this->assertEqualsWithDelta($expectedReal, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expectedReal, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -69,7 +70,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testLnZero(): void
     {
         $this->expectException(ValueError::class);
-        (new Complex(0))->ln();
+        new Complex(0)->ln();
     }
 
     /**
@@ -78,29 +79,29 @@ class ComplexTranscendentalTest extends TestCase
     public function testLogReals(): void
     {
         // log_2(8) = 3
-        $result = (new Complex(8))->log(2);
-        $this->assertEqualsWithDelta(3.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(8)->log(2);
+        $this->assertEqualsWithDelta(3.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // log_10(100) = 2
-        $result2 = (new Complex(100))->log(10);
-        $this->assertEqualsWithDelta(2.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(100)->log(10);
+        $this->assertEqualsWithDelta(2.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // log_e(e) = 1 (natural log)
-        $result3 = (new Complex(M_E))->log(M_E);
-        $this->assertEqualsWithDelta(1.0, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, 1e-10);
+        $result3 = new Complex(M_E)->log(M_E);
+        $this->assertEqualsWithDelta(1.0, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, Complex::EPSILON);
 
         // log_2(e)
-        $result4 = (new Complex(M_E))->log(2);
-        $this->assertEqualsWithDelta(M_LOG2E, $result4->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result4->imaginary, 1e-10);
+        $result4 = new Complex(M_E)->log(2);
+        $this->assertEqualsWithDelta(M_LOG2E, $result4->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result4->imaginary, Complex::EPSILON);
 
         // log_10(e)
-        $result5 = (new Complex(M_E))->log(10);
-        $this->assertEqualsWithDelta(M_LOG10E, $result5->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result5->imaginary, 1e-10);
+        $result5 = new Complex(M_E)->log(10);
+        $this->assertEqualsWithDelta(M_LOG10E, $result5->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -119,8 +120,8 @@ class ComplexTranscendentalTest extends TestCase
         $lnBase = $base->ln();
         $expected = $lnZ->div($lnBase);
 
-        $this->assertEqualsWithDelta($expected->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expected->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -129,7 +130,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testLogBaseZero(): void
     {
         $this->expectException(DomainException::class);
-        (new Complex(5))->log(0);
+        new Complex(5)->log(0);
     }
 
     /**
@@ -138,7 +139,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testLogBaseOne(): void
     {
         $this->expectException(DomainException::class);
-        (new Complex(5))->log(1);
+        new Complex(5)->log(1);
     }
 
     /**
@@ -147,41 +148,51 @@ class ComplexTranscendentalTest extends TestCase
     public function testExpSpecialValues(): void
     {
         // e^0 = 1
-        $result = (new Complex(0))->exp();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->exp();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // e^1 = e
-        $result2 = (new Complex(1))->exp();
-        $this->assertEqualsWithDelta(M_E, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->exp();
+        $this->assertEqualsWithDelta(M_E, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // e^ln(2) = 2
-        $result3 = (new Complex(M_LN2))->exp();
-        $this->assertEqualsWithDelta(2.0, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, 1e-10);
+        $result3 = new Complex(M_LN2)->exp();
+        $this->assertEqualsWithDelta(2.0, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, Complex::EPSILON);
 
         // e^ln(10) = 10
-        $result4 = (new Complex(M_LN10))->exp();
-        $this->assertEqualsWithDelta(10.0, $result4->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result4->imaginary, 1e-10);
+        $result4 = new Complex(M_LN10)->exp();
+        $this->assertEqualsWithDelta(10.0, $result4->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result4->imaginary, Complex::EPSILON);
 
         // e^ln(π) = π
-        $result5 = (new Complex(M_LNPI))->exp();
-        $this->assertEqualsWithDelta(M_PI, $result5->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result5->imaginary, 1e-10);
+        $result5 = new Complex(M_LNPI)->exp();
+        $this->assertEqualsWithDelta(M_PI, $result5->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
+
+        // e^πi = -1
+        $result5 = new Complex(0, M_PI)->exp();
+        $this->assertEqualsWithDelta(-1, $result5->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
+
+        // e^τi = 1
+        $result5 = new Complex(0, Angle::TAU)->exp();
+        $this->assertEqualsWithDelta(1, $result5->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
     }
 
     /**
-     * Test Euler's identity: e^(iπ) = -1
+     * Test Euler's identity alternate form: e^(iπ) + 1 = 0
      */
-    public function testEulersIdentity(): void
+    public function testEulersIdentityAlternateForm(): void
     {
         $z = new Complex(0, M_PI);
-        $result = $z->exp();
+        $result = $z->exp()->add(1);
 
-        $this->assertEqualsWithDelta(-1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -194,18 +205,18 @@ class ComplexTranscendentalTest extends TestCase
         $result = $z->pow(2);
 
         // (3 + 4i)^2 = 9 + 24i + 16i² = 9 + 24i - 16 = -7 + 24i
-        $this->assertEqualsWithDelta(-7.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(24.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(-7.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(24.0, $result->imaginary, Complex::EPSILON);
 
         // z^0 = 1
         $result2 = $z->pow(0);
-        $this->assertEqualsWithDelta(1.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // z^1 = z
         $result3 = $z->pow(1);
-        $this->assertEqualsWithDelta(3.0, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(4.0, $result3->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(3.0, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(4.0, $result3->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -215,8 +226,8 @@ class ComplexTranscendentalTest extends TestCase
     {
         $result = Complex::i()->pow(2);
 
-        $this->assertEqualsWithDelta(-1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -225,13 +236,13 @@ class ComplexTranscendentalTest extends TestCase
     public function testPowEBase(): void
     {
         $w = new Complex(2, 3);
-        $result = (new Complex(M_E))->pow($w);
+        $result = new Complex(M_E)->pow($w);
 
         // e^(2+3i) should equal exp(2+3i)
         $expected = $w->exp();
 
-        $this->assertEqualsWithDelta($expected->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expected->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -239,10 +250,10 @@ class ComplexTranscendentalTest extends TestCase
      */
     public function testZeroPowerZero(): void
     {
-        $result = (new Complex(0))->pow(0);
+        $result = new Complex(0)->pow(0);
 
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -250,10 +261,10 @@ class ComplexTranscendentalTest extends TestCase
      */
     public function testZeroPowerPositive(): void
     {
-        $result = (new Complex(0))->pow(5);
+        $result = new Complex(0)->pow(5);
 
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -262,7 +273,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testZeroPowerNegative(): void
     {
         $this->expectException(DomainException::class);
-        (new Complex(0))->pow(-2);
+        new Complex(0)->pow(-2);
     }
 
     /**
@@ -271,7 +282,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testZeroPowerComplex(): void
     {
         $this->expectException(DomainException::class);
-        (new Complex(0))->pow(new Complex(1, 1));
+        new Complex(0)->pow(new Complex(1, 1));
     }
 
     /**
@@ -288,8 +299,8 @@ class ComplexTranscendentalTest extends TestCase
         // Verify all roots satisfy z^3 = 1
         foreach ($roots as $root) {
             $cubed = $root->pow(3);
-            $this->assertEqualsWithDelta(1.0, $cubed->real, 1e-10);
-            $this->assertEqualsWithDelta(0.0, $cubed->imaginary, 1e-10);
+            $this->assertEqualsWithDelta(1.0, $cubed->real, Complex::EPSILON);
+            $this->assertEqualsWithDelta(0.0, $cubed->imaginary, Complex::EPSILON);
         }
     }
 
@@ -307,14 +318,14 @@ class ComplexTranscendentalTest extends TestCase
         $root1 = $roots[0];
         $root2 = $roots[1];
 
-        $this->assertEqualsWithDelta(0.0, $root1->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $root1->real, Complex::EPSILON);
         $this->assertTrue(
-            abs($root1->imaginary - 1.0) < 1e-10 || abs($root1->imaginary + 1.0) < 1e-10
+            abs($root1->imaginary - 1.0) < Complex::EPSILON || abs($root1->imaginary + 1.0) < Complex::EPSILON
         );
 
-        $this->assertEqualsWithDelta(0.0, $root2->real, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $root2->real, Complex::EPSILON);
         $this->assertTrue(
-            abs($root2->imaginary - 1.0) < 1e-10 || abs($root2->imaginary + 1.0) < 1e-10
+            abs($root2->imaginary - 1.0) < Complex::EPSILON || abs($root2->imaginary + 1.0) < Complex::EPSILON
         );
     }
 
@@ -324,7 +335,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testRootsInvalidN(): void
     {
         $this->expectException(DomainException::class);
-        (new Complex(1))->roots(0);
+        new Complex(1)->roots(0);
     }
 
     /**
@@ -332,11 +343,11 @@ class ComplexTranscendentalTest extends TestCase
      */
     public function testRootsOfZero(): void
     {
-        $roots = (new Complex(0))->roots(3);
+        $roots = new Complex(0)->roots(3);
 
         $this->assertCount(1, $roots);
-        $this->assertEqualsWithDelta(0.0, $roots[0]->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $roots[0]->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(0.0, $roots[0]->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $roots[0]->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -347,8 +358,8 @@ class ComplexTranscendentalTest extends TestCase
         $z = new Complex(3, 4);
         $result = $z->sqr();
 
-        $this->assertEqualsWithDelta(-7.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(24.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(-7.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(24.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -357,14 +368,14 @@ class ComplexTranscendentalTest extends TestCase
     public function testSqrt(): void
     {
         // sqrt(4) = 2
-        $result = (new Complex(4))->sqrt();
-        $this->assertEqualsWithDelta(2.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(4)->sqrt();
+        $this->assertEqualsWithDelta(2.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // sqrt(-1) = i (principal value)
-        $result2 = (new Complex(-1))->sqrt();
-        $this->assertEqualsWithDelta(0.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(1.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(-1)->sqrt();
+        $this->assertEqualsWithDelta(0.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -375,8 +386,8 @@ class ComplexTranscendentalTest extends TestCase
         $z = new Complex(2, 0);
         $result = $z->cube();
 
-        $this->assertEqualsWithDelta(8.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(8.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -385,8 +396,8 @@ class ComplexTranscendentalTest extends TestCase
     public function testCbrt(): void
     {
         // cbrt(8) = 2
-        $result = (new Complex(8))->cbrt();
-        $this->assertEqualsWithDelta(2.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(8)->cbrt();
+        $this->assertEqualsWithDelta(2.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 }

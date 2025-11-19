@@ -203,7 +203,7 @@ class ComplexParseTest extends TestCase
         $expected = new Complex($expected_real, $expected_imag);
 
         $this->assertEquals($expected, $result);
-        $this->assertEqualsWithDelta($expected_real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expected_real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, Complex::EPSILON);
     }
 }

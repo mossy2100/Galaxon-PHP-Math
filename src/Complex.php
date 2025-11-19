@@ -10,12 +10,10 @@ use DomainException;
 use Galaxon\Core\Angle;
 use Galaxon\Core\Equatable;
 use Galaxon\Core\Stringify;
-use Galaxon\Core\Types;
 use LogicException;
 use OutOfRangeException;
 use Override;
 use Stringable;
-use TypeError;
 use ValueError;
 
 /**
@@ -52,7 +50,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         get {
             // Compute and cache if necessary.
             if ($this->magnitude === null) {
-        $this->magnitude = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imaginary);
+                $this->magnitude = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imaginary);
             }
 
             return $this->magnitude;
@@ -68,17 +66,22 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         get {
             // Compute and cache if necessary.
             if ($this->phase === null) {
-        if ($this->isReal()) {
-            $this->phase = $this->real < 0 ? M_PI : 0;
-        } else {
-            $this->phase = atan2($this->imaginary, $this->real);
-        }
+                if ($this->isReal()) {
+                    $this->phase = $this->real < 0 ? M_PI : 0;
+                } else {
+                    $this->phase = atan2($this->imaginary, $this->real);
+                }
             }
 
             return $this->phase;
         }
     }
     // phpcs:enable
+
+    /**
+     * Small difference used for comparing values, to circumvent floating point rounding issues.
+     */
+    public const float EPSILON = 1e-10;
 
     // endregion
 
@@ -87,7 +90,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     /**
      * Create a new complex number.
      *
-     * If a string is provided, it will be parsed as a complex number (e.g., "3+4i").
+     * If a string is provided, it will be parsed as a complex number (e.g. "3+4i").
      * If a string is provided with a second argument, an ArgumentCountError is thrown.
      *
      * @param int|float|string $real The real part, or a string representation of the complex number.
@@ -152,7 +155,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     {
         // Check for valid magnitude.
         if ($mag < 0) {
-            throw new DomainException("Magnitude must not be negative.");
+            throw new DomainException('Magnitude must not be negative.');
         }
 
         // Construct the new Complex.
@@ -330,9 +333,9 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         // Make sure $other is Complex.
         $other = self::toComplex($other);
 
-        // Check for divide by zero.
+        // Check for division by zero.
         if ($other->equals(0)) {
-            throw new DomainException("Cannot divide by 0.");
+            throw new DomainException('Cannot divide by 0.');
         }
 
         // Do the division.
@@ -484,9 +487,14 @@ final class Complex implements Stringable, ArrayAccess, Equatable
             return new self(10);
         }
 
-        // Check for Euler's identity e^iπ = -1
+        // Euler's identity: e^iπ = -1
         if ($this->equals(new self(0, M_PI))) {
             return new self(-1);
+        }
+
+        // Euler's identity, alternate form: e^iτ = 1
+        if ($this->equals(new self(0, Angle::TAU))) {
+            return new self(1);
         }
 
         // Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b))
@@ -495,14 +503,14 @@ final class Complex implements Stringable, ArrayAccess, Equatable
 
     /**
      * Raise this complex number to a power.
-     * This function can be multi-valued for certain base/exponent combinations.
+     * This function can be multivalued for certain base/exponent combinations.
      * For simplicity, only the principal value is returned.
      *
      * Single-valued cases:
      * - Any base raised to an integer exponent.
      * - Real positive base with real exponent.
      *
-     * Multi-valued cases:
+     * Multivalued cases:
      * - Complex base with fractional exponent: z^(1/n)
      * - Negative real base with fractional exponent: (-2)^(1/3)
      * - Any base with complex exponent: z^(a+bi) where b ≠ 0
@@ -569,7 +577,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      * Calculate the nth roots of this complex number.
      * Returns all n complex roots using De Moivre's theorem.
      *
-     * @param int $n The root to calculate (e.g., 2 for square root, 3 for cube root).
+     * @param int $n The root to calculate (e.g. 2 for square root, 3 for cube root).
      * @return self[] An array of Complex numbers representing all nth roots.
      * @throws DomainException If n is not a positive integer.
      */
@@ -577,7 +585,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     {
         // Check for negative number of roots.
         if ($n <= 0) {
-            throw new DomainException("Root index must be a positive integer");
+            throw new DomainException('Root index must be a positive integer');
         }
 
         // Handle special case of 0.
@@ -740,7 +748,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         // iz = -y + ix (multiply by i directly)
         $iz = new self(-$this->imaginary, $this->real);
         // 1 - z² (use sqr() instead of pow(2) for efficiency)
-        $one_minus_z2 = (new self(1))->sub($this->sqr());
+        $one_minus_z2 = new self(1)->sub($this->sqr());
         // -i·ln(iz + √(1-z²))
         return $iz->add($one_minus_z2->sqrt())->ln()->mul(new self(0, -1));
     }
@@ -755,7 +763,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     {
         // acos(z) = -i·ln(z + i·√(1-z²))
         // 1 - z² (use sqr() instead of pow(2) for efficiency)
-        $one_minus_z2 = (new self(1))->sub($this->sqr());
+        $one_minus_z2 = new self(1)->sub($this->sqr());
         // i·√(1-z²) - multiply √(1-z²) by i directly
         $sqrt = $one_minus_z2->sqrt();
         $i_sqrt = new self(-$sqrt->imaginary, $sqrt->real);
@@ -937,8 +945,8 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     public function atanh(): self
     {
         // atanh(z) = (1/2)·ln((1+z)/(1-z))
-        $one_plus_z = (new self(1))->add($this);
-        $one_minus_z = (new self(1))->sub($this);
+        $one_plus_z = new self(1)->add($this);
+        $one_minus_z = new self(1)->sub($this);
         return $one_plus_z->div($one_minus_z)->ln()->mul(0.5);
     }
 
@@ -1000,7 +1008,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      * @return bool True if the numbers are equal within the tolerance.
      */
     #[Override]
-    public function equals(mixed $other, float $epsilon = 1E-10): bool
+    public function equals(mixed $other, float $epsilon = self::EPSILON): bool
     {
         // Convert int or float to Complex.
         if (is_int($other) || is_float($other)) {
@@ -1105,7 +1113,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     #[Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new LogicException("Complex values are immutable.");
+        throw new LogicException('Complex values are immutable.');
     }
 
     /**
@@ -1118,6 +1126,6 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     #[Override]
     public function offsetUnset(mixed $offset): void
     {
-        throw new LogicException("Complex values are immutable.");
+        throw new LogicException('Complex values are immutable.');
     }
 }

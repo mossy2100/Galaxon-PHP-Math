@@ -17,19 +17,19 @@ class ComplexTrigonometricTest extends TestCase
     public function testSinReal(): void
     {
         // sin(0) = 0
-        $result = (new Complex(0))->sin();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->sin();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // sin(π/2) = 1
-        $result2 = (new Complex(M_PI / 2))->sin();
-        $this->assertEqualsWithDelta(1.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_PI / 2)->sin();
+        $this->assertEqualsWithDelta(1.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // sin(π) = 0
-        $result3 = (new Complex(M_PI))->sin();
-        $this->assertEqualsWithDelta(0.0, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, 1e-10);
+        $result3 = new Complex(M_PI)->sin();
+        $this->assertEqualsWithDelta(0.0, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -44,8 +44,8 @@ class ComplexTrigonometricTest extends TestCase
         $expectedReal = sin(1) * cosh(1);
         $expectedImag = cos(1) * sinh(1);
 
-        $this->assertEqualsWithDelta($expectedReal, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expectedReal, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -54,19 +54,19 @@ class ComplexTrigonometricTest extends TestCase
     public function testCosReal(): void
     {
         // cos(0) = 1
-        $result = (new Complex(0))->cos();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->cos();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // cos(π/2) = 0
-        $result2 = (new Complex(M_PI / 2))->cos();
-        $this->assertEqualsWithDelta(0.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_PI / 2)->cos();
+        $this->assertEqualsWithDelta(0.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // cos(π) = -1
-        $result3 = (new Complex(M_PI))->cos();
-        $this->assertEqualsWithDelta(-1.0, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, 1e-10);
+        $result3 = new Complex(M_PI)->cos();
+        $this->assertEqualsWithDelta(-1.0, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -81,8 +81,8 @@ class ComplexTrigonometricTest extends TestCase
         $expectedReal = cos(1) * cosh(1);
         $expectedImag = -sin(1) * sinh(1);
 
-        $this->assertEqualsWithDelta($expectedReal, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expectedReal, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -91,14 +91,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testTanReal(): void
     {
         // tan(0) = 0
-        $result = (new Complex(0))->tan();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->tan();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // tan(π/4) = 1
-        $result2 = (new Complex(M_PI / 4))->tan();
-        $this->assertEqualsWithDelta(1.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_PI / 4)->tan();
+        $this->assertEqualsWithDelta(1.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -114,8 +114,8 @@ class ComplexTrigonometricTest extends TestCase
         $cos = $z->cos();
         $expected = $sin->div($cos);
 
-        $this->assertEqualsWithDelta($expected->real, $result->real, 1e-10);
-        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($expected->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -133,8 +133,8 @@ class ComplexTrigonometricTest extends TestCase
 
         $sum = $sin2->add($cos2);
 
-        $this->assertEqualsWithDelta(1.0, $sum->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $sum->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $sum->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $sum->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -143,14 +143,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testAsin(): void
     {
         // asin(0) = 0
-        $result = (new Complex(0))->asin();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->asin();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // asin(1) = π/2
-        $result2 = (new Complex(1))->asin();
-        $this->assertEqualsWithDelta(M_PI / 2, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->asin();
+        $this->assertEqualsWithDelta(M_PI / 2, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -163,8 +163,8 @@ class ComplexTrigonometricTest extends TestCase
         $sin = $z->sin();
         $asin = $sin->asin();
 
-        $this->assertEqualsWithDelta($z->real, $asin->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $asin->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $asin->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $asin->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -173,19 +173,19 @@ class ComplexTrigonometricTest extends TestCase
     public function testAcos(): void
     {
         // acos(1) = 0
-        $result = (new Complex(1))->acos();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->acos();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // acos(0) = π/2
-        $result2 = (new Complex(0))->acos();
-        $this->assertEqualsWithDelta(M_PI / 2, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(0)->acos();
+        $this->assertEqualsWithDelta(M_PI / 2, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
 
         // acos(-1) = π
-        $result3 = (new Complex(-1))->acos();
-        $this->assertEqualsWithDelta(M_PI, $result3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, 1e-10);
+        $result3 = new Complex(-1)->acos();
+        $this->assertEqualsWithDelta(M_PI, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -198,8 +198,8 @@ class ComplexTrigonometricTest extends TestCase
         $cos = $z->cos();
         $acos = $cos->acos();
 
-        $this->assertEqualsWithDelta($z->real, $acos->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $acos->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $acos->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $acos->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -208,14 +208,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testAtan(): void
     {
         // atan(0) = 0
-        $result = (new Complex(0))->atan();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->atan();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // atan(1) = π/4
-        $result2 = (new Complex(1))->atan();
-        $this->assertEqualsWithDelta(M_PI / 4, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(1)->atan();
+        $this->assertEqualsWithDelta(M_PI / 4, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -228,8 +228,8 @@ class ComplexTrigonometricTest extends TestCase
         $tan = $z->tan();
         $atan = $tan->atan();
 
-        $this->assertEqualsWithDelta($z->real, $atan->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $atan->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $atan->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $atan->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -238,14 +238,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testSec(): void
     {
         // sec(0) = 1
-        $result = (new Complex(0))->sec();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(0)->sec();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // sec(π/3) = 2
-        $result2 = (new Complex(M_PI / 3))->sec();
-        $this->assertEqualsWithDelta(2.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_PI / 3)->sec();
+        $this->assertEqualsWithDelta(2.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -258,8 +258,8 @@ class ComplexTrigonometricTest extends TestCase
         $sec = $z->sec();
         $invCos = $z->cos()->inv();
 
-        $this->assertEqualsWithDelta($invCos->real, $sec->real, 1e-10);
-        $this->assertEqualsWithDelta($invCos->imaginary, $sec->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($invCos->real, $sec->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invCos->imaginary, $sec->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -268,14 +268,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testCsc(): void
     {
         // csc(π/2) = 1
-        $result = (new Complex(M_PI / 2))->csc();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(M_PI / 2)->csc();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // csc(π/6) = 2
-        $result2 = (new Complex(M_PI / 6))->csc();
-        $this->assertEqualsWithDelta(2.0, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_PI / 6)->csc();
+        $this->assertEqualsWithDelta(2.0, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -288,8 +288,8 @@ class ComplexTrigonometricTest extends TestCase
         $csc = $z->csc();
         $invSin = $z->sin()->inv();
 
-        $this->assertEqualsWithDelta($invSin->real, $csc->real, 1e-10);
-        $this->assertEqualsWithDelta($invSin->imaginary, $csc->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($invSin->real, $csc->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invSin->imaginary, $csc->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -298,14 +298,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testCot(): void
     {
         // cot(π/4) = 1
-        $result = (new Complex(M_PI / 4))->cot();
-        $this->assertEqualsWithDelta(1.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(M_PI / 4)->cot();
+        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // cot(π/6) = √3
-        $result2 = (new Complex(M_PI / 6))->cot();
-        $this->assertEqualsWithDelta(sqrt(3), $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(M_PI / 6)->cot();
+        $this->assertEqualsWithDelta(sqrt(3), $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -318,8 +318,8 @@ class ComplexTrigonometricTest extends TestCase
         $cot = $z->cot();
         $invTan = $z->tan()->inv();
 
-        $this->assertEqualsWithDelta($invTan->real, $cot->real, 1e-10);
-        $this->assertEqualsWithDelta($invTan->imaginary, $cot->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($invTan->real, $cot->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invTan->imaginary, $cot->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -328,14 +328,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testAsec(): void
     {
         // asec(1) = 0
-        $result = (new Complex(1))->asec();
-        $this->assertEqualsWithDelta(0.0, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->asec();
+        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // asec(2) = π/3
-        $result2 = (new Complex(2))->asec();
-        $this->assertEqualsWithDelta(M_PI / 3, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(2)->asec();
+        $this->assertEqualsWithDelta(M_PI / 3, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -348,8 +348,8 @@ class ComplexTrigonometricTest extends TestCase
         $sec = $z->sec();
         $asec = $sec->asec();
 
-        $this->assertEqualsWithDelta($z->real, $asec->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $asec->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $asec->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $asec->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -358,14 +358,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testAcsc(): void
     {
         // acsc(1) = π/2
-        $result = (new Complex(1))->acsc();
-        $this->assertEqualsWithDelta(M_PI / 2, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->acsc();
+        $this->assertEqualsWithDelta(M_PI / 2, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // acsc(2) = π/6
-        $result2 = (new Complex(2))->acsc();
-        $this->assertEqualsWithDelta(M_PI / 6, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(2)->acsc();
+        $this->assertEqualsWithDelta(M_PI / 6, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -378,8 +378,8 @@ class ComplexTrigonometricTest extends TestCase
         $csc = $z->csc();
         $acsc = $csc->acsc();
 
-        $this->assertEqualsWithDelta($z->real, $acsc->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $acsc->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $acsc->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $acsc->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -388,14 +388,14 @@ class ComplexTrigonometricTest extends TestCase
     public function testAcot(): void
     {
         // acot(1) = π/4
-        $result = (new Complex(1))->acot();
-        $this->assertEqualsWithDelta(M_PI / 4, $result->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, 1e-10);
+        $result = new Complex(1)->acot();
+        $this->assertEqualsWithDelta(M_PI / 4, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
 
         // acot(√3) = π/6
-        $result2 = (new Complex(sqrt(3)))->acot();
-        $this->assertEqualsWithDelta(M_PI / 6, $result2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, 1e-10);
+        $result2 = new Complex(sqrt(3))->acot();
+        $this->assertEqualsWithDelta(M_PI / 6, $result2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -408,8 +408,8 @@ class ComplexTrigonometricTest extends TestCase
         $cot = $z->cot();
         $acot = $cot->acot();
 
-        $this->assertEqualsWithDelta($z->real, $acot->real, 1e-10);
-        $this->assertEqualsWithDelta($z->imaginary, $acot->imaginary, 1e-10);
+        $this->assertEqualsWithDelta($z->real, $acot->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($z->imaginary, $acot->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -421,17 +421,17 @@ class ComplexTrigonometricTest extends TestCase
 
         // sec(z) * cos(z) = 1
         $product1 = $z->sec()->mul($z->cos());
-        $this->assertEqualsWithDelta(1.0, $product1->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product1->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product1->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product1->imaginary, Complex::EPSILON);
 
         // csc(z) * sin(z) = 1
         $product2 = $z->csc()->mul($z->sin());
-        $this->assertEqualsWithDelta(1.0, $product2->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product2->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product2->imaginary, Complex::EPSILON);
 
         // cot(z) * tan(z) = 1
         $product3 = $z->cot()->mul($z->tan());
-        $this->assertEqualsWithDelta(1.0, $product3->real, 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product3->imaginary, 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product3->imaginary, Complex::EPSILON);
     }
 }

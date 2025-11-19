@@ -690,7 +690,7 @@ echo $z->phase;      // 0.785... (π/4)
 ```php
 // e^(iπ) = -1
 $z = new Complex(0, M_PI);
-$result = $z->exp();  // -1 + 0i (approximately)
+$result = $z->exp();  // -1 + 0i
 ```
 
 ### Finding Roots

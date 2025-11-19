@@ -41,27 +41,27 @@ class ComplexFactoryTest extends TestCase
     public function testConstructorWithString(): void
     {
         // Complex number
-        $z1 = new Complex("3+4i");
+        $z1 = new Complex('3+4i');
         $this->assertSame(3.0, $z1->real);
         $this->assertSame(4.0, $z1->imaginary);
 
         // Complex with negative imaginary
-        $z2 = new Complex("5-2i");
+        $z2 = new Complex('5-2i');
         $this->assertSame(5.0, $z2->real);
         $this->assertSame(-2.0, $z2->imaginary);
 
         // Pure imaginary
-        $z3 = new Complex("3i");
+        $z3 = new Complex('3i');
         $this->assertSame(0.0, $z3->real);
         $this->assertSame(3.0, $z3->imaginary);
 
         // Real number as string
-        $z4 = new Complex("7");
+        $z4 = new Complex('7');
         $this->assertSame(7.0, $z4->real);
         $this->assertSame(0.0, $z4->imaginary);
 
         // Just i
-        $z5 = new Complex("i");
+        $z5 = new Complex('i');
         $this->assertSame(0.0, $z5->real);
         $this->assertSame(1.0, $z5->imaginary);
     }
@@ -72,7 +72,7 @@ class ComplexFactoryTest extends TestCase
     public function testConstructorStringWithSecondArgThrows(): void
     {
         $this->expectException(ArgumentCountError::class);
-        new Complex("3+4i", 5);
+        new Complex('3+4i', 5);
     }
 
     /**
@@ -81,7 +81,7 @@ class ComplexFactoryTest extends TestCase
     public function testConstructorInvalidStringThrows(): void
     {
         $this->expectException(DomainException::class);
-        new Complex("not a complex number");
+        new Complex('not a complex number');
     }
 
     /**
@@ -122,10 +122,10 @@ class ComplexFactoryTest extends TestCase
 
         $z = Complex::fromPolar($mag, $phase);
 
-        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, 1e-10);
-        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, 1e-10);
-        $this->assertEqualsWithDelta($mag, $z->magnitude, 1e-10);
-        $this->assertEqualsWithDelta($phase, $z->phase, 1e-10);
+        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
     }
 
     /**
@@ -148,8 +148,8 @@ class ComplexFactoryTest extends TestCase
 
         foreach ($angles as $angle) {
             $z = Complex::fromPolar(1.0, $angle);
-            $this->assertEqualsWithDelta(cos($angle), $z->real, 1e-10);
-            $this->assertEqualsWithDelta(sin($angle), $z->imaginary, 1e-10);
+            $this->assertEqualsWithDelta(cos($angle), $z->real, Complex::EPSILON);
+            $this->assertEqualsWithDelta(sin($angle), $z->imaginary, Complex::EPSILON);
         }
     }
 

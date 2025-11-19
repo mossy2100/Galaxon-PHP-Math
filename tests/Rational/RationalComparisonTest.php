@@ -7,6 +7,7 @@ namespace Galaxon\Math\Tests\Rational;
 use Galaxon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use TypeError;
 
 #[CoversClass(Rational::class)]
@@ -58,7 +59,7 @@ class RationalComparisonTest extends TestCase
 
         $this->assertSame(-1, $r->compare(2)); // 3/2 < 2
         $this->assertSame(1, $r->compare(1));  // 3/2 > 1
-        $this->assertSame(0, (new Rational(4, 2))->compare(2)); // 2 == 2
+        $this->assertSame(0, new Rational(4, 2)->compare(2)); // 2 == 2
     }
 
     /**
@@ -131,7 +132,7 @@ class RationalComparisonTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $r = new Rational(3, 4);
-        $r->compare("string");
+        $r->compare('string');
     }
 
     /**
@@ -186,9 +187,9 @@ class RationalComparisonTest extends TestCase
     public function testEqualsWithInvalidType(): void
     {
         $r = new Rational(3, 4);
-        $this->assertFalse($r->equals("string"));
+        $this->assertFalse($r->equals('string'));
         $this->assertFalse($r->equals([]));
-        $this->assertFalse($r->equals(new \stdClass()));
+        $this->assertFalse($r->equals(new stdClass()));
     }
 
     /**
