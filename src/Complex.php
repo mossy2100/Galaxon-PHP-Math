@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math;
 
+use ArgumentCountError;
 use ArrayAccess;
 use DomainException;
 use Galaxon\Core\Angle;
@@ -86,13 +87,30 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     /**
      * Create a new complex number.
      *
-     * @param int|float $real The real part of the complex number.
-     * @param int|float $imag The imaginary part of the complex number.
+     * If a string is provided, it will be parsed as a complex number (e.g., "3+4i").
+     * If a string is provided with a second argument, an ArgumentCountError is thrown.
+     *
+     * @param int|float|string $real The real part, or a string representation of the complex number.
+     * @param int|float $imag The imaginary part (only valid when $real is numeric).
+     * @throws ArgumentCountError If a string is provided with a second argument.
+     * @throws DomainException If the string cannot be parsed.
      */
-    public function __construct(int|float $real = 0, int|float $imag = 0)
+    public function __construct(int|float|string $real = 0, int|float $imag = 0)
     {
-        $this->real = $real;
-        $this->imaginary = $imag;
+        if (is_string($real)) {
+            // If a string is provided with additional arguments, throw an error.
+            if (func_num_args() > 1) {
+                throw new ArgumentCountError(
+                    'When providing a string to the Complex constructor, only one argument is allowed.'
+                );
+            }
+
+            // Parse the string directly to floats (avoids creating intermediate Complex object).
+            [$this->real, $this->imaginary] = self::parseToFloats($real);
+        } else {
+            $this->real = $real;
+            $this->imaginary = $imag;
+        }
     }
 
     // endregion
@@ -117,7 +135,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      * @param self|int|float $z The real or complex value.
      * @return self The equivalent complex value.
      */
-    public static function toComplex(self|int|float $z): self
+    private static function toComplex(self|int|float $z): self
     {
         return $z instanceof self ? $z : new self($z);
     }
@@ -163,32 +181,45 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      */
     public static function parse(string $str): self
     {
+        [$real, $imag] = self::parseToFloats($str);
+        return new self($real, $imag);
+    }
+
+    /**
+     * Parse a string representation of a complex number into real and imaginary parts.
+     *
+     * @param string $str The string to parse
+     * @return float[] Array of [real, imaginary]
+     * @throws DomainException If the string cannot be parsed
+     */
+    private static function parseToFloats(string $str): array
+    {
         // Remove all whitespace
         /** @var string $str */
         $str = preg_replace('/\s+/', '', $str);
 
         // Handle empty string
         if ($str === '') {
-            throw new DomainException("Cannot parse empty string as complex number.");
+            throw new DomainException('Cannot parse empty string as complex number.');
         }
 
         // Handle pure real numbers (no imaginary unit)
         if (is_numeric($str)) {
-            return new self((float)$str);
+            return [(float)$str, 0.0];
         }
 
         // Handle pure imaginary with or without coefficient: i, 3i, -2.5j, etc.
         $rx_num = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
         if (preg_match("/^([+-]?)((?:$rx_num)?)[ijIJ]$/", $str, $matches)) {
             // Handle cases where coefficient is omitted (like i or -i).
-            $imag = $matches[2] === '' ? 1 : (float)$matches[2];
+            $imag = $matches[2] === '' ? 1.0 : (float)$matches[2];
 
             // Apply signs to get final value.
             if ($matches[1] === '-') {
                 $imag = -$imag;
             }
 
-            return new self(0, $imag);
+            return [0.0, $imag];
         }
 
         // Handle complex numbers with both real and imaginary parts.
@@ -206,7 +237,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Get the imaginary part. Handle cases where the imaginary coefficient is omitted (like +i or -i).
-        $imag = $imag_val === '' ? 1 : (float)$imag_val;
+        $imag = $imag_val === '' ? 1.0 : (float)$imag_val;
 
         // Get the real part.
         $real = (float)$real_val;
@@ -219,7 +250,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
             $real = -$real;
         }
 
-        return new self($real, $imag);
+        return [$real, $imag];
     }
 
     // endregion

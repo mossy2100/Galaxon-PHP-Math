@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Complex;
 
+use ArgumentCountError;
 use DomainException;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -35,6 +36,55 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
+     * Test the constructor with string input.
+     */
+    public function testConstructorWithString(): void
+    {
+        // Complex number
+        $z1 = new Complex("3+4i");
+        $this->assertSame(3.0, $z1->real);
+        $this->assertSame(4.0, $z1->imaginary);
+
+        // Complex with negative imaginary
+        $z2 = new Complex("5-2i");
+        $this->assertSame(5.0, $z2->real);
+        $this->assertSame(-2.0, $z2->imaginary);
+
+        // Pure imaginary
+        $z3 = new Complex("3i");
+        $this->assertSame(0.0, $z3->real);
+        $this->assertSame(3.0, $z3->imaginary);
+
+        // Real number as string
+        $z4 = new Complex("7");
+        $this->assertSame(7.0, $z4->real);
+        $this->assertSame(0.0, $z4->imaginary);
+
+        // Just i
+        $z5 = new Complex("i");
+        $this->assertSame(0.0, $z5->real);
+        $this->assertSame(1.0, $z5->imaginary);
+    }
+
+    /**
+     * Test the constructor with string and second argument throws error.
+     */
+    public function testConstructorStringWithSecondArgThrows(): void
+    {
+        $this->expectException(ArgumentCountError::class);
+        new Complex("3+4i", 5);
+    }
+
+    /**
+     * Test the constructor with invalid string throws error.
+     */
+    public function testConstructorInvalidStringThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        new Complex("not a complex number");
+    }
+
+    /**
      * Test the constructor accepts int or float.
      */
     public function testConstructorIntFloat(): void
@@ -60,39 +110,6 @@ class ComplexFactoryTest extends TestCase
         // Verify it's cached (same instance returned)
         $i2 = Complex::i();
         $this->assertSame($i, $i2);
-    }
-
-    /**
-     * Test toComplex with Complex input.
-     */
-    public function testToComplexWithComplex(): void
-    {
-        $z = new Complex(3, 4);
-        $result = Complex::toComplex($z);
-
-        $this->assertSame($z, $result);
-    }
-
-    /**
-     * Test toComplex with int input.
-     */
-    public function testToComplexWithInt(): void
-    {
-        $result = Complex::toComplex(5);
-
-        $this->assertSame(5.0, $result->real);
-        $this->assertSame(0.0, $result->imaginary);
-    }
-
-    /**
-     * Test toComplex with float input.
-     */
-    public function testToComplexWithFloat(): void
-    {
-        $result = Complex::toComplex(3.14);
-
-        $this->assertSame(3.14, $result->real);
-        $this->assertSame(0.0, $result->imaginary);
     }
 
     /**

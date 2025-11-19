@@ -54,10 +54,12 @@ For z = a + bi: arg(z) = atan2(b, a)
 ## Constructor
 
 ```php
-public function __construct(int|float $real = 0, int|float $imag = 0)
+public function __construct(int|float|string $real = 0, int|float $imag = 0)
 ```
 
-Create a new complex number from real and imaginary parts.
+Create a new complex number from real and imaginary parts, or from a string.
+
+If a string is provided, it will be parsed as a complex number. Only one argument is allowed when using a string.
 
 **Examples:**
 ```php
@@ -65,7 +67,13 @@ $z1 = new Complex(3, 4);        // 3 + 4i
 $z2 = new Complex(5);           // 5 + 0i (real number)
 $z3 = new Complex(0, 2);        // 0 + 2i (pure imaginary)
 $z4 = new Complex();            // 0 + 0i (zero)
+$z5 = new Complex("3+4i");      // 3 + 4i (from string)
+$z6 = new Complex("i");         // 0 + 1i (imaginary unit)
 ```
+
+**Throws:**
+- `ArgumentCountError` if a string is provided with a second argument
+- `DomainException` if the string cannot be parsed
 
 ## Factory Methods
 
@@ -81,21 +89,6 @@ Get the imaginary unit (0 + 1i). Returns a cached instance.
 ```php
 $i = Complex::i();
 echo $i;  // "i"
-```
-
-### toComplex()
-
-```php
-public static function toComplex(int|float|self $value): self
-```
-
-Convert a value to a Complex number if it isn't one already.
-
-**Examples:**
-```php
-$z1 = Complex::toComplex(5);              // 5 + 0i
-$z2 = Complex::toComplex(3.14);           // 3.14 + 0i
-$z3 = Complex::toComplex(new Complex(2, 3)); // Returns same instance
 ```
 
 ### fromPolar()
