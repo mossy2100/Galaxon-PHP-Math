@@ -293,6 +293,25 @@ class RationalArithmeticTest extends TestCase
     }
 
     /**
+     * Test zero to positive power returns zero.
+     */
+    public function testPowZeroPositive(): void
+    {
+        // 0^1 = 0
+        $r = new Rational(0);
+        $result = $r->pow(1);
+
+        $this->assertSame(0, $result->num);
+        $this->assertSame(1, $result->den);
+
+        // 0^5 = 0
+        $result2 = $r->pow(5);
+
+        $this->assertSame(0, $result2->num);
+        $this->assertSame(1, $result2->den);
+    }
+
+    /**
      * Test zero to negative power throws exception.
      */
     public function testPowZeroNegativeThrows(): void

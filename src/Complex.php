@@ -787,6 +787,168 @@ final class Complex implements Stringable, ArrayAccess, Equatable
 
     // endregion
 
+    // region Hyperbolic functions
+
+    /**
+     * Calculate the hyperbolic sine of this complex number.
+     *
+     * @return self A new complex number representing the hyperbolic sine of this complex number.
+     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
+     */
+    public function sinh(): self
+    {
+        // sinh(z) = sinh(x)cos(y) + i·cosh(x)sin(y)
+        // where z = x + iy
+        $x = $this->real;
+        $y = $this->imaginary;
+        return new self(sinh($x) * cos($y), cosh($x) * sin($y));
+    }
+
+    /**
+     * Calculate the hyperbolic cosine of this complex number.
+     *
+     * @return self A new complex number representing the hyperbolic cosine of this complex number.
+     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
+     */
+    public function cosh(): self
+    {
+        // cosh(z) = cosh(x)cos(y) + i·sinh(x)sin(y)
+        // where z = x + iy
+        $x = $this->real;
+        $y = $this->imaginary;
+        return new self(cosh($x) * cos($y), sinh($x) * sin($y));
+    }
+
+    /**
+     * Calculate the hyperbolic tangent of this complex number.
+     *
+     * @return self A new complex number representing the hyperbolic tangent of this complex number.
+     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
+     */
+    public function tanh(): self
+    {
+        // tanh(z) = sinh(z) / cosh(z)
+        return $this->sinh()->div($this->cosh());
+    }
+
+    /**
+     * Calculate the hyperbolic secant of this complex number.
+     *
+     * @return self A new complex number representing the hyperbolic secant of this complex number.
+     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
+     */
+    public function sech(): self
+    {
+        // sech(z) = 1 / cosh(z)
+        return $this->cosh()->inv();
+    }
+
+    /**
+     * Calculate the hyperbolic cosecant of this complex number.
+     *
+     * @return self A new complex number representing the hyperbolic cosecant of this complex number.
+     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
+     */
+    public function csch(): self
+    {
+        // csch(z) = 1 / sinh(z)
+        return $this->sinh()->inv();
+    }
+
+    /**
+     * Calculate the hyperbolic cotangent of this complex number.
+     *
+     * @return self A new complex number representing the hyperbolic cotangent of this complex number.
+     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
+     */
+    public function coth(): self
+    {
+        // coth(z) = cosh(z) / sinh(z)
+        return $this->cosh()->div($this->sinh());
+    }
+
+    // endregion
+
+    // region Inverse hyperbolic functions
+
+    /**
+     * Calculate the inverse hyperbolic sine of this complex number.
+     *
+     * @return self A new complex number representing the inverse hyperbolic sine of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     */
+    public function asinh(): self
+    {
+        // asinh(z) = ln(z + √(z² + 1))
+        $z2_plus_1 = $this->sqr()->add(new self(1));
+        return $this->add($z2_plus_1->sqrt())->ln();
+    }
+
+    /**
+     * Calculate the inverse hyperbolic cosine of this complex number.
+     *
+     * @return self A new complex number representing the inverse hyperbolic cosine of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     */
+    public function acosh(): self
+    {
+        // acosh(z) = ln(z + √(z² - 1))
+        $z2_minus_1 = $this->sqr()->sub(new self(1));
+        return $this->add($z2_minus_1->sqrt())->ln();
+    }
+
+    /**
+     * Calculate the inverse hyperbolic tangent of this complex number.
+     *
+     * @return self A new complex number representing the inverse hyperbolic tangent of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     */
+    public function atanh(): self
+    {
+        // atanh(z) = (1/2)·ln((1+z)/(1-z))
+        $one_plus_z = (new self(1))->add($this);
+        $one_minus_z = (new self(1))->sub($this);
+        return $one_plus_z->div($one_minus_z)->ln()->mul(0.5);
+    }
+
+    /**
+     * Calculate the inverse hyperbolic secant of this complex number.
+     *
+     * @return self A new complex number representing the inverse hyperbolic secant of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     */
+    public function asech(): self
+    {
+        // asech(z) = acosh(1/z)
+        return $this->inv()->acosh();
+    }
+
+    /**
+     * Calculate the inverse hyperbolic cosecant of this complex number.
+     *
+     * @return self A new complex number representing the inverse hyperbolic cosecant of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     */
+    public function acsch(): self
+    {
+        // acsch(z) = asinh(1/z)
+        return $this->inv()->asinh();
+    }
+
+    /**
+     * Calculate the inverse hyperbolic cotangent of this complex number.
+     *
+     * @return self A new complex number representing the inverse hyperbolic cotangent of this complex number.
+     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     */
+    public function acoth(): self
+    {
+        // acoth(z) = atanh(1/z)
+        return $this->inv()->atanh();
+    }
+
+    // endregion
+
     // region Comparison methods
 
     /**

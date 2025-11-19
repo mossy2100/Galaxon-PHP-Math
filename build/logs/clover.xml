@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763512568">
-  <project timestamp="1763512568" name="Clover Coverage">
+<coverage generated="1763513139">
+  <project timestamp="1763513139" name="Clover Coverage">
     <package name="Galaxon\Math">
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Math\src\Complex.php">
         <class name="Galaxon\Math\Complex" namespace="Galaxon\Math">
@@ -235,29 +235,29 @@
       </file>
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Math\src\Rational.php">
         <class name="Galaxon\Math\Rational" namespace="Galaxon\Math">
-          <metrics complexity="85" methods="21" coveredmethods="19" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="165" elements="190" coveredelements="184"/>
+          <metrics complexity="85" methods="21" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="167" elements="190" coveredelements="187"/>
         </class>
-        <line num="69" type="method" name="__construct" visibility="public" complexity="14" crap="14" count="75"/>
-        <line num="72" type="stmt" count="75"/>
+        <line num="69" type="method" name="__construct" visibility="public" complexity="14" crap="14" count="76"/>
+        <line num="72" type="stmt" count="76"/>
         <line num="73" type="stmt" count="3"/>
-        <line num="77" type="stmt" count="72"/>
+        <line num="77" type="stmt" count="73"/>
         <line num="78" type="stmt" count="4"/>
-        <line num="82" type="stmt" count="68"/>
-        <line num="83" type="stmt" count="68"/>
-        <line num="87" type="stmt" count="68"/>
+        <line num="82" type="stmt" count="69"/>
+        <line num="83" type="stmt" count="69"/>
+        <line num="87" type="stmt" count="69"/>
         <line num="89" type="stmt" count="1"/>
-        <line num="91" type="stmt" count="68"/>
+        <line num="91" type="stmt" count="69"/>
         <line num="93" type="stmt" count="1"/>
-        <line num="97" type="stmt" count="68"/>
-        <line num="98" type="stmt" count="68"/>
-        <line num="101" type="stmt" count="64"/>
+        <line num="97" type="stmt" count="69"/>
+        <line num="98" type="stmt" count="69"/>
+        <line num="101" type="stmt" count="65"/>
         <line num="102" type="stmt" count="2"/>
         <line num="104" type="stmt" count="2"/>
         <line num="107" type="stmt" count="6"/>
-        <line num="111" type="stmt" count="68"/>
+        <line num="111" type="stmt" count="69"/>
         <line num="112" type="stmt" count="8"/>
-        <line num="116" type="stmt" count="66"/>
-        <line num="117" type="stmt" count="66"/>
+        <line num="116" type="stmt" count="67"/>
+        <line num="117" type="stmt" count="67"/>
         <line num="145" type="method" name="parse" visibility="public" complexity="6" crap="6" count="8"/>
         <line num="148" type="stmt" count="8"/>
         <line num="149" type="stmt" count="8"/>
@@ -318,13 +318,13 @@
         <line num="340" type="stmt" count="3"/>
         <line num="341" type="stmt" count="1"/>
         <line num="344" type="stmt" count="2"/>
-        <line num="355" type="method" name="pow" visibility="public" complexity="5" crap="5.02" count="4"/>
-        <line num="359" type="stmt" count="4"/>
+        <line num="355" type="method" name="pow" visibility="public" complexity="5" crap="5" count="5"/>
+        <line num="359" type="stmt" count="5"/>
         <line num="360" type="stmt" count="1"/>
-        <line num="364" type="stmt" count="3"/>
-        <line num="366" type="stmt" count="1"/>
+        <line num="364" type="stmt" count="4"/>
+        <line num="366" type="stmt" count="2"/>
         <line num="367" type="stmt" count="1"/>
-        <line num="371" type="stmt" count="0"/>
+        <line num="371" type="stmt" count="1"/>
         <line num="375" type="stmt" count="2"/>
         <line num="376" type="stmt" count="1"/>
         <line num="380" type="stmt" count="2"/>
@@ -374,9 +374,9 @@
         <line num="525" type="stmt" count="6"/>
         <line num="526" type="stmt" count="1"/>
         <line num="527" type="stmt" count="1"/>
-        <line num="543" type="method" name="simplify" visibility="private" complexity="6" crap="6" count="64"/>
-        <line num="546" type="stmt" count="64"/>
-        <line num="547" type="stmt" count="12"/>
+        <line num="543" type="method" name="simplify" visibility="private" complexity="6" crap="6" count="65"/>
+        <line num="546" type="stmt" count="65"/>
+        <line num="547" type="stmt" count="13"/>
         <line num="551" type="stmt" count="61"/>
         <line num="552" type="stmt" count="6"/>
         <line num="556" type="stmt" count="60"/>
@@ -386,50 +386,50 @@
         <line num="566" type="stmt" count="10"/>
         <line num="567" type="stmt" count="10"/>
         <line num="571" type="stmt" count="57"/>
-        <line num="594" type="method" name="floatToRational" visibility="public" complexity="13" crap="13.07" count="15"/>
-        <line num="597" type="stmt" count="15"/>
-        <line num="598" type="stmt" count="0"/>
-        <line num="602" type="stmt" count="15"/>
+        <line num="594" type="method" name="floatToRatio" visibility="public" complexity="13" crap="13" count="20"/>
+        <line num="597" type="stmt" count="20"/>
+        <line num="598" type="stmt" count="3"/>
+        <line num="602" type="stmt" count="17"/>
         <line num="603" type="stmt" count="1"/>
-        <line num="607" type="stmt" count="14"/>
-        <line num="608" type="stmt" count="14"/>
-        <line num="609" type="stmt" count="14"/>
-        <line num="612" type="stmt" count="14"/>
+        <line num="607" type="stmt" count="16"/>
+        <line num="608" type="stmt" count="16"/>
+        <line num="609" type="stmt" count="16"/>
+        <line num="612" type="stmt" count="16"/>
         <line num="613" type="stmt" count="2"/>
-        <line num="617" type="stmt" count="12"/>
-        <line num="618" type="stmt" count="12"/>
-        <line num="619" type="stmt" count="12"/>
-        <line num="620" type="stmt" count="12"/>
-        <line num="623" type="stmt" count="12"/>
-        <line num="624" type="stmt" count="12"/>
-        <line num="625" type="stmt" count="12"/>
-        <line num="628" type="stmt" count="12"/>
-        <line num="631" type="stmt" count="12"/>
-        <line num="633" type="stmt" count="12"/>
-        <line num="637" type="stmt" count="12"/>
+        <line num="617" type="stmt" count="14"/>
+        <line num="618" type="stmt" count="14"/>
+        <line num="619" type="stmt" count="14"/>
+        <line num="620" type="stmt" count="14"/>
+        <line num="623" type="stmt" count="14"/>
+        <line num="624" type="stmt" count="14"/>
+        <line num="625" type="stmt" count="14"/>
+        <line num="628" type="stmt" count="14"/>
+        <line num="631" type="stmt" count="14"/>
+        <line num="633" type="stmt" count="14"/>
+        <line num="637" type="stmt" count="14"/>
         <line num="638" type="stmt" count="3"/>
-        <line num="642" type="stmt" count="10"/>
-        <line num="643" type="stmt" count="10"/>
-        <line num="646" type="stmt" count="10"/>
+        <line num="642" type="stmt" count="12"/>
+        <line num="643" type="stmt" count="12"/>
+        <line num="646" type="stmt" count="12"/>
         <line num="647" type="stmt" count="0"/>
-        <line num="651" type="stmt" count="10"/>
-        <line num="652" type="stmt" count="10"/>
-        <line num="653" type="stmt" count="9"/>
-        <line num="657" type="stmt" count="10"/>
-        <line num="658" type="stmt" count="3"/>
-        <line num="659" type="stmt" count="3"/>
-        <line num="660" type="stmt" count="3"/>
-        <line num="664" type="stmt" count="10"/>
-        <line num="665" type="stmt" count="10"/>
-        <line num="666" type="stmt" count="10"/>
-        <line num="667" type="stmt" count="10"/>
-        <line num="670" type="stmt" count="10"/>
-        <line num="673" type="stmt" count="10"/>
+        <line num="651" type="stmt" count="12"/>
+        <line num="652" type="stmt" count="12"/>
+        <line num="653" type="stmt" count="11"/>
+        <line num="657" type="stmt" count="12"/>
+        <line num="658" type="stmt" count="4"/>
+        <line num="659" type="stmt" count="4"/>
+        <line num="660" type="stmt" count="4"/>
+        <line num="664" type="stmt" count="12"/>
+        <line num="665" type="stmt" count="12"/>
+        <line num="666" type="stmt" count="12"/>
+        <line num="667" type="stmt" count="12"/>
+        <line num="670" type="stmt" count="12"/>
+        <line num="673" type="stmt" count="12"/>
         <line num="674" type="stmt" count="0"/>
-        <line num="678" type="stmt" count="10"/>
-        <metrics loc="684" ncloc="401" classes="1" methods="21" coveredmethods="19" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="165" elements="190" coveredelements="184"/>
+        <line num="678" type="stmt" count="12"/>
+        <metrics loc="684" ncloc="401" classes="1" methods="21" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="169" coveredstatements="167" elements="190" coveredelements="187"/>
       </file>
     </package>
-    <metrics files="2" loc="1615" ncloc="923" classes="2" methods="62" coveredmethods="60" conditionals="0" coveredconditionals="0" statements="353" coveredstatements="349" elements="415" coveredelements="409"/>
+    <metrics files="2" loc="1615" ncloc="923" classes="2" methods="62" coveredmethods="61" conditionals="0" coveredconditionals="0" statements="353" coveredstatements="351" elements="415" coveredelements="412"/>
   </project>
 </coverage>

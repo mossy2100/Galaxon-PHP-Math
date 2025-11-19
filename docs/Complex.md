@@ -490,6 +490,80 @@ $acsc = $z->acsc();  // asin(1/z)
 $acot = $z->acot();  // atan(1/z)
 ```
 
+## Hyperbolic Functions
+
+### sinh(), cosh(), tanh()
+
+```php
+public function sinh(): self
+public function cosh(): self
+public function tanh(): self
+```
+
+Calculate hyperbolic functions.
+
+**Examples:**
+```php
+$z = new Complex(1, 1);
+$sinh = $z->sinh();
+$cosh = $z->cosh();
+$tanh = $z->tanh();
+```
+
+### sech(), csch(), coth()
+
+```php
+public function sech(): self
+public function csch(): self
+public function coth(): self
+```
+
+Calculate hyperbolic secant, cosecant, and cotangent functions.
+
+**Examples:**
+```php
+$z = new Complex(1, 1);
+$sech = $z->sech();  // 1/cosh(z)
+$csch = $z->csch();  // 1/sinh(z)
+$coth = $z->coth();  // cosh(z)/sinh(z)
+```
+
+### asinh(), acosh(), atanh()
+
+```php
+public function asinh(): self
+public function acosh(): self
+public function atanh(): self
+```
+
+Calculate inverse hyperbolic functions.
+
+**Examples:**
+```php
+$z = new Complex(0.5);
+$asinh = $z->asinh();
+$acosh = $z->acosh();
+$atanh = $z->atanh();
+```
+
+### asech(), acsch(), acoth()
+
+```php
+public function asech(): self
+public function acsch(): self
+public function acoth(): self
+```
+
+Calculate inverse hyperbolic secant, cosecant, and cotangent functions.
+
+**Examples:**
+```php
+$z = new Complex(2);
+$asech = $z->asech();  // acosh(1/z)
+$acsch = $z->acsch();  // asinh(1/z)
+$acoth = $z->acoth();  // atanh(1/z)
+```
+
 ## Comparison Methods
 
 ### isReal()

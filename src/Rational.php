@@ -109,7 +109,7 @@ final class Rational implements Stringable, Equatable
 
         // Convert from float if necessary.
         if ($convert_float) {
-            [$num2, $den2] = self::floatToRational($num / $den);
+            [$num2, $den2] = self::floatToRatio($num / $den);
         }
 
         // Set the properties.
@@ -591,7 +591,7 @@ final class Rational implements Stringable, Equatable
      * @throws DomainException If the value is infinite or NaN.
      * @throws RangeException If the value is outside the valid convertible range.
      */
-    public static function floatToRational(float $value): array
+    public static function floatToRatio(float $value): array
     {
         // Check for infinite or NaN.
         if (!is_finite($value)) {

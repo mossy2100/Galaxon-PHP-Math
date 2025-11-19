@@ -468,10 +468,10 @@ echo new Rational(6, 8);   // "3/4" (auto-reduced)
 
 ## Static Helper Methods
 
-### floatToRational()
+### floatToRatio()
 
 ```php
-public static function floatToRational(float $value): array
+public static function floatToRatio(float $value): array
 ```
 
 Convert a float to a pair of integers [numerator, denominator] using continued fractions algorithm.
@@ -484,9 +484,9 @@ Convert a float to a pair of integers [numerator, denominator] using continued f
 
 **Examples:**
 ```php
-[$num, $den] = Rational::floatToRational(0.5);    // [1, 2]
-[$num, $den] = Rational::floatToRational(0.333...); // [1, 3]
-[$num, $den] = Rational::floatToRational(M_PI);   // [245850922, 78256779] (close approximation)
+[$num, $den] = Rational::floatToRatio(0.5);    // [1, 2]
+[$num, $den] = Rational::floatToRatio(0.333...); // [1, 3]
+[$num, $den] = Rational::floatToRatio(M_PI);   // [245850922, 78256779] (close approximation)
 ```
 
 **Notes:**
