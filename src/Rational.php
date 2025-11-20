@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math;
 
+use _PHPStan_e870ac104\Nette\Neon\Exception;
 use DomainException;
 use Galaxon\Core\Comparable;
 use Galaxon\Core\Equatable;
@@ -110,6 +111,7 @@ final class Rational implements Stringable, Equatable
         if ($convert_float) {
             [$num2, $den2] = self::floatToRatio($num / $den);
         }
+//        var_dump($num2, $den2);
 
         // Set the properties.
         $this->num = $num2;
@@ -618,7 +620,7 @@ final class Rational implements Stringable, Equatable
         $k0 = 0;
         $k1 = 1;
 
-        // Track the best approximation found so far.
+        // Track the best approximation found so far. Initialize to the nearest integer.
         $h_best = (int)round($abs_value);
         $k_best = 1;
         $min_err = (float)abs($h_best - $abs_value);
@@ -629,11 +631,10 @@ final class Rational implements Stringable, Equatable
         // Loop until done.
         while (true) {
             // Extract integer part.
-            $a = (int)floor($x);
+            $a = (int)$x;
 
-            // If $x == abs(PHP_INT_MIN), when it's converted to int, it will overflow and become PHP_INT_MIN.
-            // For the algorithm to work, $a must be positive here.
-            if ($a === PHP_INT_MIN) {
+            // Check for negative value, indicating integer overflow.
+            if ($a < 0) {
                 throw new RangeException($range_err);
             }
 
@@ -641,8 +642,9 @@ final class Rational implements Stringable, Equatable
             $h_new = $a * $h0 + $h1;
             $k_new = $a * $k0 + $k1;
 
-            // If the numerator or the denominator exceeds the limit, return the best approximation found so far.
-            if ($h_new > PHP_INT_MAX || $k_new > PHP_INT_MAX) {
+            // If the numerator or the denominator overflows the range for integers, cease the loop and return the best
+            // approximation found so far.
+            if (is_float($h_new) || is_float($k_new)) {
                 return [$sign * $h_best, $k_best];
             }
 

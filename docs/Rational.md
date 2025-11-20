@@ -12,7 +12,7 @@ The `Rational` class provides exact representation of rational numbers using two
 - Comparison operations with support for mixed types
 - Overflow detection for safe integer arithmetic
 
-**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Neither the numerator nor denominator can be PHP_INT_MIN (except for special cases handled internally).
+**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Neither the numerator nor denominator can be PHP_INT_MIN.
 
 ## Properties
 

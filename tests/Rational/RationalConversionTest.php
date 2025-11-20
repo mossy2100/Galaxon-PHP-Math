@@ -98,7 +98,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with common fractions.
      */
-    public function testFloatToRationalCommonFractions(): void
+    public function testFloatToRatioCommonFractions(): void
     {
         // 0.5 = 1/2
         [$num, $den] = Rational::floatToRatio(0.5);
@@ -129,7 +129,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with negative numbers.
      */
-    public function testFloatToRationalNegative(): void
+    public function testFloatToRatioNegative(): void
     {
         // -0.5 = -1/2
         [$num, $den] = Rational::floatToRatio(-0.5);
@@ -145,7 +145,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with whole numbers.
      */
-    public function testFloatToRationalWholeNumbers(): void
+    public function testFloatToRatioWholeNumbers(): void
     {
         // 5.0 = 5/1
         [$num, $den] = Rational::floatToRatio(5.0);
@@ -166,7 +166,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with mathematical constants.
      */
-    public function testFloatToRationalConstants(): void
+    public function testFloatToRatioConstants(): void
     {
         // Test that it produces reasonable approximations
         [$num, $den] = Rational::floatToRatio(M_PI);
@@ -212,7 +212,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with PHP_INT_MIN float throws RangeException.
      */
-    public function testFloatToRationalWithPhpIntMinThrows(): void
+    public function testFloatToRatioWithPhpIntMinThrows(): void
     {
         $this->expectException(RangeException::class);
         // (float)PHP_INT_MIN is exactly representable as a float, but is outside valid Rational range
@@ -222,7 +222,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with value too small throws RangeException.
      */
-    public function testFloatToRationalTooSmallThrows(): void
+    public function testFloatToRatioTooSmallThrows(): void
     {
         $this->expectException(RangeException::class);
         // Value smaller than 1/PHP_INT_MAX
@@ -232,7 +232,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with value too large throws RangeException.
      */
-    public function testFloatToRationalTooLargeThrows(): void
+    public function testFloatToRatioTooLargeThrows(): void
     {
         $this->expectException(RangeException::class);
         // Value larger than PHP_INT_MAX
@@ -242,7 +242,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with infinity throws DomainException.
      */
-    public function testFloatToRationalInfinityThrows(): void
+    public function testFloatToRatioInfinityThrows(): void
     {
         $this->expectException(DomainException::class);
         Rational::floatToRatio(INF);
@@ -251,7 +251,7 @@ class RationalConversionTest extends TestCase
     /**
      * Test floatToRatio with negative infinity throws DomainException.
      */
-    public function testFloatToRationalNegativeInfinityThrows(): void
+    public function testFloatToRatioNegativeInfinityThrows(): void
     {
         $this->expectException(DomainException::class);
         Rational::floatToRatio(-INF);
@@ -267,36 +267,42 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with irrational number returns best approximation when convergent exceeds limit.
+     * Test floatToRatio with value that causes convergent overflow.
+     *
+     * Note: Code coverage tools can verify this hits the overflow guard, but the test cannot programmatically verify
+     * the exit path.
      */
     public function testFloatToRatioConvergentExceedsLimit(): void
     {
-        // Golden ratio has a continued fraction [1; 1, 1, 1, ...] that grows slowly
-        // but will eventually exceed PHP_INT_MAX
-        $phi = (1 + sqrt(5)) / 2;
-        [$num, $den] = Rational::floatToRatio($phi);
+        // Testing with random floats revealed many cases where the next convergent would exceed PHP_INT_MAX, causing
+        // the algorithm to return the current best approximation. This is one such value.
+        $value = 2.1213650134300899e-10;
+        [$num, $den] = Rational::floatToRatio($value);
 
-        $this->assertIsInt($num);
-        $this->assertIsInt($den);
-        // Should be close to phi
-        $this->assertEqualsWithDelta($phi, $num / $den, 1e-10);
+        $this->assertEquals(431, $num);
+        $this->assertEquals(2031710701701, $den);
+
+        // Should return best approximation before overflow, and the difference should be small.
+        $this->assertEqualsWithDelta($value, $num / $den, 1e-10);
     }
 
     /**
      * Test floatToRatio with value that terminates with zero remainder.
+     *
+     * Note: Code coverage tools can verify this hits the zero remainder exit, but the test cannot programmatically
+     * verify the exit path.
      */
     public function testFloatToRatioZeroRemainder(): void
     {
-        // 1.5 = 3/2, continued fraction is [1; 2] which terminates with remainder 0
-        [$num, $den] = Rational::floatToRatio(1.5);
+        // Testing with random floats revealed many cases where the test for zero remainder causes the algorithm to
+        // return the current best approximation. This is one such value.
+        $value = 2.176543618258578e-17;
+        [$num, $den] = Rational::floatToRatio($value);
 
-        $this->assertSame(3, $num);
-        $this->assertSame(2, $den);
+        $this->assertEquals(1, $num);
+        $this->assertEquals(45944404312011256, $den);
 
-        // 2.25 = 9/4, continued fraction is [2; 4] which terminates with remainder 0
-        [$num, $den] = Rational::floatToRatio(2.25);
-
-        $this->assertSame(9, $num);
-        $this->assertSame(4, $den);
+        // Should return best approximation before overflow, and the difference should be small.
+        $this->assertEqualsWithDelta($value, $num / $den, 1e-10);
     }
 }
