@@ -47,19 +47,23 @@ For z = a + bi: |z| = √(a² + b²)
 public ?float $phase
 ```
 
-The phase (argument) of the complex number in radians. Automatically computed and cached on first access.
+The phase (argument or angle) of the complex number in radians, normalized to the principal value range **(-π, π]**. Automatically computed and cached on first access.
 
-For z = a + bi: arg(z) = atan2(b, a)
+For z = a + bi: arg(z) = atan2(b, a), then wrapped to (-π, π]
+
+The range excludes -π but includes π, following the standard mathematical convention for complex number arguments.
 
 ## Constructor
 
 ```php
-public function __construct(int|float|string $real = 0, int|float $imag = 0)
+public function __construct(int|float $real = 0, int|float $imag = 0)
 ```
 
-Create a new complex number from real and imaginary parts, or from a string.
+Create a new complex number from real and imaginary parts.
 
-If a string is provided, it will be parsed as a complex number. Only one argument is allowed when using a string.
+**Parameters:**
+- `$real` (int|float) - The real part (default: 0)
+- `$imag` (int|float) - The imaginary part (default: 0)
 
 **Examples:**
 ```php
@@ -67,13 +71,9 @@ $z1 = new Complex(3, 4);        // 3 + 4i
 $z2 = new Complex(5);           // 5 + 0i (real number)
 $z3 = new Complex(0, 2);        // 0 + 2i (pure imaginary)
 $z4 = new Complex();            // 0 + 0i (zero)
-$z5 = new Complex("3+4i");      // 3 + 4i (from string)
-$z6 = new Complex("i");         // 0 + 1i (imaginary unit)
 ```
 
-**Throws:**
-- `ArgumentCountError` if a string is provided with a second argument
-- `DomainException` if the string cannot be parsed
+**Note:** To create a complex number from a string, use the `parse()` method.
 
 ## Factory Methods
 
@@ -91,17 +91,17 @@ $i = Complex::i();
 echo $i;  // "i"
 ```
 
-### fromPolar()
+    ### fromPolar()
 
 ```php
-public static function fromPolar(float $magnitude, float|Angle $phase): self
+public static function fromPolar(int|float $magnitude, int|float|Angle $phase): self
 ```
 
 Create a complex number from polar coordinates (magnitude and phase).
 
 **Parameters:**
-- `$magnitude` (float) - The magnitude (r)
-- `$phase` (float|Angle) - The phase angle in radians, or an Angle object
+- `$magnitude` (int|float) - The magnitude (r)
+- `$phase` (int|float|Angle) - The phase angle in radians, or an Angle object
 
 **Examples:**
 ```php

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Galaxon\Math;
 
-use _PHPStan_e870ac104\Nette\Neon\Exception;
 use DomainException;
 use Galaxon\Core\Comparable;
 use Galaxon\Core\Equatable;
@@ -644,6 +643,7 @@ final class Rational implements Stringable, Equatable
 
             // If the numerator or the denominator overflows the range for integers, cease the loop and return the best
             // approximation found so far.
+            // @phpstan-ignore-next-line
             if (is_float($h_new) || is_float($k_new)) {
                 return [$sign * $h_best, $k_best];
             }

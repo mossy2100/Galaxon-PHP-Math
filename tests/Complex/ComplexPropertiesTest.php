@@ -201,12 +201,20 @@ class ComplexPropertiesTest extends TestCase
      */
     public function testFromPolarVariousAngles(): void
     {
-        $angles = [0, M_PI / 6, M_PI / 4, M_PI / 3, M_PI / 2, M_PI, -M_PI / 2, -M_PI / 4];
+        // Test positive angles (should remain unchanged)
+        $positiveAngles = [0, M_PI / 6, M_PI / 4, M_PI / 3, M_PI / 2, M_PI];
 
-        foreach ($angles as $angle) {
+        foreach ($positiveAngles as $angle) {
             $z = Complex::fromPolar(1.0, $angle);
             $this->assertEqualsWithDelta($angle, $z->phase, Complex::EPSILON);
         }
+
+        // Test negative angles (should remain in principal range (-π, π])
+        $z1 = Complex::fromPolar(1.0, -M_PI / 2);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z1->phase, Complex::EPSILON);
+
+        $z2 = Complex::fromPolar(1.0, -M_PI / 4);
+        $this->assertEqualsWithDelta(-M_PI / 4, $z2->phase, Complex::EPSILON);
     }
 
     /**

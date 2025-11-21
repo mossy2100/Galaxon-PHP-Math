@@ -46,7 +46,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      *
      * @var null|float
      */
-    public ?float $magnitude = null {
+    private(set) ?float $magnitude = null {
         get {
             // Compute and cache if necessary.
             if ($this->magnitude === null) {
@@ -60,16 +60,21 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     /**
      * The phase (a.k.a. argument) of this complex number in radians.
      *
+     * It is stored in a canonical form, in the range (-π, π]. This is known as the principal value.
+     * @see https://en.wikipedia.org/wiki/Principal_value#Complex_argument
+     *
      * @var null|float
      */
-    public ?float $phase = null {
+    private(set) ?float $phase = null {
         get {
             // Compute and cache if necessary.
             if ($this->phase === null) {
                 if ($this->isReal()) {
                     $this->phase = $this->real < 0 ? M_PI : 0;
                 } else {
-                    $this->phase = atan2($this->imaginary, $this->real);
+                    // atan2() can return a value in the range [-π, π] inclusive, which isn't quite canonical.
+                    // The call to wrapRadians() will convert a result of -π to π.
+                    $this->phase = Angle::wrapRadians(atan2($this->imaginary, $this->real));
                 }
             }
 
@@ -90,30 +95,13 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     /**
      * Create a new complex number.
      *
-     * If a string is provided, it will be parsed as a complex number (e.g. "3+4i").
-     * If a string is provided with a second argument, an ArgumentCountError is thrown.
-     *
-     * @param int|float|string $real The real part, or a string representation of the complex number.
-     * @param int|float $imag The imaginary part (only valid when $real is numeric).
-     * @throws ArgumentCountError If a string is provided with a second argument.
-     * @throws DomainException If the string cannot be parsed.
+     * @param int|float $real The real part.
+     * @param int|float $imag The imaginary part.
      */
-    public function __construct(int|float|string $real = 0, int|float $imag = 0)
+    public function __construct(int|float $real = 0, int|float $imag = 0)
     {
-        if (is_string($real)) {
-            // If a string is provided with additional arguments, throw an error.
-            if (func_num_args() > 1) {
-                throw new ArgumentCountError(
-                    'When providing a string to the Complex constructor, only one argument is allowed.'
-                );
-            }
-
-            // Parse the string directly to floats (avoids creating intermediate Complex object).
-            [$this->real, $this->imaginary] = self::parseToFloats($real);
-        } else {
-            $this->real = $real;
-            $this->imaginary = $imag;
-        }
+        $this->real = $real;
+        $this->imaginary = $imag;
     }
 
     // endregion
@@ -147,23 +135,28 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      * Create a complex number from polar coordinates.
      *
      * @param int|float $mag The magnitude (distance from origin).
-     * @param int|float $phase The phase angle in radians.
+     * @param int|float|Angle $phase The phase angle in radians, or as an Angle object.
      * @return self A new complex number.
      * @throws DomainException If the magnitude is not positive.
      */
-    public static function fromPolar(int|float $mag, int|float $phase): self
+    public static function fromPolar(int|float $mag, int|float|Angle $phase): self
     {
         // Check for valid magnitude.
         if ($mag < 0) {
             throw new DomainException('Magnitude must not be negative.');
         }
 
+        // If the phase was provided as an Angle object, convert it to radians.
+        if ($phase instanceof Angle) {
+            $phase = $phase->toRadians();
+        }
+
         // Construct the new Complex.
         $z = new self($mag * cos($phase), $mag * sin($phase));
 
-        // We may as well remember the magnitude and phase since we know them already.
-        $z->magnitude = $mag;
-        $z->phase = $phase;
+        // Remember the magnitude and phase since we know them already.
+        $z->magnitude = (float)$mag;
+        $z->phase = Angle::wrapRadians($phase);
 
         return $z;
     }
@@ -184,19 +177,6 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      */
     public static function parse(string $str): self
     {
-        [$real, $imag] = self::parseToFloats($str);
-        return new self($real, $imag);
-    }
-
-    /**
-     * Parse a string representation of a complex number into real and imaginary parts.
-     *
-     * @param string $str The string to parse
-     * @return float[] Array of [real, imaginary]
-     * @throws DomainException If the string cannot be parsed
-     */
-    private static function parseToFloats(string $str): array
-    {
         // Remove all whitespace
         /** @var string $str */
         $str = preg_replace('/\s+/', '', $str);
@@ -208,7 +188,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
 
         // Handle pure real numbers (no imaginary unit)
         if (is_numeric($str)) {
-            return [(float)$str, 0.0];
+            return new self((float)$str, 0.0);
         }
 
         // Handle pure imaginary with or without coefficient: i, 3i, -2.5j, etc.
@@ -222,7 +202,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
                 $imag = -$imag;
             }
 
-            return [0.0, $imag];
+            return new self(0.0, $imag);
         }
 
         // Handle complex numbers with both real and imaginary parts.
@@ -253,7 +233,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
             $real = -$real;
         }
 
-        return [$real, $imag];
+        return new self($real, $imag);
     }
 
     // endregion
