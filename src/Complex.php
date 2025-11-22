@@ -9,6 +9,7 @@ use ArrayAccess;
 use DomainException;
 use Galaxon\Core\Angle;
 use Galaxon\Core\Equatable;
+use Galaxon\Core\Floats;
 use Galaxon\Core\Stringify;
 use LogicException;
 use OutOfRangeException;
@@ -998,8 +999,8 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Compare real and imaginary parts.
-        return abs($this->real - $other->real) < $epsilon &&
-               abs($this->imaginary - $other->imaginary) < $epsilon;
+        return Floats::approxEqual($this->real, $other->real, $epsilon) &&
+               Floats::approxEqual($this->imaginary, $other->imaginary, $epsilon);
     }
 
     // endregion

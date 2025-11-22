@@ -35,11 +35,13 @@
         "check": "vendor/bin/phpcs",
         "analyse": "vendor/bin/phpstan analyse -l 9",
         "test": "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
+        "coverage": "php scripts/coverage-check.php",
         "quality": [
             "@fix",
             "@check",
             "@analyse",
-            "@test"
+            "@test",
+            "@coverage"
         ]
     }
 }

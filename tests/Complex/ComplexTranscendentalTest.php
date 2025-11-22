@@ -6,6 +6,7 @@ namespace Galaxon\Math\Tests\Complex;
 
 use DomainException;
 use Galaxon\Core\Angle;
+use Galaxon\Core\Floats;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -309,17 +310,15 @@ class ComplexTranscendentalTest extends TestCase
         $this->assertCount(2, $roots);
 
         // One root should be i, the other -i
-        $root1 = $roots[0];
-        $root2 = $roots[1];
+        [$root1, $root2] = $roots;
 
         $this->assertEqualsWithDelta(0.0, $root1->real, Complex::EPSILON);
         $this->assertTrue(
-            abs($root1->imaginary - 1.0) < Complex::EPSILON || abs($root1->imaginary + 1.0) < Complex::EPSILON
+            Floats::approxEqual($root1->imaginary, 1.0) || Floats::approxEqual($root1->imaginary, -1.0)
         );
-
         $this->assertEqualsWithDelta(0.0, $root2->real, Complex::EPSILON);
         $this->assertTrue(
-            abs($root2->imaginary - 1.0) < Complex::EPSILON || abs($root2->imaginary + 1.0) < Complex::EPSILON
+            Floats::approxEqual($root2->imaginary, 1.0) || Floats::approxEqual($root2->imaginary, -1.0)
         );
     }
 
