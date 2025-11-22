@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1763781593">
-  <project timestamp="1763781593" name="Clover Coverage">
+<coverage generated="1763788671">
+  <project timestamp="1763788671" name="Clover Coverage">
     <package name="Galaxon\Math">
       <file name="C:\Users\shaun\Projects\PHP\Galaxon\Math\src\Complex.php">
         <class name="Galaxon\Math\Complex" namespace="Galaxon\Math">
