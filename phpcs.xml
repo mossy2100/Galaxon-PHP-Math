@@ -6,12 +6,7 @@
     <file>src</file>
     <file>tests</file>
 
-    <!-- Base standard -->
-    <rule ref="PSR12"/>
-
-    <!-- Allow multiple classes in test files for test fixtures -->
-    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
-        <exclude-pattern>tests/*</exclude-pattern>
-    </rule>
+    <!-- Use Galaxon PHP Coding Standard (includes PSR12 + custom rules) -->
+    <rule ref="Galaxon"/>
 
 </ruleset>

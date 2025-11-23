@@ -83,31 +83,35 @@ final class Rational implements Stringable, Equatable
 
         // Check to see if either argument was provided as a float, but could have been an int.
         // This might enable a call to simplify(), which is preferable to floatToRational().
-        if (is_float($num) && Floats::tryConvertToInt($num, $i_num)) {
-            /** @var int $i_num */
-            $num = $i_num;
+        if (is_float($num)) {
+            $iNum = Floats::tryConvertToInt($num);
+            if ($iNum !== null) {
+                $num = $iNum;
+            }
         }
-        if (is_float($den) && Floats::tryConvertToInt($den, $i_den)) {
-            /** @var int $i_den */
-            $den = $i_den;
+        if (is_float($den)) {
+            $iDen = Floats::tryConvertToInt($den);
+            if ($iDen !== null) {
+                $den = $iDen;
+            }
         }
 
         // Check if we got two valid integers.
-        $convert_float = false;
+        $convertFloat = false;
         if (is_int($num) && is_int($den)) {
             try {
                 // Simplify the ratio.
                 [$num2, $den2] = self::simplify($num, $den);
             } catch (RangeException) {
                 // If either the resulting numerator or denominator is out of range, try converting from float.
-                $convert_float = true;
+                $convertFloat = true;
             }
         } else {
-            $convert_float = true;
+            $convertFloat = true;
         }
 
         // Convert from float if necessary.
-        if ($convert_float) {
+        if ($convertFloat) {
             [$num2, $den2] = self::floatToRatio($num / $den);
         }
 //        var_dump($num2, $den2);
@@ -475,14 +479,18 @@ final class Rational implements Stringable, Equatable
             $other = new self($other);
         }
 
-        // Convert float to Rational, if it can be done without calling floatToRational().
-        if (is_float($other) && Floats::tryConvertToInt($other, $i_other) && $i_other > PHP_INT_MIN) {
-            $other = new self($i_other);
+        // Convert float to Rational if it can be done without calling floatToRational().
+        if (is_float($other)) {
+            $iOther = Floats::tryConvertToInt($other);
+            if ($iOther !== null && $iOther > PHP_INT_MIN) {
+                $other = new self($iOther);
+            }
         }
 
-        // If $other is still an int or float, it's quicker to convert $this to a float and compare than it would be
-        // be to call floatToRational() and compare two Rationals.
-        if (is_int($other) || is_float($other)) {
+        // If $other is still an int or float, it's quicker to convert $this and $other to floats and compare those
+        // values than it would be to call floatToRational() and compare two Rationals.
+        if (!$other instanceof self) {
+            /** @var int|float $other */
             $left = $this->toFloat();
             $right = (float)$other;
         } else {
@@ -599,18 +607,19 @@ final class Rational implements Stringable, Equatable
         }
 
         // Check if the float equals a valid integer.
-        if (Floats::tryConvertToInt($value, $i_value) && $i_value > PHP_INT_MIN) {
-            return [$i_value, 1];
+        $iValue = Floats::tryConvertToInt($value);
+        if ($iValue !== null && $iValue > PHP_INT_MIN) {
+            return [$iValue, 1];
         }
 
         // Initialise variables.
         $sign = Numbers::sign($value, false);
-        $abs_value = abs($value);
-        $range_err = 'The value is outside the valid range for representation as a rational number.';
+        $absValue = abs($value);
+        $rangeErr = 'The value is outside the valid range for representation as a rational number.';
 
         // Check for values outside the valid range.
-        if ($abs_value < 1 / PHP_INT_MAX || $abs_value > PHP_INT_MAX) {
-            throw new RangeException($range_err);
+        if ($absValue < 1 / PHP_INT_MAX || $absValue > PHP_INT_MAX) {
+            throw new RangeException($rangeErr);
         }
 
         // Initialize convergents.
@@ -620,12 +629,12 @@ final class Rational implements Stringable, Equatable
         $k1 = 1;
 
         // Track the best approximation found so far. Initialize to the nearest integer.
-        $h_best = (int)round($abs_value);
-        $k_best = 1;
-        $min_err = (float)abs($h_best - $abs_value);
+        $hBest = (int)round($absValue);
+        $kBest = 1;
+        $minErr = (float)abs($hBest - $absValue);
 
         // Get the initial approximation.
-        $x = $abs_value;
+        $x = $absValue;
 
         // Loop until done.
         while (true) {
@@ -634,38 +643,38 @@ final class Rational implements Stringable, Equatable
 
             // Check for negative value, indicating integer overflow.
             if ($a < 0) {
-                throw new RangeException($range_err);
+                throw new RangeException($rangeErr);
             }
 
             // Calculate next convergent
-            $h_new = $a * $h0 + $h1;
-            $k_new = $a * $k0 + $k1;
+            $hNew = $a * $h0 + $h1;
+            $kNew = $a * $k0 + $k1;
 
             // If the numerator or the denominator overflows the range for integers, cease the loop and return the best
             // approximation found so far.
             // @phpstan-ignore-next-line
-            if (is_float($h_new) || is_float($k_new)) {
-                return [$sign * $h_best, $k_best];
+            if (is_float($hNew) || is_float($kNew)) {
+                return [$sign * $hBest, $kBest];
             }
 
             // Check if we've found an exact representation.
-            $err = (float)abs($h_new / $k_new - $abs_value);
+            $err = (float)abs($hNew / $kNew - $absValue);
             if ($err === 0.0) {
-                return [$sign * $h_new, $k_new];
+                return [$sign * $hNew, $kNew];
             }
 
             // Check if this convergent is better than the best so far.
-            if ($err < $min_err) {
-                $h_best = $h_new;
-                $k_best = $k_new;
-                $min_err = $err;
+            if ($err < $minErr) {
+                $hBest = $hNew;
+                $kBest = $kNew;
+                $minErr = $err;
             }
 
             // Update convergents.
             $h1 = $h0;
-            $h0 = $h_new;
+            $h0 = $hNew;
             $k1 = $k0;
-            $k0 = $k_new;
+            $k0 = $kNew;
 
             // Calculate remainder.
             $rem = $x - $a;

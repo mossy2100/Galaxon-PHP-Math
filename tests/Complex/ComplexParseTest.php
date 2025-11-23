@@ -197,13 +197,13 @@ class ComplexParseTest extends TestCase
     }
 
     #[DataProvider('complexNumberProvider')]
-    public function testParseComprehensive(string $input, float $expected_real, float $expected_imag): void
+    public function testParseComprehensive(string $input, float $expectedReal, float $expectedImag): void
     {
         $result = Complex::parse($input);
-        $expected = new Complex($expected_real, $expected_imag);
+        $expected = new Complex($expectedReal, $expectedImag);
 
         $this->assertEquals($expected, $result);
-        $this->assertEqualsWithDelta($expected_real, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedReal, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, Complex::EPSILON);
     }
 }

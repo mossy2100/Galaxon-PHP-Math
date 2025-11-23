@@ -40,11 +40,11 @@ class ComplexHyperbolicTest extends TestCase
         $z = new Complex(1, 1);
         $result = $z->sinh();
 
-        $expected_real = sinh(1) * cos(1);
-        $expected_imag = cosh(1) * sin(1);
+        $expectedReal = sinh(1) * cos(1);
+        $expectedImag = cosh(1) * sin(1);
 
-        $this->assertEqualsWithDelta($expected_real, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedReal, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -71,11 +71,11 @@ class ComplexHyperbolicTest extends TestCase
         $z = new Complex(1, 1);
         $result = $z->cosh();
 
-        $expected_real = cosh(1) * cos(1);
-        $expected_imag = sinh(1) * sin(1);
+        $expectedReal = cosh(1) * cos(1);
+        $expectedImag = sinh(1) * sin(1);
 
-        $this->assertEqualsWithDelta($expected_real, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($expected_imag, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedReal, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -132,10 +132,10 @@ class ComplexHyperbolicTest extends TestCase
         $z = new Complex(1, 1);
 
         $sech = $z->sech();
-        $inv_cosh = $z->cosh()->inv();
+        $invCosh = $z->cosh()->inv();
 
-        $this->assertEqualsWithDelta($inv_cosh->real, $sech->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($inv_cosh->imaginary, $sech->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invCosh->real, $sech->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invCosh->imaginary, $sech->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -157,10 +157,10 @@ class ComplexHyperbolicTest extends TestCase
         $z = new Complex(1, 1);
 
         $csch = $z->csch();
-        $inv_sinh = $z->sinh()->inv();
+        $invSinh = $z->sinh()->inv();
 
-        $this->assertEqualsWithDelta($inv_sinh->real, $csch->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($inv_sinh->imaginary, $csch->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invSinh->real, $csch->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($invSinh->imaginary, $csch->imaginary, Complex::EPSILON);
     }
 
     /**

@@ -193,8 +193,8 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Handle pure imaginary with or without coefficient: i, 3i, -2.5j, etc.
-        $rx_num = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
-        if (preg_match("/^([+-]?)((?:$rx_num)?)[ijIJ]$/", $str, $matches)) {
+        $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
+        if (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]$/", $str, $matches)) {
             // Handle cases where coefficient is omitted (like i or -i).
             $imag = $matches[2] === '' ? 1.0 : (float)$matches[2];
 
@@ -208,29 +208,29 @@ final class Complex implements Stringable, ArrayAccess, Equatable
 
         // Handle complex numbers with both real and imaginary parts.
         // Pattern real±imag.
-        $pattern_real_first = "/^([+-]?)($rx_num)([+-])((?:$rx_num)?)[ijIJ]\$/";
+        $rxRealFirst = "/^([+-]?)($rxNum)([+-])((?:$rxNum)?)[ijIJ]\$/";
         // Pattern imag±real.
-        $pattern_imag_first = "/^([+-]?)((?:$rx_num)?)[ijIJ]([+-])($rx_num)\$/";
+        $rxImagFirst = "/^([+-]?)((?:$rxNum)?)[ijIJ]([+-])($rxNum)\$/";
 
-        if (preg_match($pattern_real_first, $str, $matches)) {
-            [, $real_sign, $real_val, $imag_sign, $imag_val] = $matches;
-        } elseif (preg_match($pattern_imag_first, $str, $matches)) {
-            [, $imag_sign, $imag_val, $real_sign, $real_val] = $matches;
+        if (preg_match($rxRealFirst, $str, $matches)) {
+            [, $realSign, $realVal, $imagSign, $imagVal] = $matches;
+        } elseif (preg_match($rxImagFirst, $str, $matches)) {
+            [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
             throw new DomainException("Cannot parse '$str' as complex number.");
         }
 
         // Get the imaginary part. Handle cases where the imaginary coefficient is omitted (like +i or -i).
-        $imag = $imag_val === '' ? 1.0 : (float)$imag_val;
+        $imag = $imagVal === '' ? 1.0 : (float)$imagVal;
 
         // Get the real part.
-        $real = (float)$real_val;
+        $real = (float)$realVal;
 
         // Apply signs to get final values.
-        if ($imag_sign === '-') {
+        if ($imagSign === '-') {
             $imag = -$imag;
         }
-        if ($real_sign === '-') {
+        if ($realSign === '-') {
             $real = -$real;
         }
 
@@ -575,15 +575,15 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Calculate the magnitude of the roots.
-        $root_mag = $this->magnitude ** (1.0 / $n);
+        $rootMag = $this->magnitude ** (1.0 / $n);
 
         // Calculate all n roots.
         $roots = [];
         $theta = $this->phase / $n;
         $delta = Angle::TAU / $n;
         for ($k = 0; $k < $n; $k++) {
-            $root_phase = $theta + $k * $delta;
-            $roots[] = self::fromPolar($root_mag, $root_phase);
+            $rootPhase = $theta + $k * $delta;
+            $roots[] = self::fromPolar($rootMag, $rootPhase);
         }
 
         return $roots;
@@ -729,9 +729,9 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         // iz = -y + ix (multiply by i directly)
         $iz = new self(-$this->imaginary, $this->real);
         // 1 - z² (use sqr() instead of pow(2) for efficiency)
-        $one_minus_z2 = new self(1)->sub($this->sqr());
+        $oneMinusZ2 = new self(1)->sub($this->sqr());
         // -i·ln(iz + √(1-z²))
-        return $iz->add($one_minus_z2->sqrt())->ln()->mul(new self(0, -1));
+        return $iz->add($oneMinusZ2->sqrt())->ln()->mul(new self(0, -1));
     }
 
     /**
@@ -744,12 +744,12 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     {
         // acos(z) = -i·ln(z + i·√(1-z²))
         // 1 - z² (use sqr() instead of pow(2) for efficiency)
-        $one_minus_z2 = new self(1)->sub($this->sqr());
+        $oneMinusZ2 = new self(1)->sub($this->sqr());
         // i·√(1-z²) - multiply √(1-z²) by i directly
-        $sqrt = $one_minus_z2->sqrt();
-        $i_sqrt = new self(-$sqrt->imaginary, $sqrt->real);
+        $sqrt = $oneMinusZ2->sqrt();
+        $iSqrt = new self(-$sqrt->imaginary, $sqrt->real);
         // -i·ln(z + i·√(1-z²))
-        return $this->add($i_sqrt)->ln()->mul(new self(0, -1));
+        return $this->add($iSqrt)->ln()->mul(new self(0, -1));
     }
 
     /**
@@ -762,11 +762,11 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     {
         // atan(z) = (-i/2)·ln((i-z)/(i+z))
         // i - z = -x + (1-y)i (calculate directly)
-        $i_minus_z = new self(-$this->real, 1 - $this->imaginary);
+        $iMinusZ = new self(-$this->real, 1 - $this->imaginary);
         // i + z = x + (1+y)i (calculate directly)
-        $i_plus_z = new self($this->real, 1 + $this->imaginary);
+        $iPlusZ = new self($this->real, 1 + $this->imaginary);
         // (-i/2)·ln((i-z)/(i+z))
-        return $i_minus_z->div($i_plus_z)->ln()->mul(new self(0, -0.5));
+        return $iMinusZ->div($iPlusZ)->ln()->mul(new self(0, -0.5));
     }
 
     /**
@@ -900,8 +900,8 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     public function asinh(): self
     {
         // asinh(z) = ln(z + √(z² + 1))
-        $z2_plus_1 = $this->sqr()->add(new self(1));
-        return $this->add($z2_plus_1->sqrt())->ln();
+        $z2Plus1 = $this->sqr()->add(new self(1));
+        return $this->add($z2Plus1->sqrt())->ln();
     }
 
     /**
@@ -913,8 +913,8 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     public function acosh(): self
     {
         // acosh(z) = ln(z + √(z² - 1))
-        $z2_minus_1 = $this->sqr()->sub(new self(1));
-        return $this->add($z2_minus_1->sqrt())->ln();
+        $z2Minus1 = $this->sqr()->sub(new self(1));
+        return $this->add($z2Minus1->sqrt())->ln();
     }
 
     /**
@@ -926,9 +926,9 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     public function atanh(): self
     {
         // atanh(z) = (1/2)·ln((1+z)/(1-z))
-        $one_plus_z = new self(1)->add($this);
-        $one_minus_z = new self(1)->sub($this);
-        return $one_plus_z->div($one_minus_z)->ln()->mul(0.5);
+        $onePlusZ = new self(1)->add($this);
+        $oneMinusZ = new self(1)->sub($this);
+        return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
     }
 
     /**
