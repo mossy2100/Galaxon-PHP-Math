@@ -31,7 +31,7 @@ This package provides immutable classes for working with complex and rational nu
 
 ```bash
 composer require galaxon/math
-```
+``` 
 
 ## Classes
 

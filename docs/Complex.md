@@ -109,10 +109,11 @@ Create a complex number from polar coordinates (magnitude and phase).
 $z1 = Complex::fromPolar(5, M_PI / 4);
 
 // Create from magnitude and Angle
-$z2 = Complex::fromPolar(3, Angle::fromDegrees(60));
+$z2 = Complex::fromPolar(3, new Angle(60, 'deg'));
 ```
 
-NB: The `Angle` class is provided by the `Galaxon\Core` namespace (i.e. the `galaxon/core` package, which is a dependency of `galaxon/math`). See: [Angle](https://github.com/mossy2100/PHP-Core/blob/main/docs/Angle.md)
+NB: The `Angle` class is provided by the `Galaxon\Units` namespace (i.e. the `galaxon/units` package, which is a
+dependency of `galaxon/math`). See: Angle|@todo update this link
 
 ### parse()
 

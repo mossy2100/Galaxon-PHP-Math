@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Galaxon\Math;
 
-use ArgumentCountError;
 use ArrayAccess;
 use DomainException;
-use Galaxon\Core\Angle;
 use Galaxon\Core\Equatable;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Stringify;
+use Galaxon\Units\MeasurementTypes\Angle;
 use LogicException;
 use OutOfRangeException;
 use Override;
@@ -41,7 +40,9 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     private(set) float $imaginary;
 
     // PHPCS doesn't know property hooks yet.
-    // phpcs:disable
+    // phpcs:disable PSR2.Classes.PropertyDeclaration
+    // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
+
     /**
      * The magnitude (a.k.a. absolute value or modulus) of this complex number.
      *
@@ -73,16 +74,18 @@ final class Complex implements Stringable, ArrayAccess, Equatable
                 if ($this->isReal()) {
                     $this->phase = $this->real < 0 ? M_PI : 0;
                 } else {
-                    // atan2() can return a value in the range [-π, π] inclusive, which isn't quite canonical.
-                    // The call to wrapRadians() will convert a result of -π to π.
-                    $this->phase = Angle::wrapRadians(atan2($this->imaginary, $this->real));
+                    // atan2() can return a value in the range [-π, π] inclusive, which isn't canonical.
+                    // The call to wrap() will convert the value to a range of (-π to π]
+                    $this->phase = new Angle(atan2($this->imaginary, $this->real), 'rad')->wrap()->value;
                 }
             }
 
             return $this->phase;
         }
     }
-    // phpcs:enable
+
+    // phpcs:enable PSR2.Classes.PropertyDeclaration
+    // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
 
     /**
      * Small difference used for comparing values, to circumvent floating point rounding issues.
@@ -136,7 +139,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      * Create a complex number from polar coordinates.
      *
      * @param int|float $mag The magnitude (distance from origin).
-     * @param int|float|Angle $phase The phase angle in radians, or as an Angle object.
+     * @param int|float|Angle $phase The phase angle. If this is a number, it's in radians.
      * @return self A new complex number.
      * @throws DomainException If the magnitude is not positive.
      */
@@ -147,17 +150,15 @@ final class Complex implements Stringable, ArrayAccess, Equatable
             throw new DomainException('Magnitude must not be negative.');
         }
 
-        // If the phase was provided as an Angle object, convert it to radians.
-        if ($phase instanceof Angle) {
-            $phase = $phase->toRadians();
-        }
+        // Get the phase as radians in the normal range (-pi, pi]
+        $phase = ($phase instanceof Angle ? $phase->to('rad') : new Angle($phase, 'rad'))->wrap()->value;
 
         // Construct the new Complex.
         $z = new self($mag * cos($phase), $mag * sin($phase));
 
         // Remember the magnitude and phase since we know them already.
-        $z->magnitude = (float)$mag;
-        $z->phase = Angle::wrapRadians($phase);
+        $z->magnitude = $mag;
+        $z->phase = $phase;
 
         return $z;
     }
@@ -474,7 +475,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Euler's identity, alternate form: e^iτ = 1
-        if ($this->equals(new self(0, Angle::TAU))) {
+        if ($this->equals(new self(0, Floats::TAU))) {
             return new self(1);
         }
 
@@ -580,7 +581,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         // Calculate all n roots.
         $roots = [];
         $theta = $this->phase / $n;
-        $delta = Angle::TAU / $n;
+        $delta = Floats::TAU / $n;
         for ($k = 0; $k < $n; $k++) {
             $rootPhase = $theta + $k * $delta;
             $roots[] = self::fromPolar($rootMag, $rootPhase);
@@ -985,7 +986,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
      * Check if this complex number equals another.
      *
      * @param mixed $other The real or complex number to compare with.
-     * @param float $epsilon The tolerance for floating-point comparison.
+     * @param float $epsilon The maximum relative difference for floating-point comparison.
      * @return bool True if the numbers are equal within the tolerance.
      */
     #[Override]

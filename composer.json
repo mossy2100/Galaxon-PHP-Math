@@ -10,6 +10,10 @@
         },
         {
             "type": "path",
+            "url": "../Units"
+        },
+        {
+            "type": "path",
             "url": "../CodingStandard"
         }
     ],
@@ -17,7 +21,8 @@
         "php": "^8.4",
         "ext-ctype": "*",
         "ext-mbstring": "*",
-        "galaxon/core": "@dev"
+        "galaxon/core": "@dev",
+        "galaxon/units": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
@@ -43,7 +48,7 @@
     },
     "scripts": {
         "fix": "vendor/bin/phpcbf",
-        "check": "vendor/bin/phpcs",
+        "check": "vendor/bin/phpcs -s",
         "analyse": "vendor/bin/phpstan analyse -l 9",
         "test": "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
         "coverage": "php scripts/coverage-check.php",

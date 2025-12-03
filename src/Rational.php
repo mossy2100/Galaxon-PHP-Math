@@ -67,8 +67,8 @@ final class Rational implements Stringable, Equatable
      */
     public function __construct(int|float $num = 0, int|float $den = 1)
     {
-        // Check for zero denominator. The double-equals is deliberate, to check for int 0 or float 0.0.
-        if ($den == 0) {
+        // Check for zero denominator.
+        if (Numbers::equal($den, 0)) {
             throw new DomainException('The denominator cannot be zero.');
         }
 

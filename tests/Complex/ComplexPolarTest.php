@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Galaxon\Math\Tests\Complex;
 
 use DomainException;
-use Galaxon\Core\Angle;
 use Galaxon\Math\Complex;
+use Galaxon\Units\MeasurementTypes\Angle;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -189,22 +189,57 @@ class ComplexPolarTest extends TestCase
     public function testFromPolarWithAngleDegrees(): void
     {
         // Test with Angle object (270 degrees = -90 degrees in principal range)
-        $z = Complex::fromPolar(1, Angle::fromDegrees(270));
+        $z = Complex::fromPolar(1, new Angle(270, 'deg'));
         $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, Complex::EPSILON);
     }
 
     public function testFromPolarWithAngleNegativeDegrees(): void
     {
         // Test with negative Angle object
-        $z = Complex::fromPolar(1, Angle::fromDegrees(-90));
+        $z = Complex::fromPolar(1, new Angle(-90, 'deg'));
         $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, Complex::EPSILON);
     }
 
     public function testFromPolarWithAnglePositiveDegrees(): void
     {
         // Test with positive Angle object
-        $z = Complex::fromPolar(1, Angle::fromDegrees(45));
+        $z = Complex::fromPolar(1, new Angle(45, 'deg'));
         $this->assertEqualsWithDelta(M_PI / 4, $z->phase, Complex::EPSILON);
+    }
+
+    public function testFromPolarWithAngleRadians(): void
+    {
+        // Test with Angle object in radians
+        $angle = new Angle(M_PI / 3, 'rad');
+        $z = Complex::fromPolar(2.0, $angle);
+        $this->assertEqualsWithDelta(M_PI / 3, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(2.0, $z->magnitude, Complex::EPSILON);
+    }
+
+    public function testFromPolarWithAngleGradians(): void
+    {
+        // Test with Angle object in gradians (100 grad = 90 deg = π/2 rad)
+        $angle = new Angle(100, 'grad');
+        $z = Complex::fromPolar(3.0, $angle);
+        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(3.0, $z->magnitude, Complex::EPSILON);
+    }
+
+    public function testFromPolarWithAngleTurns(): void
+    {
+        // Test with Angle object in turns (0.25 turn = 90 deg = π/2 rad)
+        $angle = new Angle(0.25, 'turn');
+        $z = Complex::fromPolar(1.5, $angle);
+        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.5, $z->magnitude, Complex::EPSILON);
+    }
+
+    public function testFromPolarWithAngleLargeValue(): void
+    {
+        // Test with Angle object with value > 2π (should wrap)
+        $angle = new Angle(720, 'deg');  // 720° = 2 full turns = wraps to 0
+        $z = Complex::fromPolar(1.0, $angle);
+        $this->assertEqualsWithDelta(0.0, $z->phase, Complex::EPSILON);
     }
 
     public function testFromPolarRoundTripQuadrant1(): void
@@ -302,8 +337,8 @@ class ComplexPolarTest extends TestCase
             new Complex(1, -1),
             Complex::fromPolar(1, -M_PI),
             Complex::fromPolar(1, 5 * M_PI),
-            Complex::fromPolar(1, Angle::fromDegrees(-180)),
-            Complex::fromPolar(1, Angle::fromDegrees(270)),
+            Complex::fromPolar(1, new Angle(-180, 'deg')),
+            Complex::fromPolar(1, new Angle(270, 'deg')),
         ];
 
         foreach ($testCases as $z) {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Complex;
 
+use Angle;
 use DomainException;
-use Galaxon\Core\Angle;
 use Galaxon\Core\Floats;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -185,7 +185,7 @@ class ComplexTranscendentalTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
 
         // e^τi = 1
-        $result5 = new Complex(0, Angle::TAU)->exp();
+        $result5 = new Complex(0, Floats::TAU)->exp();
         $this->assertEqualsWithDelta(1, $result5->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, Complex::EPSILON);
     }
