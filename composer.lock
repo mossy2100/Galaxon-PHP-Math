@@ -45,8 +45,8 @@
                 "check": [
                     "vendor/bin/phpcs -s"
                 ],
-                "analyse": [
-                    "vendor/bin/phpstan analyse -l 9"
+                "analyze": [
+                    "vendor/bin/phpstan analyze -l 9"
                 ],
                 "test": [
                     "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result"
@@ -57,7 +57,7 @@
                 "quality": [
                     "@fix",
                     "@check",
-                    "@analyse",
+                    "@analyze",
                     "@test",
                     "@coverage"
                 ]
@@ -110,8 +110,8 @@
                 "check": [
                     "vendor/bin/phpcs -s"
                 ],
-                "analyse": [
-                    "vendor/bin/phpstan analyse -l 9"
+                "analyze": [
+                    "vendor/bin/phpstan analyze -l 9"
                 ],
                 "test": [
                     "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result"
@@ -122,7 +122,7 @@
                 "quality": [
                     "@fix",
                     "@check",
-                    "@analyse",
+                    "@analyze",
                     "@test",
                     "@coverage"
                 ]
@@ -260,13 +260,13 @@
                 "check": [
                     "vendor/bin/phpcs -s"
                 ],
-                "analyse": [
-                    "vendor/bin/phpstan analyse -l 9"
+                "analyze": [
+                    "vendor/bin/phpstan analyze -l 9"
                 ],
                 "quality": [
                     "@fix",
                     "@check",
-                    "@analyse"
+                    "@analyze"
                 ]
             },
             "license": [

@@ -19,8 +19,6 @@
     ],
     "require": {
         "php": "^8.4",
-        "ext-ctype": "*",
-        "ext-mbstring": "*",
         "galaxon/core": "@dev",
         "galaxon/units": "@dev"
     },
@@ -49,13 +47,13 @@
     "scripts": {
         "fix": "vendor/bin/phpcbf",
         "check": "vendor/bin/phpcs -s",
-        "analyse": "vendor/bin/phpstan analyse -l 9",
+        "analyze": "vendor/bin/phpstan analyze -l 9",
         "test": "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
         "coverage": "php scripts/coverage-check.php",
         "quality": [
             "@fix",
             "@check",
-            "@analyse",
+            "@analyze",
             "@test",
             "@coverage"
         ]

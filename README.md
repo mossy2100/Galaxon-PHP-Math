@@ -26,6 +26,8 @@ This package provides immutable classes for working with complex and rational nu
 ## Requirements
 
 - PHP ^8.4
+- galaxon/core
+- galaxon/units
 
 ## Installation
 
