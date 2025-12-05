@@ -2,7 +2,7 @@
 
 Provides classes for Complex and Rational numbers.
 
-**[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)** | **[Coverage Report](https://html-preview.github.io/?url=https://github.com/mossy2100/PHP-Math/blob/main/build/coverage/index.html)**
+**[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)**
 
 ![PHP 8.4](docs/logo_php8_4.png)
 
