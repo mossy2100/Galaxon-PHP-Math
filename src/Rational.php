@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Galaxon\Math;
 
 use DomainException;
-use Galaxon\Core\Comparable;
-use Galaxon\Core\Equatable;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Integers;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Types;
+use Galaxon\Core\Traits\ApproxComparable;
 use OverflowException;
 use Override;
 use RangeException;
@@ -32,9 +30,9 @@ use TypeError;
  * subtraction, and simplification methods.
  * So, while it's technically possible, supporting this edge case inflates the code for little gain.
  */
-final class Rational implements Stringable, Equatable
+final class Rational implements Stringable
 {
-    use Comparable;
+    use ApproxComparable;
 
     // region Properties
 
@@ -233,6 +231,126 @@ final class Rational implements Stringable, Equatable
     public function __toString(): string
     {
         return $this->num . ($this->den === 1 ? '' : '/' . $this->den);
+    }
+
+    // endregion
+
+    // region Comparison methods
+
+    /**
+     * Compare a rational number with another number.
+     *
+     * @param mixed $other The number to compare with.
+     * @return int Returns -1 if this < other, 0 if equal, 1 if this > other.
+     * @throws TypeError If the value being compared has an invalid type.
+     */
+    #[Override]
+    public function compare(mixed $other): int
+    {
+        // Check the type is comparable.
+        if (!Numbers::isNumber($other) && !$other instanceof self) {
+            throw new TypeError('Can only compare Rational numbers with values of type int, float, or Rational.');
+        }
+
+        // Convert int to Rational, if it can be done without calling floatToRational().
+        if (is_int($other) && $other > PHP_INT_MIN) {
+            $other = new self($other);
+        }
+
+        // Convert float to Rational if it can be done without calling floatToRational().
+        if (is_float($other)) {
+            $iOther = Floats::tryConvertToInt($other);
+            if ($iOther !== null && $iOther > PHP_INT_MIN) {
+                $other = new self($iOther);
+            }
+        }
+
+        // If $other is still an int or float, it's quicker (and sufficiently precise) to compare $this and $other as
+        // floats than it would be to call floatToRational() and compare two Rationals.
+        if (!$other instanceof self) {
+            $left = $this->toFloat();
+            $right = (float)$other;
+        } else {
+            /** @var self $other */
+            if ($this->den === $other->den) {
+                // If the denominators are equal, just compare numerators.
+                $left = $this->num;
+                $right = $other->num;
+            } else {
+                try {
+                    // Cross multiply: compare a*d with b*c for a/b vs c/d.
+                    $left = Integers::mul($this->num, $other->den);
+                    $right = Integers::mul($this->den, $other->num);
+                } catch (OverflowException) {
+                    // In case of overflow, compare equivalent floating point values.
+                    // NB: This could produce a result of 0 (equal) if two different rationals convert to the same
+                    // float, which is possible for values with a magnitude greater than or equal to 2^53 (64-bit
+                    // platforms only).
+                    $left = $this->toFloat();
+                    $right = $other->toFloat();
+                }
+            }
+        }
+
+        // The spaceship operator only guarantees sign, not specific values. Normalize to -1, 0, or 1 for
+        // predictable behavior used by other comparison methods.
+        return Numbers::sign($left <=> $right);
+    }
+
+    /**
+     * Check if this rational number equals another number.
+     *
+     * @param mixed $other The number to compare with.
+     * @return bool True if equal, false otherwise.
+     */
+    public function equal(mixed $other): bool
+    {
+        try {
+            // This will throw on invalid type.
+            return $this->compare($other) === 0;
+        } catch (TypeError) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if this Rational approximately equals another one, within specified tolerances.
+     *
+     * This method uses a combined absolute and relative tolerance approach, matching the algorithm in
+     * Floats::approxEqual(). The absolute tolerance is checked first (useful for comparisons near zero), and if
+     * that fails, the relative tolerance is checked (which scales with the magnitude of the values).
+     *
+     * To compare using only absolute difference, set $relTol to 0.0.
+     * To compare using only relative difference, set $absTol to 0.0.
+     *
+     * Implementations should return false for incompatible types rather than throwing TypeError, to match the
+     * behavior of equal().
+     *
+     * @param mixed $other The int, float, or Rational to compare with.
+     * @param float $relTol The maximum allowed relative difference (default: 1e-9).
+     * @param float $absTol The maximum allowed absolute difference (default: PHP_FLOAT_EPSILON).
+     * @return bool True if the values are equal within the given tolerances, false otherwise.
+     * @see Floats::approxEqual() For the tolerance algorithm details.
+     */
+    public function approxEqual(
+        mixed $other,
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+    ): bool {
+        // Get the other value as a float.
+        if (is_int($other)) {
+            $other = (float)$other;
+        } elseif ($other instanceof self) {
+            $other = $other->toFloat();
+        }
+
+        // If the other value's type is not float at this point, the values are inequal.
+        if (!is_float($other)) {
+            return false;
+        }
+
+        // Compare as floats.
+        return Floats::approxEqual($this->toFloat(), $other, $relTol, $absTol);
     }
 
     // endregion
@@ -451,89 +569,6 @@ final class Rational implements Stringable, Equatable
         }
 
         return $result;
-    }
-
-    // endregion
-
-    // region Comparison methods
-
-    /**
-     * Compare a rational number with another number.
-     *
-     * @param mixed $other The number to compare with.
-     * @return int Returns -1 if this < other, 0 if equal, 1 if this > other.
-     * @throws TypeError If the value being compared has an invalid type.
-     * @throws DomainException If a float argument is infinite or NaN.
-     * @throws RangeException If the value is outside the valid convertible range.
-     */
-    #[Override]
-    public function compare(mixed $other): int
-    {
-        // Check the type is comparable.
-        if (!Types::isNumber($other) && !$other instanceof self) {
-            throw new TypeError('Can only compare Rational numbers with values of type int, float, or Rational.');
-        }
-
-        // Convert int to Rational, if it can be done without calling floatToRational().
-        if (is_int($other) && $other > PHP_INT_MIN) {
-            $other = new self($other);
-        }
-
-        // Convert float to Rational if it can be done without calling floatToRational().
-        if (is_float($other)) {
-            $iOther = Floats::tryConvertToInt($other);
-            if ($iOther !== null && $iOther > PHP_INT_MIN) {
-                $other = new self($iOther);
-            }
-        }
-
-        // If $other is still an int or float, it's quicker to convert $this and $other to floats and compare those
-        // values than it would be to call floatToRational() and compare two Rationals.
-        if (!$other instanceof self) {
-            /** @var int|float $other */
-            $left = $this->toFloat();
-            $right = (float)$other;
-        } else {
-            /** @var self $other */
-            if ($this->den === $other->den) {
-                // If the denominators are equal, just compare numerators.
-                $left = $this->num;
-                $right = $other->num;
-            } else {
-                try {
-                    // Cross multiply: compare a*d with b*c for a/b vs c/d.
-                    $left = Integers::mul($this->num, $other->den);
-                    $right = Integers::mul($this->den, $other->num);
-                } catch (OverflowException) {
-                    // In case of overflow, compare equivalent floating point values.
-                    // NB: This could produce a result of 0 (equal) if two different rationals convert to the same
-                    // float, which is possible for values with a magnitude greater than or equal to 2^53 (64-bit
-                    // platforms only).
-                    $left = $this->toFloat();
-                    $right = $other->toFloat();
-                }
-            }
-        }
-
-        // The spaceship operator's contract only guarantees sign, not specific values. Normalize to -1, 0, or 1 for
-        // predictable behavior used by other comparison methods.
-        return Numbers::sign($left <=> $right);
-    }
-
-    /**
-     * Check if this rational number equals another number.
-     *
-     * @param mixed $other The number to compare with.
-     * @return bool True if equal, false otherwise.
-     */
-    #[Override]
-    public function equals(mixed $other): bool
-    {
-        try {
-            return $this->compare($other) === 0;
-        } catch (TypeError) {
-            return false;
-        }
     }
 
     // endregion

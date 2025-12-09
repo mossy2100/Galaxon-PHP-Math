@@ -138,7 +138,7 @@ class RationalConstructorTest extends TestCase
     /**
      * Test that NaN numerator throws exception.
      */
-    public function testNaNNumeratorThrows(): void
+    public function testNanNumeratorThrows(): void
     {
         $this->expectException(DomainException::class);
         new Rational(NAN);
@@ -147,7 +147,7 @@ class RationalConstructorTest extends TestCase
     /**
      * Test that NaN denominator throws exception.
      */
-    public function testNaNDenominatorThrows(): void
+    public function testNanDenominatorThrows(): void
     {
         $this->expectException(DomainException::class);
         new Rational(1, NAN);

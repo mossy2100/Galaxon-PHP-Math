@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Complex;
 
-use Angle;
 use DomainException;
 use Galaxon\Core\Floats;
 use Galaxon\Math\Complex;

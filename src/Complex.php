@@ -6,9 +6,10 @@ namespace Galaxon\Math;
 
 use ArrayAccess;
 use DomainException;
-use Galaxon\Core\Equatable;
 use Galaxon\Core\Floats;
+use Galaxon\Core\Numbers;
 use Galaxon\Core\Stringify;
+use Galaxon\Core\Traits\ApproxEquatable;
 use Galaxon\Units\MeasurementTypes\Angle;
 use LogicException;
 use OutOfRangeException;
@@ -21,8 +22,10 @@ use ValueError;
  *
  * @implements ArrayAccess<int, float>
  */
-final class Complex implements Stringable, ArrayAccess, Equatable
+final class Complex implements Stringable, ArrayAccess
 {
+    use ApproxEquatable;
+
     // region Properties
 
     /**
@@ -240,6 +243,75 @@ final class Complex implements Stringable, ArrayAccess, Equatable
 
     // endregion
 
+    // region Inspection  methods
+
+    /**
+     * Check if a complex number is real.
+     *
+     * @return bool True if the Complex is a real number, otherwise false.
+     */
+    public function isReal(): bool
+    {
+        return $this->imaginary === 0.0;
+    }
+
+    // endregion
+
+    // region Comparison methods
+
+    /**
+     * Check if this complex number equals another.
+     *
+     * @param mixed $other The real or complex number to compare with.
+     * @return bool True if the numbers are equal.
+     */
+    #[Override]
+    public function equal(mixed $other): bool
+    {
+        // Convert int or float to Complex.
+        if (Numbers::isNumber($other)) {
+            $other = self::toComplex($other);
+        } elseif (!$other instanceof self) { // Check if other is Complex.
+            return false;
+        }
+
+        // Compare real and imaginary parts.
+        return $this->real === $other->real && $this->imaginary === $other->imaginary;
+    }
+
+    /**
+     * Check if this complex number approximately equals another, within a given tolerance.
+     *
+     * The comparison will use the absolute tolerance first, and if that fails, the relative tolerance.
+     * To compare purely by absolute difference, set the relative tolerance to zero.
+     * To compare purely by relative difference, set the absolute tolerance to zero.
+     * @see Floats::approxEqual()
+     *
+     * @param mixed $other The real or complex number to compare with.
+     * @param float $relTol The relative tolerance.
+     * @param float $absTol The absolute tolerance.
+     * @return bool True if the numbers are equal within the given tolerances, otherwise false.
+     */
+    #[Override]
+    public function approxEqual(
+        mixed $other,
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+    ): bool {
+        // Convert int or float to Complex.
+        if (Numbers::isNumber($other)) {
+            $other = self::toComplex($other);
+        } elseif (!$other instanceof self) { // Check if other is Complex.
+            return false;
+        }
+
+        // Compare real and imaginary parts.
+        return Floats::approxEqual($this->real, $other->real, $relTol, $absTol) &&
+               Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
+    }
+
+    // endregion
+
     // region Arithmetic operations
 
     /**
@@ -316,7 +388,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         $other = self::toComplex($other);
 
         // Check for division by zero.
-        if ($other->equals(0)) {
+        if ($other->equal(0)) {
             throw new DomainException('Cannot divide by 0.');
         }
 
@@ -362,28 +434,28 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     public function ln(): self
     {
         // Check for ln(0), which is undefined.
-        if ($this->equals(0)) {
+        if ($this->equal(0)) {
             throw new ValueError('The logarithm of 0 is undefined.');
         }
 
         // Use shortcuts where possible.
-        if ($this->equals(1)) {
+        if ($this->equal(1)) {
             return new self(0);
         }
 
-        if ($this->equals(2)) {
+        if ($this->equal(2)) {
             return new self(M_LN2);
         }
 
-        if ($this->equals(M_E)) {
+        if ($this->equal(M_E)) {
             return new self(1);
         }
 
-        if ($this->equals(M_PI)) {
+        if ($this->equal(M_PI)) {
             return new self(M_LNPI);
         }
 
-        if ($this->equals(10)) {
+        if ($this->equal(10)) {
             return new self(M_LN10);
         }
 
@@ -409,25 +481,25 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         $base = self::toComplex($base);
 
         // Check for invalid base values.
-        if ($base->equals(0)) {
+        if ($base->equal(0)) {
             throw new DomainException('Logarithm base cannot be 0.');
         }
-        if ($base->equals(1)) {
+        if ($base->equal(1)) {
             throw new DomainException('Logarithm base cannot be 1.');
         }
 
         // Check for natural logarithm.
-        if ($base->equals(M_E)) {
+        if ($base->equal(M_E)) {
             return $this->ln();
         }
 
         // Use built-in constants for log_2(e) and log_10(e).
-        if ($this->equals(M_E)) {
-            if ($base->equals(2)) {
+        if ($this->equal(M_E)) {
+            if ($base->equal(2)) {
                 return new self(M_LOG2E);
             }
 
-            if ($base->equals(10)) {
+            if ($base->equal(10)) {
                 return new self(M_LOG10E);
             }
         }
@@ -449,33 +521,33 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     public function exp(): self
     {
         // Use shortcuts where possible.
-        if ($this->equals(0)) {
+        if ($this->equal(0)) {
             return new self(1);
         }
 
-        if ($this->equals(M_LN2)) {
+        if ($this->equal(M_LN2)) {
             return new self(2);
         }
 
-        if ($this->equals(1)) {
+        if ($this->equal(1)) {
             return new self(M_E);
         }
 
-        if ($this->equals(M_LNPI)) {
+        if ($this->equal(M_LNPI)) {
             return new self(M_PI);
         }
 
-        if ($this->equals(M_LN10)) {
+        if ($this->equal(M_LN10)) {
             return new self(10);
         }
 
         // Euler's identity: e^iπ = -1
-        if ($this->equals(new self(0, M_PI))) {
+        if ($this->equal(new self(0, M_PI))) {
             return new self(-1);
         }
 
         // Euler's identity, alternate form: e^iτ = 1
-        if ($this->equals(new self(0, Floats::TAU))) {
+        if ($this->equal(new self(0, Floats::TAU))) {
             return new self(1);
         }
 
@@ -507,7 +579,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         $other = self::toComplex($other);
 
         // Handle special cases.
-        if ($this->equals(0)) {
+        if ($this->equal(0)) {
             // Check for complex exponent.
             if (!$other->isReal()) {
                 throw new DomainException('Cannot raise 0 to a complex number.');
@@ -519,7 +591,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
             }
 
             // Check for 0 exponent.
-            if ($other->equals(0)) {
+            if ($other->equal(0)) {
                 // Although mathematically 0^0 is undefined, return 1 for consistency with pow(0, 0).
                 // This is a common result in many programming languages.
                 // (Principle of least astonishment.)
@@ -532,22 +604,22 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Handle exponent = 0. Any non-zero number to power 0 is 1.
-        if ($other->equals(0)) {
+        if ($other->equal(0)) {
             return new self(1);
         }
 
         // Handle exponent = 1. Any number to power 1 is itself.
-        if ($other->equals(1)) {
+        if ($other->equal(1)) {
             return $this;
         }
 
         // Handle i^2 = -1.
-        if ($this->equals(self::i()) && $other->equals(2)) {
+        if ($this->equal(self::i()) && $other->equal(2)) {
             return new self(-1);
         }
 
         // Handle e^w. Skip unnecessary calls to ln() and mul().
-        if ($this->equals(M_E)) {
+        if ($this->equal(M_E)) {
             return $other->exp();
         }
 
@@ -571,7 +643,7 @@ final class Complex implements Stringable, ArrayAccess, Equatable
         }
 
         // Handle special case of 0.
-        if ($this->equals(0)) {
+        if ($this->equal(0)) {
             return [new self()];
         }
 
@@ -966,42 +1038,6 @@ final class Complex implements Stringable, ArrayAccess, Equatable
     {
         // acoth(z) = atanh(1/z)
         return $this->inv()->atanh();
-    }
-
-    // endregion
-
-    // region Comparison methods
-
-    /**
-     * Check if a complex number is real.
-     *
-     * @return bool True if the Complex is a real number, otherwise false.
-     */
-    public function isReal(): bool
-    {
-        return $this->imaginary === 0.0;
-    }
-
-    /**
-     * Check if this complex number equals another.
-     *
-     * @param mixed $other The real or complex number to compare with.
-     * @param float $epsilon The maximum relative difference for floating-point comparison.
-     * @return bool True if the numbers are equal within the tolerance.
-     */
-    #[Override]
-    public function equals(mixed $other, float $epsilon = self::EPSILON): bool
-    {
-        // Convert int or float to Complex.
-        if (is_int($other) || is_float($other)) {
-            $other = self::toComplex($other);
-        } elseif (!$other instanceof self) { // Check if other is Complex.
-            return false;
-        }
-
-        // Compare real and imaginary parts.
-        return Floats::approxEqual($this->real, $other->real, $epsilon) &&
-               Floats::approxEqual($this->imaginary, $other->imaginary, $epsilon);
     }
 
     // endregion

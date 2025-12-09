@@ -13,6 +13,8 @@ use TypeError;
 #[CoversClass(Rational::class)]
 class RationalComparisonTest extends TestCase
 {
+    // region Compare tests
+
     /**
      * Test compare with equal Rationals.
      */
@@ -136,117 +138,6 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
-     * Test equals with equal Rationals.
-     */
-    public function testEqualsTrue(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(3, 4);
-
-        $this->assertTrue($r1->equals($r2));
-
-        // Different representations of same value
-        $r3 = new Rational(6, 8);
-        $this->assertTrue($r1->equals($r3));
-    }
-
-    /**
-     * Test equals with unequal Rationals.
-     */
-    public function testEqualsFalse(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(1, 2);
-
-        $this->assertFalse($r1->equals($r2));
-    }
-
-    /**
-     * Test equals with integer.
-     */
-    public function testEqualsWithInteger(): void
-    {
-        $r = new Rational(4, 2);
-        $this->assertTrue($r->equals(2));
-        $this->assertFalse($r->equals(3));
-    }
-
-    /**
-     * Test equals with float.
-     */
-    public function testEqualsWithFloat(): void
-    {
-        $r = new Rational(1, 2);
-        $this->assertTrue($r->equals(0.5));
-        $this->assertFalse($r->equals(0.6));
-    }
-
-    /**
-     * Test equals with invalid type returns false.
-     */
-    public function testEqualsWithInvalidType(): void
-    {
-        $r = new Rational(3, 4);
-        $this->assertFalse($r->equals('string'));
-        $this->assertFalse($r->equals([]));
-        $this->assertFalse($r->equals(new stdClass()));
-    }
-
-    /**
-     * Test isLessThan.
-     */
-    public function testIsLessThan(): void
-    {
-        $r1 = new Rational(1, 3);
-        $r2 = new Rational(1, 2);
-
-        $this->assertTrue($r1->isLessThan($r2));
-        $this->assertFalse($r2->isLessThan($r1));
-        $this->assertFalse($r1->isLessThan($r1));
-    }
-
-    /**
-     * Test isLessThanOrEqual.
-     */
-    public function testIsLessThanOrEqual(): void
-    {
-        $r1 = new Rational(1, 3);
-        $r2 = new Rational(1, 2);
-        $r3 = new Rational(1, 3);
-
-        $this->assertTrue($r1->isLessThanOrEqual($r2));
-        $this->assertTrue($r1->isLessThanOrEqual($r3));
-        $this->assertFalse($r2->isLessThanOrEqual($r1));
-    }
-
-    /**
-     * Test isGreaterThan.
-     */
-    public function testIsGreaterThan(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(1, 2);
-
-        $this->assertTrue($r1->isGreaterThan($r2));
-        $this->assertFalse($r2->isGreaterThan($r1));
-        $this->assertFalse($r1->isGreaterThan($r1));
-    }
-
-    /**
-     * Test isGreaterThanOrEqual.
-     */
-    public function testIsGreaterThanOrEqual(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(1, 2);
-        $r3 = new Rational(3, 4);
-
-        $this->assertTrue($r1->isGreaterThanOrEqual($r2));
-        $this->assertTrue($r1->isGreaterThanOrEqual($r3));
-        $this->assertFalse($r2->isGreaterThanOrEqual($r1));
-    }
-
-    /**
      * Test compare with PHP_INT_MIN falls through to float comparison.
      */
     public function testCompareWithPhpIntMin(): void
@@ -271,4 +162,551 @@ class RationalComparisonTest extends TestCase
         // (float)PHP_INT_MIN is exactly representable, but should still use float comparison path
         $this->assertSame(1, $r->compare((float)PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
     }
+
+    // endregion
+
+    // region Equal tests
+
+    /**
+     * Test equals with equal Rationals.
+     */
+    public function testEqualTrue(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(3, 4);
+
+        $this->assertTrue($r1->equal($r2));
+
+        // Different representations of same value
+        $r3 = new Rational(6, 8);
+        $this->assertTrue($r1->equal($r3));
+    }
+
+    /**
+     * Test equals with unequal Rationals.
+     */
+    public function testEqualFalse(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+
+        $this->assertFalse($r1->equal($r2));
+    }
+
+    /**
+     * Test equals with integer.
+     */
+    public function testEqualWithInteger(): void
+    {
+        $r = new Rational(4, 2);
+        $this->assertTrue($r->equal(2));
+        $this->assertFalse($r->equal(3));
+    }
+
+    /**
+     * Test equals with float.
+     */
+    public function testEqualWithFloat(): void
+    {
+        $r = new Rational(1, 2);
+        $this->assertTrue($r->equal(0.5));
+        $this->assertFalse($r->equal(0.6));
+    }
+
+    /**
+     * Test equals with invalid type returns false.
+     */
+    public function testEqualWithInvalidType(): void
+    {
+        $r = new Rational(3, 4);
+        $this->assertFalse($r->equal('string'));
+        $this->assertFalse($r->equal([]));
+        $this->assertFalse($r->equal(new stdClass()));
+    }
+
+    // endregion
+
+    // region Less/greater than tests
+
+    /**
+     * Test lessThan.
+     */
+    public function testLessThan(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(1, 2);
+
+        $this->assertTrue($r1->lessThan($r2));
+        $this->assertFalse($r2->lessThan($r1));
+        $this->assertFalse($r1->lessThan($r1));
+    }
+
+    /**
+     * Test lessThanOrEqual.
+     */
+    public function testLessThanOrEqual(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(1, 2);
+        $r3 = new Rational(1, 3);
+
+        $this->assertTrue($r1->lessThanOrEqual($r2));
+        $this->assertTrue($r1->lessThanOrEqual($r3));
+        $this->assertFalse($r2->lessThanOrEqual($r1));
+    }
+
+    /**
+     * Test greaterThan.
+     */
+    public function testGreaterThan(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+
+        $this->assertTrue($r1->greaterThan($r2));
+        $this->assertFalse($r2->greaterThan($r1));
+        $this->assertFalse($r1->greaterThan($r1));
+    }
+
+    /**
+     * Test greaterThanOrEqual.
+     */
+    public function testGreaterThanOrEqual(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+        $r3 = new Rational(3, 4);
+
+        $this->assertTrue($r1->greaterThanOrEqual($r2));
+        $this->assertTrue($r1->greaterThanOrEqual($r3));
+        $this->assertFalse($r2->greaterThanOrEqual($r1));
+    }
+
+    // endregion
+
+    // region Mathematical property tests
+
+    /**
+     * Test reflexivity: a value should equal itself.
+     */
+    public function testEqualReflexive(): void
+    {
+        $r1 = new Rational(3, 4);
+        $this->assertTrue($r1->equal($r1));
+
+        $r2 = new Rational(-5, 7);
+        $this->assertTrue($r2->equal($r2));
+
+        $r3 = new Rational(0, 1);
+        $this->assertTrue($r3->equal($r3));
+    }
+
+    /**
+     * Test symmetry: if a equals b, then b equals a.
+     */
+    public function testEqualSymmetric(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(6, 8);
+
+        $this->assertTrue($r1->equal($r2));
+        $this->assertTrue($r2->equal($r1));
+
+        $r3 = new Rational(1, 2);
+        $r4 = new Rational(1, 3);
+
+        $this->assertFalse($r3->equal($r4));
+        $this->assertFalse($r4->equal($r3));
+    }
+
+    /**
+     * Test transitivity: if a equals b and b equals c, then a equals c.
+     */
+    public function testEqualTransitive(): void
+    {
+        $r1 = new Rational(2, 4);
+        $r2 = new Rational(3, 6);
+        $r3 = new Rational(4, 8);
+
+        $this->assertTrue($r1->equal($r2));
+        $this->assertTrue($r2->equal($r3));
+        $this->assertTrue($r1->equal($r3));
+    }
+
+    /**
+     * Test compare is reflexive: comparing a value with itself returns 0.
+     */
+    public function testCompareReflexive(): void
+    {
+        $r = new Rational(5, 7);
+        $this->assertSame(0, $r->compare($r));
+    }
+
+    /**
+     * Test compare is antisymmetric: if a < b then b > a.
+     */
+    public function testCompareAntisymmetric(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(1, 2);
+
+        $this->assertSame(-1, $r1->compare($r2));
+        $this->assertSame(1, $r2->compare($r1));
+    }
+
+    /**
+     * Test compare is transitive: if a < b and b < c, then a < c.
+     */
+    public function testCompareTransitive(): void
+    {
+        $r1 = new Rational(1, 4);
+        $r2 = new Rational(1, 3);
+        $r3 = new Rational(1, 2);
+
+        $this->assertSame(-1, $r1->compare($r2));
+        $this->assertSame(-1, $r2->compare($r3));
+        $this->assertSame(-1, $r1->compare($r3));
+    }
+
+    // endregion
+
+    // region Ordering method tests
+
+    /**
+     * Test lessThan with invalid type throws TypeError.
+     */
+    public function testLessThanInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(3, 4);
+        $r->lessThan('string');
+    }
+
+    /**
+     * Test lessThanOrEqual with invalid type throws TypeError.
+     */
+    public function testLessThanOrEqualInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(3, 4);
+        $r->lessThanOrEqual([]);
+    }
+
+    /**
+     * Test greaterThan with invalid type throws TypeError.
+     */
+    public function testGreaterThanInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(3, 4);
+        $r->greaterThan(new stdClass());
+    }
+
+    /**
+     * Test greaterThanOrEqual with invalid type throws TypeError.
+     */
+    public function testGreaterThanOrEqualInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(3, 4);
+        $r->greaterThanOrEqual(null);
+    }
+
+    /**
+     * Test lessThan with Rational.
+     */
+    public function testLessThanWithRational(): void
+    {
+        $r1 = new Rational(1, 2);
+        $r2 = new Rational(3, 4);
+
+        $this->assertTrue($r1->lessThan($r2));
+        $this->assertFalse($r2->lessThan($r1));
+    }
+
+    /**
+     * Test greaterThan with Rational.
+     */
+    public function testGreaterThanWithRational(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+
+        $this->assertTrue($r1->greaterThan($r2));
+        $this->assertFalse($r2->greaterThan($r1));
+    }
+
+    /**
+     * Test lessThanOrEqual boundary cases.
+     */
+    public function testLessThanOrEqualBoundary(): void
+    {
+        $r1 = new Rational(1, 2);
+        $r2 = new Rational(1, 2);
+
+        // Equal values
+        $this->assertTrue($r1->lessThanOrEqual($r2));
+        $this->assertTrue($r2->lessThanOrEqual($r1));
+
+        // Less than
+        $r3 = new Rational(1, 3);
+        $this->assertTrue($r3->lessThanOrEqual($r1));
+        $this->assertFalse($r1->lessThanOrEqual($r3));
+    }
+
+    /**
+     * Test greaterThanOrEqual boundary cases.
+     */
+    public function testGreaterThanOrEqualBoundary(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(3, 4);
+
+        // Equal values
+        $this->assertTrue($r1->greaterThanOrEqual($r2));
+        $this->assertTrue($r2->greaterThanOrEqual($r1));
+
+        // Greater than
+        $r3 = new Rational(7, 8);
+        $this->assertTrue($r3->greaterThanOrEqual($r1));
+        $this->assertFalse($r1->greaterThanOrEqual($r3));
+    }
+
+    // endregion
+
+    // region Approximate equality tests
+
+    /**
+     * Test basic approximate equality with default tolerances.
+     */
+    public function testApproxEqualBasic(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = 0.333333333333;
+
+        // Should be approximately equal
+        $this->assertTrue($r1->approxEqual($r2));
+    }
+
+    /**
+     * Test approximate equality with tight tolerance.
+     */
+    public function testApproxEqualTightTolerance(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = 0.33333;
+
+        // Should not be equal with very tight tolerance
+        $this->assertFalse($r1->approxEqual($r2, 1e-12, 1e-12));
+    }
+
+    /**
+     * Test approximate equality with zero tolerances (exact match required).
+     */
+    public function testApproxEqualZeroTolerances(): void
+    {
+        $r1 = new Rational(1, 2);
+        $r2 = 0.5;
+
+        // Exact match
+        $this->assertTrue($r1->approxEqual($r2, 0.0, 0.0));
+
+        $r3 = 0.5 + 1e-15;
+        $this->assertFalse($r1->approxEqual($r3, 0.0, 0.0));
+    }
+
+    /**
+     * Test approximate equality with relative tolerance only.
+     */
+    public function testApproxEqualRelativeTolerance(): void
+    {
+        $r = new Rational(1000000, 1);
+        $f = 1000001.0;
+
+        // Within relative tolerance
+        $this->assertTrue($r->approxEqual($f, 1e-5, 0.0));
+
+        // Outside relative tolerance
+        $this->assertFalse($r->approxEqual($f, 1e-8, 0.0));
+    }
+
+    /**
+     * Test approximate equality with absolute tolerance only.
+     */
+    public function testApproxEqualAbsoluteTolerance(): void
+    {
+        $r = new Rational(1, 1000000);
+        $f = 2.0 / 1000000;
+
+        // Within absolute tolerance
+        $this->assertTrue($r->approxEqual($f, 0.0, 1e-5));
+
+        // Outside absolute tolerance
+        $this->assertFalse($r->approxEqual($f, 0.0, 1e-8));
+    }
+
+    /**
+     * Test approximate equality with Rational.
+     */
+    public function testApproxEqualWithRational(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(333333, 1000000);
+
+        // Close approximation with looser tolerance
+        $this->assertTrue($r1->approxEqual($r2, 1e-5, 1e-5));
+    }
+
+    /**
+     * Test approximate equality with int.
+     */
+    public function testApproxEqualWithInt(): void
+    {
+        $r = new Rational(4, 2);
+
+        $this->assertTrue($r->approxEqual(2));
+        $this->assertFalse($r->approxEqual(3));
+    }
+
+    /**
+     * Test approximate equality with invalid type returns false.
+     */
+    public function testApproxEqualInvalidTypeReturnsFalse(): void
+    {
+        $r = new Rational(3, 4);
+
+        $this->assertFalse($r->approxEqual('string'));
+        $this->assertFalse($r->approxEqual([]));
+        $this->assertFalse($r->approxEqual(new stdClass()));
+        $this->assertFalse($r->approxEqual(null));
+    }
+
+    /**
+     * Test approximate equality is reflexive.
+     */
+    public function testApproxEqualReflexive(): void
+    {
+        $r = new Rational(7, 11);
+
+        $this->assertTrue($r->approxEqual($r));
+        $this->assertTrue($r->approxEqual($r, 0.0, 0.0));
+    }
+
+    /**
+     * Test approximate equality with custom tolerances.
+     */
+    public function testApproxEqualCustomTolerances(): void
+    {
+        $r = new Rational(100, 1);
+        $f = 100.5;
+
+        // Within loose tolerance
+        $this->assertTrue($r->approxEqual($f, 0.01, 1.0));
+
+        // Outside tight tolerance
+        $this->assertFalse($r->approxEqual($f, 1e-6, 0.1));
+    }
+
+    /**
+     * Test approximate equality with very small values.
+     */
+    public function testApproxEqualVerySmallValues(): void
+    {
+        $r = new Rational(1, PHP_INT_MAX);
+        $f = 2.0 / PHP_INT_MAX;
+
+        // Within default absolute tolerance
+        $this->assertTrue($r->approxEqual($f));
+    }
+
+    /**
+     * Test approximate equality with very large values.
+     */
+    public function testApproxEqualVeryLargeValues(): void
+    {
+        $r = new Rational(PHP_INT_MAX, 1);
+        $f = (float)PHP_INT_MAX;
+
+        // Should be approximately equal
+        $this->assertTrue($r->approxEqual($f));
+    }
+
+    // endregion
+
+    // region Approximate comparison tests
+
+    /**
+     * Test approxCompare with values that are approximately equal.
+     */
+    public function testApproxCompareEqual(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(333333, 1000000);
+
+        // Should return 0 (approximately equal) with looser tolerance
+        $this->assertSame(0, $r1->approxCompare($r2, 1e-5, 1e-5));
+    }
+
+    /**
+     * Test approxCompare with less than.
+     */
+    public function testApproxCompareLessThan(): void
+    {
+        $r1 = new Rational(1, 4);
+        $r2 = new Rational(1, 2);
+
+        // Should return -1 (less than)
+        $this->assertSame(-1, $r1->approxCompare($r2));
+    }
+
+    /**
+     * Test approxCompare with greater than.
+     */
+    public function testApproxCompareGreaterThan(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+
+        // Should return 1 (greater than)
+        $this->assertSame(1, $r1->approxCompare($r2));
+    }
+
+    /**
+     * Test approxCompare with custom tolerances.
+     */
+    public function testApproxCompareCustomTolerances(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(333, 1000);
+
+        // With loose tolerance, should be equal
+        $this->assertSame(0, $r1->approxCompare($r2, 0.01, 0.001));
+
+        // With tight tolerance, should be greater than (1/3 > 333/1000)
+        $this->assertSame(1, $r1->approxCompare($r2, 1e-6, 1e-6));
+    }
+
+    /**
+     * Test approxCompare with Rational.
+     */
+    public function testApproxCompareWithRational(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(333333, 1000000);
+
+        // Should be approximately equal with looser tolerance
+        $this->assertSame(0, $r1->approxCompare($r2, 1e-5, 1e-5));
+    }
+
+    /**
+     * Test approxCompare with invalid type throws TypeError.
+     */
+    public function testApproxCompareInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(3, 4);
+        $r->approxCompare('string');
+    }
+
+    // endregion
 }

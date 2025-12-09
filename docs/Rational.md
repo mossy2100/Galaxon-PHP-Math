@@ -110,6 +110,192 @@ $r3 = Rational::toRational("3/4");          // 3/4
 $r4 = Rational::toRational(new Rational(2, 3)); // Returns same instance
 ```
 
+## Comparison Methods
+
+Rational uses the `ApproxComparable` trait, which provides both exact and approximate comparison operations.
+
+### equal()
+
+```php
+public function equal(mixed $other): bool
+```
+
+Check if this rational number exactly equals another value.
+
+Uses exact comparison based on `compare()` returning 0. Returns `false` for invalid types instead of throwing.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with (int, float, or Rational)
+
+**Returns:**
+- `bool` - True if exactly equal, false otherwise
+
+**Examples:**
+```php
+$r1 = new Rational(3, 4);
+$r2 = new Rational(6, 8);  // Reduced to 3/4
+$r3 = new Rational(1, 2);
+
+var_dump($r1->equal($r2));  // true (both are 3/4)
+var_dump($r1->equal($r3));  // false
+var_dump($r1->equal(0.75)); // true (exact match)
+var_dump($r1->equal(0.7500000001)); // false (not exact)
+
+// Invalid types return false
+var_dump($r1->equal("3/4")); // false
+var_dump($r1->equal(null));  // false
+```
+
+### approxEqual()
+
+```php
+public function approxEqual(
+    mixed $other,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = PHP_FLOAT_EPSILON
+): bool
+```
+
+Check if this rational number approximately equals another value within specified tolerances.
+
+Converts both values to floats and uses combined relative and absolute tolerance approach. Returns `false` for invalid types instead of throwing.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with (int, float, or Rational)
+- `$relTol` (float) - Relative tolerance (default: 1e-9)
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+
+**Returns:**
+- `bool` - True if approximately equal within tolerances, false otherwise
+
+**How tolerance works:**
+- Checks: `|a - b| ≤ max(relTolerance * max(|a|, |b|), absTolerance)`
+- Relative tolerance matters for large values
+- Absolute tolerance matters for values near zero
+
+**Examples:**
+```php
+$r1 = new Rational(1, 3);
+$r2 = new Rational(333333, 1000000);
+
+// Within loose tolerance
+var_dump($r1->approxEqual($r2, 1e-5, 1e-5));  // true
+
+// Outside tight tolerance
+var_dump($r1->approxEqual($r2, 1e-9, 1e-9));  // false
+
+// Works with floats
+$r3 = new Rational(1, 2);
+var_dump($r3->approxEqual(0.5000001, 1e-5));  // true
+
+// With zero tolerances (exact match required)
+var_dump($r1->approxEqual($r1, 0.0, 0.0));  // true
+
+// Invalid types return false
+var_dump($r1->approxEqual('string'));  // false
+```
+
+### compare()
+
+```php
+public function compare(mixed $other): int
+```
+
+Compare this rational number with another value using exact comparison.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with (int, float, or Rational)
+
+**Returns:**
+- `int` - Exactly -1, 0, or 1
+
+**Behavior:**
+- Optimizes comparison with integers and simple floats
+- Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c
+- Falls back to float comparison if overflow occurs
+- Returns 0 for exact equality (no epsilon needed - integers are exact)
+
+**Examples:**
+```php
+$r1 = new Rational(1, 2);
+$r2 = new Rational(1, 3);
+
+echo $r1->compare($r2);   // 1 (1/2 > 1/3)
+echo $r1->compare(0.5);   // 0 (1/2 == 0.5 exactly)
+echo $r2->compare(1);     // -1 (1/3 < 1)
+
+// Works with Rational objects
+$r3 = new Rational(2, 4);
+echo $r1->compare($r3);   // 0 (1/2 == 2/4)
+```
+
+**Throws:** `TypeError` if the value cannot be compared.
+
+### approxCompare()
+
+```php
+public function approxCompare(
+    mixed $other,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = PHP_FLOAT_EPSILON
+): int
+```
+
+Compare this rational number with another value using approximate equality.
+
+Returns 0 if values are approximately equal within tolerances, otherwise performs exact less/greater than comparison.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with (int, float, or Rational)
+- `$relTol` (float) - Relative tolerance (default: 1e-9)
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+
+**Returns:**
+- `int` - Exactly -1, 0, or 1
+
+**Examples:**
+```php
+$r1 = new Rational(1, 3);
+$r2 = new Rational(333333, 1000000);
+
+// Approximately equal within tolerance
+echo $r1->approxCompare($r2, 1e-5, 1e-5);  // 0
+
+// Outside tolerance, performs exact comparison
+echo $r1->approxCompare($r2, 1e-9, 1e-9);  // 1 (1/3 > 333333/1000000)
+
+// Use in sorting with approximate equality
+$r3 = new Rational(1, 4);
+echo $r3->approxCompare($r1);  // -1 (1/4 < 1/3)
+```
+
+**Throws:** `TypeError` if the value cannot be compared.
+
+### lessThan(), greaterThan(), etc.
+
+```php
+public function lessThan(mixed $other): bool
+public function lessThanOrEqual(mixed $other): bool
+public function greaterThan(mixed $other): bool
+public function greaterThanOrEqual(mixed $other): bool
+```
+
+Ordering comparison methods provided by the `ApproxComparable` trait. These use exact comparison via `compare()`.
+
+**Examples:**
+```php
+$r1 = new Rational(1, 3);
+$r2 = new Rational(1, 2);
+
+var_dump($r1->lessThan($r2));           // true
+var_dump($r1->lessThanOrEqual($r2));    // true
+var_dump($r2->greaterThan($r1));        // true
+var_dump($r2->greaterThanOrEqual($r1)); // true
+
+// Note: These methods require same type (Rational)
+// Use compare() directly for mixed-type comparisons with int/float
+```
+
 ## Arithmetic Operations
 
 ### add()
@@ -148,6 +334,20 @@ $diff = $r1->sub($r2);  // 1/2
 ```
 
 **Throws:** `OverflowException` if the result overflows.
+
+### neg()
+
+```php
+public function neg(): self
+```
+
+Calculate the negative of this rational number.
+
+**Example:**
+```php
+$r = new Rational(3, 4);
+$result = $r->neg();  // -3/4
+```
 
 ### mul()
 
@@ -192,20 +392,6 @@ $quotient2 = $r3->div(2);   // 3/8
 **Throws:**
 - `DomainException` if dividing by zero
 - `OverflowException` if the result overflows
-
-### neg()
-
-```php
-public function neg(): self
-```
-
-Calculate the negative of this rational number.
-
-**Example:**
-```php
-$r = new Rational(3, 4);
-$result = $r->neg();  // -3/4
-```
 
 ### inv()
 
@@ -327,84 +513,6 @@ echo $r3->round();  // 3 (2.5 rounds away from zero)
 
 $r4 = new Rational(-5, 2);
 echo $r4->round();  // -3 (-2.5 rounds away from zero)
-```
-
-## Comparison Methods
-
-Rational implements the `Equatable` interface and uses the `Comparable` trait.
-
-### compare()
-
-```php
-public function compare(mixed $other): int
-```
-
-Compare this rational number with another value.
-
-**Parameters:**
-- `$other` (mixed) - The value to compare with (int, float, or Rational)
-
-**Returns:**
-- `int` - Exactly -1, 0, or 1
-
-**Behavior:**
-- Optimizes comparison with integers and simple floats
-- Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c
-- Falls back to float comparison if overflow occurs
-- Returns 0 for exact equality (no epsilon needed - integers are exact)
-
-**Example:**
-```php
-$r1 = new Rational(1, 2);
-$r2 = new Rational(1, 3);
-
-echo $r1->compare($r2);   // 1 (1/2 > 1/3)
-echo $r1->compare(0.5);   // 0 (1/2 == 0.5)
-echo $r2->compare(1);     // -1 (1/3 < 1)
-```
-
-**Throws:** `TypeError` if the value cannot be compared.
-
-### equals()
-
-```php
-public function equals(mixed $other): bool
-```
-
-Check if this rational number equals another value. Provided by the `Comparable` trait.
-
-**Example:**
-```php
-$r1 = new Rational(3, 4);
-$r2 = new Rational(6, 8);  // Reduced to 3/4
-$r3 = new Rational(1, 2);
-
-var_dump($r1->equals($r2));  // true (both are 3/4)
-var_dump($r1->equals($r3));  // false
-var_dump($r1->equals(0.75)); // true
-var_dump($r1->equals("3/4")); // false (wrong type, returns false gracefully)
-```
-
-### isLessThan(), isGreaterThan(), etc.
-
-```php
-public function isLessThan(mixed $other): bool
-public function isLessThanOrEqual(mixed $other): bool
-public function isGreaterThan(mixed $other): bool
-public function isGreaterThanOrEqual(mixed $other): bool
-```
-
-Comparison methods provided by the `Comparable` trait.
-
-**Examples:**
-```php
-$r1 = new Rational(1, 3);
-$r2 = new Rational(1, 2);
-
-var_dump($r1->isLessThan($r2));           // true
-var_dump($r1->isLessThanOrEqual($r2));    // true
-var_dump($r2->isGreaterThan($r1));        // true
-var_dump($r2->isGreaterThanOrEqual($r1)); // true
 ```
 
 ## Conversion Methods
@@ -557,7 +665,7 @@ $r1 = new Rational(1, 2);
 $r2 = new Rational(2, 4);  // Same as 1/2
 $r3 = new Rational(1, 3);
 
-var_dump($r1->equals($r2));      // true
-var_dump($r1->isGreaterThan($r3)); // true
-var_dump($r3->isLessThan(0.5));  // true (can compare with floats)
+var_dump($r1->equal($r2));      // true
+var_dump($r1->greaterThan($r3)); // true
+var_dump($r3->lessThan(0.5));  // true (can compare with floats)
 ```

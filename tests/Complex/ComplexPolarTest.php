@@ -342,16 +342,8 @@ class ComplexPolarTest extends TestCase
         ];
 
         foreach ($testCases as $z) {
-            $this->assertGreaterThan(
-                -M_PI,
-                $z->phase,
-                "Phase should be > -π for $z"
-            );
-            $this->assertLessThanOrEqual(
-                M_PI,
-                $z->phase,
-                "Phase should be <= π for $z"
-            );
+            $this->assertGreaterThan(-M_PI, $z->phase, "Phase should be > -π for $z");
+            $this->assertLessThanOrEqual(M_PI, $z->phase, "Phase should be <= π for $z");
         }
     }
 

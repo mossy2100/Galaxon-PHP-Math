@@ -193,7 +193,7 @@ class RationalConversionTest extends TestCase
         $f = $r->toFloat();
         $r2 = new Rational($f);
 
-        $this->assertTrue($r->equals($r2));
+        $this->assertTrue($r->equal($r2));
     }
 
     /**

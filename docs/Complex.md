@@ -141,6 +141,112 @@ $z4 = Complex::parse("4i+3");
 
 **Throws:** `DomainException` if the string is invalid.
 
+## Inspection and Comparison Methods
+
+### isReal()
+
+```php
+public function isReal(): bool
+```
+
+Check if the complex number is real (imaginary part is zero).
+
+**Example:**
+```php
+$z1 = new Complex(5, 0);
+var_dump($z1->isReal());  // true
+
+$z2 = new Complex(3, 4);
+var_dump($z2->isReal());  // false
+```
+
+### equal()
+
+```php
+public function equal(mixed $other): bool
+```
+
+Check if this complex number exactly equals another value.
+
+Compares both real and imaginary parts using exact equality (`===`). Returns `false` for invalid types instead of throwing.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with (Complex, int, or float)
+
+**Returns:**
+- `bool` - True if exactly equal, false otherwise
+
+**Examples:**
+```php
+$z1 = new Complex(3, 4);
+$z2 = new Complex(3, 4);
+$z3 = new Complex(3.0000000001, 4);
+
+var_dump($z1->equal($z2));  // true (exact match)
+var_dump($z1->equal($z3));  // false (not exact)
+var_dump($z1->equal(5));    // false (z1 is not real)
+
+// Real Complex numbers can equal int/float
+$z4 = new Complex(5, 0);
+var_dump($z4->equal(5));    // true
+var_dump($z4->equal(5.0));  // true
+
+// Invalid types return false
+var_dump($z1->equal('string'));  // false
+var_dump($z1->equal(null));      // false
+```
+
+### approxEqual()
+
+```php
+public function approxEqual(
+    mixed $other,
+    float $relTolerance = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTolerance = PHP_FLOAT_EPSILON
+): bool
+```
+
+Check if this complex number approximately equals another value within specified tolerances.
+
+Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately. Returns `false` for invalid types instead of throwing.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with (Complex, int, or float)
+- `$relTolerance` (float) - Relative tolerance (default: 1e-9)
+- `$absTolerance` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+
+**Returns:**
+- `bool` - True if approximately equal within tolerances, false otherwise
+
+**How tolerance works:**
+- For each component, checks: `|a - b| ≤ max(relTolerance * max(|a|, |b|), absTolerance)`
+- Relative tolerance matters for large values
+- Absolute tolerance matters for values near zero
+- Both components must be within tolerance
+
+**Examples:**
+```php
+$z1 = new Complex(3, 4);
+$z2 = new Complex(3.00000001, 4.00000001);
+
+// Within default tolerance
+var_dump($z1->approxEqual($z2));  // true
+
+// With tight tolerance
+var_dump($z1->approxEqual($z2, 1e-15, 1e-15));  // false
+
+// With zero tolerances (exact match required)
+var_dump($z1->approxEqual($z1, 0.0, 0.0));  // true
+var_dump($z1->approxEqual($z2, 0.0, 0.0));  // false
+
+// Works with real numbers
+$z3 = new Complex(5, 0);
+var_dump($z3->approxEqual(5.0000001, 1e-6));  // true
+
+// Invalid types return false
+var_dump($z1->approxEqual('string'));  // false
+```
+
 ## Arithmetic Operations
 
 ### add()
@@ -556,51 +662,6 @@ $z = new Complex(2);
 $asech = $z->asech();  // acosh(1/z)
 $acsch = $z->acsch();  // asinh(1/z)
 $acoth = $z->acoth();  // atanh(1/z)
-```
-
-## Comparison Methods
-
-### isReal()
-
-```php
-public function isReal(): bool
-```
-
-Check if the complex number is real (imaginary part is zero).
-
-**Example:**
-```php
-$z1 = new Complex(5, 0);
-var_dump($z1->isReal());  // true
-
-$z2 = new Complex(3, 4);
-var_dump($z2->isReal());  // false
-```
-
-### equals()
-
-```php
-public function equals(mixed $other, float $epsilon = 1E-10): bool
-```
-
-Check if this complex number equals another within epsilon tolerance.
-
-**Parameters:**
-- `$other` (mixed) - The value to compare with
-- `$epsilon` (float) - Tolerance for floating-point comparison (default: 1E-10)
-
-**Returns:**
-- `bool` - True if equal within epsilon, false otherwise
-
-**Example:**
-```php
-$z1 = new Complex(3, 4);
-$z2 = new Complex(3, 4);
-$z3 = new Complex(3.0000000001, 4);
-
-var_dump($z1->equals($z2));  // true
-var_dump($z1->equals($z3));  // true (within default epsilon)
-var_dump($z1->equals(5));     // false
 ```
 
 ## Conversion Methods

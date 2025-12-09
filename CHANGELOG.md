@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] - 2025-01-18
+## [0.2.0] - 2025-12-09
+
+### Changed (Breaking Changes)
+
+- **Complex**: Renamed `equals()` → `equal()` for exact equality (no tolerance)
+- **Complex**: Added `approxEqual()` method with configurable relative and absolute tolerances
+- **Complex**: Now uses `ApproxEquatable` trait instead of implementing `Equatable` interface
+- **Rational**: Renamed `equals()` → `equal()` for exact equality
+- **Rational**: Added `approxEqual()` and `approxCompare()` methods with configurable tolerances
+- **Rational**: Renamed comparison methods: `isLessThan()` → `lessThan()`, `isGreaterThan()` → `greaterThan()`, `isLessThanOrEqual()` → `lessThanOrEqual()`, `isGreaterThanOrEqual()` → `greaterThanOrEqual()`
+- **Rational**: Now uses `ApproxComparable` trait instead of `Comparable` trait
+- **Rational**: `compare()` method now performs exact comparison (no epsilon parameter)
+
+### Improved
+
+- Updated comprehensive documentation for comparison methods with detailed examples
+- Added new comparison tests for both Complex and Rational classes
+- Updated dependencies: PHPStan 2.1.33, PHPUnit 12.5.2, nikic/php-parser 5.7.0, theseer/tokenizer 2.0.1
+- Added slevomat/coding-standard 8.25.1 to CodingStandard package
+- Enhanced composer scripts with verbose output flags (`phpcbf -vp`)
+
+## [0.1.0] - 2025-01-18
 
 ### Added
 

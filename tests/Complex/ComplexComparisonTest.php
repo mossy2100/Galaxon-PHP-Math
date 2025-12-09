@@ -1,0 +1,414 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Galaxon\Math\Tests\Complex;
+
+use Galaxon\Core\Floats;
+use Galaxon\Math\Complex;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+
+#[CoversClass(Complex::class)]
+class ComplexComparisonTest extends TestCase
+{
+    // region Exact equality tests
+
+    /**
+     * Test exact equality with identical complex numbers.
+     */
+    public function testEqualExact(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(3, 4);
+
+        $this->assertTrue($z1->equal($z2));
+    }
+
+    /**
+     * Test inequality with different complex numbers.
+     */
+    public function testNotEqual(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(3, 5);
+
+        $this->assertFalse($z1->equal($z2));
+
+        $z3 = new Complex(4, 4);
+        $this->assertFalse($z1->equal($z3));
+
+        $z4 = new Complex(4, 5);
+        $this->assertFalse($z1->equal($z4));
+    }
+
+    /**
+     * Test equality with real numbers (int and float).
+     */
+    public function testEqualWithRealNumber(): void
+    {
+        $z = new Complex(5, 0);
+
+        // Should work with both int and float
+        $this->assertTrue($z->equal(5));
+        $this->assertTrue($z->equal(5.0));
+        $this->assertFalse($z->equal(6));
+        $this->assertFalse($z->equal(4.99999));
+    }
+
+    /**
+     * Test equality with zero.
+     */
+    public function testEqualWithZero(): void
+    {
+        $z = new Complex(0, 0);
+
+        $this->assertTrue($z->equal(0));
+        $this->assertTrue($z->equal(0.0));
+        $this->assertTrue($z->equal(new Complex(0, 0)));
+        $this->assertFalse($z->equal(new Complex(0, 1e-100)));
+    }
+
+    /**
+     * Test reflexivity: a value should equal itself.
+     */
+    public function testEqualReflexive(): void
+    {
+        $z1 = new Complex(3, 4);
+        $this->assertTrue($z1->equal($z1));
+
+        $z2 = new Complex(-5.7, 2.3);
+        $this->assertTrue($z2->equal($z2));
+
+        $z3 = new Complex(0, 0);
+        $this->assertTrue($z3->equal($z3));
+    }
+
+    /**
+     * Test symmetry: if a equals b, then b equals a.
+     */
+    public function testEqualSymmetric(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(3, 4);
+
+        $this->assertTrue($z1->equal($z2));
+        $this->assertTrue($z2->equal($z1));
+
+        $z3 = new Complex(5, 6);
+        $z4 = new Complex(5, 7);
+
+        $this->assertFalse($z3->equal($z4));
+        $this->assertFalse($z4->equal($z3));
+    }
+
+    /**
+     * Test transitivity: if a equals b and b equals c, then a equals c.
+     */
+    public function testEqualTransitive(): void
+    {
+        $z1 = new Complex(5, 6);
+        $z2 = new Complex(5, 6);
+        $z3 = new Complex(5, 6);
+
+        $this->assertTrue($z1->equal($z2));
+        $this->assertTrue($z2->equal($z3));
+        $this->assertTrue($z1->equal($z3));
+    }
+
+    /**
+     * Test equality with negative zero.
+     */
+    public function testEqualNegativeZero(): void
+    {
+        // In PHP, -0.0 === 0.0 is true, so Complex should treat them as equal
+        $z1 = new Complex(-0.0, 0);
+        $z2 = new Complex(0.0, 0);
+
+        $this->assertTrue($z1->equal($z2));
+
+        $z3 = new Complex(0, -0.0);
+        $z4 = new Complex(0, 0.0);
+
+        $this->assertTrue($z3->equal($z4));
+
+        $z5 = new Complex(-0.0, -0.0);
+        $z6 = new Complex(0.0, 0.0);
+
+        $this->assertTrue($z5->equal($z6));
+    }
+
+    /**
+     * Test that equal returns false for invalid types instead of throwing.
+     */
+    public function testEqualInvalidTypeReturnsFalse(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertFalse($z->equal('string'));
+        $this->assertFalse($z->equal(null));
+        $this->assertFalse($z->equal([]));
+        $this->assertFalse($z->equal(new stdClass()));
+        $this->assertFalse($z->equal(true));
+    }
+
+    /**
+     * Test equality with pure imaginary numbers.
+     */
+    public function testEqualPureImaginary(): void
+    {
+        $z1 = new Complex(0, 5);
+        $z2 = new Complex(0, 5);
+
+        $this->assertTrue($z1->equal($z2));
+
+        $z3 = new Complex(0, -5);
+        $this->assertFalse($z1->equal($z3));
+    }
+
+    // endregion
+
+    // region Approximate equality tests
+
+    /**
+     * Test basic approximate equality with default tolerances.
+     */
+    public function testApproxEqualBasic(): void
+    {
+        $z1 = new Complex(3.00000000001, 4.00000000001);
+        $z2 = new Complex(3, 4);
+
+        // Should be equal with default tolerance
+        $this->assertTrue($z1->approxEqual($z2));
+    }
+
+    /**
+     * Test approximate equality with tight tolerance.
+     */
+    public function testApproxEqualTightTolerance(): void
+    {
+        $z1 = new Complex(3.00000000001, 4.00000000001);
+        $z2 = new Complex(3, 4);
+
+        // Should not be equal with very tight tolerance
+        $this->assertFalse($z1->approxEqual($z2, 1e-15, 1e-15));
+    }
+
+    /**
+     * Test approximate equality with zero tolerances (exact match required).
+     */
+    public function testApproxEqualZeroTolerances(): void
+    {
+        $z1 = new Complex(3.0, 4.0);
+        $z2 = new Complex(3.0 + 1e-15, 4.0);
+
+        // With zero tolerances, should require exact match
+        $this->assertFalse($z1->approxEqual($z2, 0.0, 0.0));
+        $this->assertTrue($z1->approxEqual($z1, 0.0, 0.0));
+
+        $z3 = new Complex(5.0, 6.0);
+        $z4 = new Complex(5.0, 6.0);
+
+        $this->assertTrue($z3->approxEqual($z4, 0.0, 0.0));
+    }
+
+    /**
+     * Test approximate equality with relative tolerance only.
+     */
+    public function testApproxEqualRelativeTolerance(): void
+    {
+        // Large values - relative tolerance matters more
+        $z1 = new Complex(1e10, 0);
+        $z2 = new Complex(1e10 + 1, 0);
+
+        // Small absolute difference but within relative tolerance
+        $this->assertTrue($z1->approxEqual($z2, 1e-9, 0.0));
+
+        // Outside relative tolerance
+        $this->assertFalse($z1->approxEqual($z2, 1e-12, 0.0));
+    }
+
+    /**
+     * Test approximate equality with absolute tolerance only.
+     */
+    public function testApproxEqualAbsoluteTolerance(): void
+    {
+        // Near zero - absolute tolerance matters more
+        $z1 = new Complex(1e-10, 0);
+        $z2 = new Complex(2e-10, 0);
+
+        // Relative tolerance won't help here, needs absolute
+        $this->assertTrue($z1->approxEqual($z2, 0.0, 1e-9));
+
+        // Outside absolute tolerance
+        $this->assertFalse($z1->approxEqual($z2, 0.0, 1e-11));
+    }
+
+    /**
+     * Test approximate equality with both components differing.
+     */
+    public function testApproxEqualBothComponents(): void
+    {
+        $z1 = new Complex(3.0, 4.0);
+        $z2 = new Complex(3.0 + 1e-10, 4.0 + 1e-10);
+
+        // Both components within tolerance
+        $this->assertTrue($z1->approxEqual($z2));
+
+        $z3 = new Complex(3.0 + 1e-10, 4.0 + 1e-5);
+
+        // One component outside default tolerance
+        $this->assertFalse($z1->approxEqual($z3));
+    }
+
+    /**
+     * Test approximate equality when only one component is within tolerance.
+     */
+    public function testApproxEqualOneComponentOutsideTolerance(): void
+    {
+        $z1 = new Complex(3.0, 4.0);
+
+        // Real part matches, imaginary doesn't
+        $z2 = new Complex(3.0, 4.1);
+        $this->assertFalse($z1->approxEqual($z2));
+
+        // Imaginary part matches, real doesn't
+        $z3 = new Complex(3.1, 4.0);
+        $this->assertFalse($z1->approxEqual($z3));
+    }
+
+    /**
+     * Test approximate equality with real numbers (int and float).
+     */
+    public function testApproxEqualWithNumbers(): void
+    {
+        $z = new Complex(5.0, 0);
+
+        // Should work with int and float like equal() does
+        $this->assertTrue($z->approxEqual(5));
+        $this->assertTrue($z->approxEqual(5.0));
+        $this->assertTrue($z->approxEqual(5.0 + 1e-11));
+
+        // Outside default tolerance
+        $this->assertFalse($z->approxEqual(5.01));
+    }
+
+    /**
+     * Test that approxEqual returns false for invalid types instead of throwing.
+     */
+    public function testApproxEqualInvalidTypeReturnsFalse(): void
+    {
+        $z = new Complex(3, 4);
+
+        // Should return false, not throw (matching equal() behavior)
+        $this->assertFalse($z->approxEqual('string'));
+        $this->assertFalse($z->approxEqual(null));
+        $this->assertFalse($z->approxEqual([]));
+        $this->assertFalse($z->approxEqual(new stdClass()));
+        $this->assertFalse($z->approxEqual(true));
+    }
+
+    /**
+     * Test approximate equality with custom tolerances.
+     */
+    public function testApproxEqualCustomTolerances(): void
+    {
+        $z1 = new Complex(100.0, 200.0);
+        $z2 = new Complex(100.5, 200.5);
+
+        // Within loose tolerance
+        $this->assertTrue($z1->approxEqual($z2, 0.01, 1.0));
+
+        // Outside tight tolerance
+        $this->assertFalse($z1->approxEqual($z2, 1e-6, 0.1));
+    }
+
+    /**
+     * Test approximate equality with negative zero.
+     */
+    public function testApproxEqualNegativeZero(): void
+    {
+        $z1 = new Complex(-0.0, 0);
+        $z2 = new Complex(0.0, 0);
+
+        $this->assertTrue($z1->approxEqual($z2));
+
+        $z3 = new Complex(0, -0.0);
+        $z4 = new Complex(0, 0.0);
+
+        $this->assertTrue($z3->approxEqual($z4));
+    }
+
+    /**
+     * Test approximate equality using default Floats constants.
+     */
+    public function testApproxEqualDefaultConstants(): void
+    {
+        $z1 = new Complex(1.0, 2.0);
+        $z2 = new Complex(1.0 + Floats::DEFAULT_RELATIVE_TOLERANCE / 10, 2.0);
+
+        // Within default relative tolerance
+        $this->assertTrue($z1->approxEqual($z2));
+
+        $z3 = new Complex(1.0, 2.0 + Floats::DEFAULT_RELATIVE_TOLERANCE * 10);
+
+        // Outside default relative tolerance
+        $this->assertFalse($z1->approxEqual($z3));
+    }
+
+    /**
+     * Test approximate equality with very small values.
+     */
+    public function testApproxEqualVerySmallValues(): void
+    {
+        $z1 = new Complex(1e-20, 1e-20);
+        $z2 = new Complex(2e-20, 2e-20);
+
+        // Within absolute tolerance (PHP_FLOAT_EPSILON)
+        $this->assertTrue($z1->approxEqual($z2));
+
+        // Outside tight absolute tolerance
+        $this->assertFalse($z1->approxEqual($z2, 0.0, 1e-30));
+    }
+
+    /**
+     * Test approximate equality with very large values.
+     */
+    public function testApproxEqualVeryLargeValues(): void
+    {
+        $z1 = new Complex(1e15, 2e15);
+        $z2 = new Complex(1e15 + 1e6, 2e15 + 1e6);
+
+        // Within relative tolerance (1e-9 of 1e15 = 1e6)
+        $this->assertTrue($z1->approxEqual($z2));
+
+        // Outside tight relative tolerance
+        $this->assertFalse($z1->approxEqual($z2, 1e-12, 0.0));
+    }
+
+    /**
+     * Test approximate equality is reflexive.
+     */
+    public function testApproxEqualReflexive(): void
+    {
+        $z = new Complex(3.14159, 2.71828);
+
+        $this->assertTrue($z->approxEqual($z));
+        $this->assertTrue($z->approxEqual($z, 0.0, 0.0));
+    }
+
+    /**
+     * Test approximate equality is symmetric.
+     */
+    public function testApproxEqualSymmetric(): void
+    {
+        $z1 = new Complex(3.0, 4.0);
+        $z2 = new Complex(3.0 + 1e-10, 4.0 + 1e-10);
+
+        $this->assertTrue($z1->approxEqual($z2));
+        $this->assertTrue($z2->approxEqual($z1));
+    }
+
+    // endregion
+}
