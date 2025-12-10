@@ -136,7 +136,7 @@ class RationalConstructorTest extends TestCase
     }
 
     /**
-     * Test that NaN numerator throws exception.
+     * Test that NAN numerator throws exception.
      */
     public function testNanNumeratorThrows(): void
     {
@@ -145,7 +145,7 @@ class RationalConstructorTest extends TestCase
     }
 
     /**
-     * Test that NaN denominator throws exception.
+     * Test that NAN denominator throws exception.
      */
     public function testNanDenominatorThrows(): void
     {

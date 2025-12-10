@@ -60,7 +60,7 @@ final class Rational implements Stringable
      * @param int|float $num The numerator. Defaults to 0.
      * @param int|float $den The denominator. Defaults to 1.
      * @throws DomainException If the denominator is zero.
-     * @throws DomainException If a float argument is infinite or NaN.
+     * @throws DomainException If a float argument is infinite or NAN.
      * @throws RangeException If the value is outside the valid convertible range.
      */
     public function __construct(int|float $num = 0, int|float $den = 1)
@@ -70,9 +70,9 @@ final class Rational implements Stringable
             throw new DomainException('The denominator cannot be zero.');
         }
 
-        // Check for infinite or NaN.
+        // Check for infinite or NAN.
         if ((is_float($num) && !is_finite($num)) || (is_float($den) && !is_finite($den))) {
-            throw new DomainException('Cannot convert an infinity or NaN to a rational number.');
+            throw new DomainException('Cannot convert an infinity or NAN to a rational number.');
         }
 
         // Initialize result variables.
@@ -131,7 +131,7 @@ final class Rational implements Stringable
      * - float, e.g. "123.456", "-456.789"
      * - fraction, e.g. "1/2", "-3/4"
      *
-     * If the string represents a float, it will be converted to the closest rational number if its within the valid
+     * If the string represents a float, it will be converted to the closest rational number if it's within the valid
      * range.
      *
      * The input string is trimmed, including fraction parts. Therefore, the following examples are all allowed:
@@ -179,7 +179,7 @@ final class Rational implements Stringable
      *
      * @param int|float|string|self $value The number to convert.
      * @return self The equivalent Rational.
-     * @throws DomainException If the number is NaN or infinite, or the input string doesn't represent a valid rational.
+     * @throws DomainException If the number is NAN or infinite, or the input string doesn't represent a valid rational.
      * @throws RangeException If the value is outside the valid convertible range.
      */
     public static function toRational(int|float|string|self $value): self
@@ -265,8 +265,8 @@ final class Rational implements Stringable
             }
         }
 
-        // If $other is still an int or float, it's quicker (and sufficiently precise) to compare $this and $other as
-        // floats than it would be to call floatToRational() and compare two Rationals.
+        // If $other is still an int or float, it's quicker (and should be sufficiently precise) to compare $this and
+        // $other as floats than it would be to call floatToRational() and compare two Rationals.
         if (!$other instanceof self) {
             $left = $this->toFloat();
             $right = (float)$other;
@@ -298,22 +298,6 @@ final class Rational implements Stringable
     }
 
     /**
-     * Check if this rational number equals another number.
-     *
-     * @param mixed $other The number to compare with.
-     * @return bool True if equal, false otherwise.
-     */
-    public function equal(mixed $other): bool
-    {
-        try {
-            // This will throw on invalid type.
-            return $this->compare($other) === 0;
-        } catch (TypeError) {
-            return false;
-        }
-    }
-
-    /**
      * Check if this Rational approximately equals another one, within specified tolerances.
      *
      * This method uses a combined absolute and relative tolerance approach, matching the algorithm in
@@ -322,9 +306,6 @@ final class Rational implements Stringable
      *
      * To compare using only absolute difference, set $relTol to 0.0.
      * To compare using only relative difference, set $absTol to 0.0.
-     *
-     * Implementations should return false for incompatible types rather than throwing TypeError, to match the
-     * behavior of equal().
      *
      * @param mixed $other The int, float, or Rational to compare with.
      * @param float $relTol The maximum allowed relative difference (default: 1e-9).
@@ -631,14 +612,14 @@ final class Rational implements Stringable
      *
      * @param float $value The value to convert.
      * @return int[] Two integers representing the equivalent rational number.
-     * @throws DomainException If the value is infinite or NaN.
+     * @throws DomainException If the value is infinite or NAN.
      * @throws RangeException If the value is outside the valid convertible range.
      */
     public static function floatToRatio(float $value): array
     {
-        // Check for infinite or NaN.
+        // Check for infinite or NAN.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot convert ±∞ or NaN to a rational number.');
+            throw new DomainException('Cannot convert ±INF or NAN to a rational number.');
         }
 
         // Check if the float equals a valid integer.

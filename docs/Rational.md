@@ -63,7 +63,7 @@ $r7 = new Rational(3, -4);       // -3/4 (sign moved to numerator)
 
 **Throws:**
 - `DomainException` if denominator is zero
-- `DomainException` if a float argument is infinite or NaN
+- `DomainException` if a float argument is infinite or NAN
 - `RangeException` if the value is outside the valid convertible range
 
 ## Factory Methods
@@ -152,7 +152,7 @@ var_dump($r1->equal(null));  // false
 public function approxEqual(
     mixed $other,
     float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = PHP_FLOAT_EPSILON
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool
 ```
 
@@ -169,7 +169,7 @@ Converts both values to floats and uses combined relative and absolute tolerance
 - `bool` - True if approximately equal within tolerances, false otherwise
 
 **How tolerance works:**
-- Checks: `|a - b| ≤ max(relTolerance * max(|a|, |b|), absTolerance)`
+- Checks: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
 - Relative tolerance matters for large values
 - Absolute tolerance matters for values near zero
 
@@ -237,7 +237,7 @@ echo $r1->compare($r3);   // 0 (1/2 == 2/4)
 public function approxCompare(
     mixed $other,
     float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = PHP_FLOAT_EPSILON
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): int
 ```
 
@@ -292,8 +292,9 @@ var_dump($r1->lessThanOrEqual($r2));    // true
 var_dump($r2->greaterThan($r1));        // true
 var_dump($r2->greaterThanOrEqual($r1)); // true
 
-// Note: These methods require same type (Rational)
-// Use compare() directly for mixed-type comparisons with int/float
+// Also works with int and float
+var_dump($r1->lessThan(0.5));           // true (1/3 < 0.5)
+var_dump($r2->greaterThan(0));          // true
 ```
 
 ## Arithmetic Operations
@@ -603,7 +604,7 @@ Convert a float to a pair of integers [numerator, denominator] using continued f
 - Maximum denominator is PHP_INT_MAX to stay within valid range
 
 **Throws:**
-- `DomainException` if value is infinite or NaN
+- `DomainException` if value is infinite or NAN
 - `RangeException` if value is outside valid range (1/PHP_INT_MAX to PHP_INT_MAX/1)
 
 ## Usage Examples

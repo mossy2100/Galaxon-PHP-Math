@@ -34,7 +34,7 @@ The imaginary part of the complex number. Read-only from outside the class.
 ### magnitude
 
 ```php
-public ?float $magnitude
+private(set) ?float $magnitude
 ```
 
 The magnitude (absolute value or modulus) of the complex number. Automatically computed and cached on first access.
@@ -44,7 +44,7 @@ For z = a + bi: |z| = √(a² + b²)
 ### phase
 
 ```php
-public ?float $phase
+private(set) ?float $phase
 ```
 
 The phase (argument or angle) of the complex number in radians, normalized to the principal value range **(-π, π]**. Automatically computed and cached on first access.
@@ -201,8 +201,8 @@ var_dump($z1->equal(null));      // false
 ```php
 public function approxEqual(
     mixed $other,
-    float $relTolerance = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTolerance = PHP_FLOAT_EPSILON
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
 ): bool
 ```
 
@@ -212,14 +212,14 @@ Uses combined relative and absolute tolerance approach, comparing both real and 
 
 **Parameters:**
 - `$other` (mixed) - The value to compare with (Complex, int, or float)
-- `$relTolerance` (float) - Relative tolerance (default: 1e-9)
-- `$absTolerance` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+- `$relTol` (float) - Relative tolerance (default: 1e-9)
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
 
 **Returns:**
 - `bool` - True if approximately equal within tolerances, false otherwise
 
 **How tolerance works:**
-- For each component, checks: `|a - b| ≤ max(relTolerance * max(|a|, |b|), absTolerance)`
+- For each component, checks: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
 - Relative tolerance matters for large values
 - Absolute tolerance matters for values near zero
 - Both components must be within tolerance

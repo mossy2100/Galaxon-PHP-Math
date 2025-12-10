@@ -258,7 +258,7 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with NaN throws DomainException.
+     * Test floatToRatio with NAN throws DomainException.
      */
     public function testFloatToRatioNanThrows(): void
     {
