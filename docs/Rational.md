@@ -575,7 +575,7 @@ echo new Rational(-2, 5);  // "-2/5"
 echo new Rational(6, 8);   // "3/4" (auto-reduced)
 ```
 
-## Static Helper Methods
+## Helper methods
 
 ### floatToRatio()
 

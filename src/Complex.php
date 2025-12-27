@@ -10,7 +10,6 @@ use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Stringify;
 use Galaxon\Core\Traits\ApproxEquatable;
-use Galaxon\Units\MeasurementTypes\Angle;
 use LogicException;
 use OutOfRangeException;
 use Override;
@@ -79,7 +78,7 @@ final class Complex implements Stringable, ArrayAccess
                 } else {
                     // atan2() can return a value in the range [-π, π] inclusive, which isn't canonical.
                     // The call to wrap() will convert the value to a range of (-π to π]
-                    $this->phase = new Angle(atan2($this->imaginary, $this->real), 'rad')->wrap()->value;
+                    $this->phase = Floats::wrap(atan2($this->imaginary, $this->real));
                 }
             }
 
@@ -142,11 +141,11 @@ final class Complex implements Stringable, ArrayAccess
      * Create a complex number from polar coordinates.
      *
      * @param int|float $mag The magnitude (distance from origin).
-     * @param int|float|Angle $phase The phase angle. If this is a number, it's in radians.
+     * @param int|float $phase The phase angle in radians.
      * @return self A new complex number.
      * @throws DomainException If the magnitude is not positive.
      */
-    public static function fromPolar(int|float $mag, int|float|Angle $phase): self
+    public static function fromPolar(int|float $mag, int|float $phase): self
     {
         // Check for valid magnitude.
         if ($mag < 0) {
@@ -154,7 +153,7 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Get the phase as radians in the normal range (-pi, pi]
-        $phase = ($phase instanceof Angle ? $phase->to('rad') : new Angle($phase, 'rad'))->wrap()->value;
+        $phase = Floats::wrap($phase);
 
         // Construct the new Complex.
         $z = new self($mag * cos($phase), $mag * sin($phase));

@@ -1,6 +1,6 @@
 # Galaxon PHP Math
 
-Provides classes for Complex and Rational numbers.
+Provides classes for Complex numbers, Rational numbers, and error-tracked floats.
 
 **[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)**
 
@@ -8,11 +8,12 @@ Provides classes for Complex and Rational numbers.
 
 ## Description
 
-This package provides immutable classes for working with complex and rational numbers in PHP. Both classes offer exact arithmetic operations (Rational) or high-precision floating-point operations (Complex) with comprehensive mathematical functions.
+This package provides immutable classes for working with complex numbers, rational numbers, and error-tracked floats in PHP. The classes offer exact arithmetic (Rational), high-precision floating-point operations (Complex), and numerical error analysis (FloatWithError).
 
 **Key Features:**
 - **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, and polar/rectangular conversions
 - **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow detection
+- **Error-tracked floats** - Automatic error propagation through arithmetic operations for precision monitoring
 - **Immutability** - All operations return new instances
 - **Type flexibility** - Methods accept int, float, string, or the respective class type
 - **Comprehensive testing** - 100% code coverage with extensive test suites
@@ -27,7 +28,6 @@ This package provides immutable classes for working with complex and rational nu
 
 - PHP ^8.4
 - galaxon/core
-- galaxon/units
 
 ## Installation
 
@@ -56,6 +56,15 @@ Immutable class for rational numbers (p/q) with support for:
 - Overflow-safe integer operations
 - Comparison operations with mixed types
 - String parsing and formatting
+
+### [FloatWithError](docs/FloatWithError.md)
+
+Immutable class for floating-point numbers with tracked error bounds:
+- Automatic error estimation based on ULP (Unit in Last Place)
+- Error propagation through arithmetic operations (add, sub, mul, div)
+- Tracks both absolute and relative error
+- Exact integers maintain zero error through compatible operations
+- Useful for numerical analysis and precision monitoring
 
 ## Testing
 
