@@ -10,10 +10,6 @@
         },
         {
             "type": "path",
-            "url": "../Units"
-        },
-        {
-            "type": "path",
             "url": "../CodingStandard"
         }
     ],

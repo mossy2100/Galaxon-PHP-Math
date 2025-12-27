@@ -94,26 +94,20 @@ echo $i;  // "i"
     ### fromPolar()
 
 ```php
-public static function fromPolar(int|float $magnitude, int|float|Angle $phase): self
+public static function fromPolar(int|float $magnitude, int|float $phase): self
 ```
 
 Create a complex number from polar coordinates (magnitude and phase).
 
 **Parameters:**
 - `$magnitude` (int|float) - The magnitude (r)
-- `$phase` (int|float|Angle) - The phase angle in radians, or an Angle object
+- `$phase` (int|float) - The phase angle in radians
 
 **Examples:**
 ```php
-// Create from magnitude and phase (radians)
+// Create from magnitude and phase
 $z1 = Complex::fromPolar(5, M_PI / 4);
-
-// Create from magnitude and Angle
-$z2 = Complex::fromPolar(3, new Angle(60, 'deg'));
 ```
-
-NB: The `Angle` class is provided by the `Galaxon\Units` namespace (i.e. the `galaxon/units` package, which is a
-dependency of `galaxon/math`). See: Angle|@todo update this link
 
 ### parse()
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e6db1ab3999a5acc080b71d2d18ad187",
+    "content-hash": "13e4f3d2ef1a397fc8d8b69ba375a60c",
     "packages": [
         {
             "name": "galaxon/core",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../Core",
-                "reference": "51742c2b9e9472115d5815265324bf24b6cbe6d9"
+                "reference": "d12d0ad6322954396c7af2f6a0bbe2dc829c902a"
             },
             "require": {
                 "php": "^8.4"
