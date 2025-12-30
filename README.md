@@ -8,7 +8,7 @@ Provides classes for Complex numbers, Rational numbers, and error-tracked floats
 
 ## Description
 
-This package provides immutable classes for working with complex numbers, rational numbers, and error-tracked floats in PHP. The classes offer exact arithmetic (Rational), high-precision floating-point operations (Complex), and numerical error analysis (FloatWithError).
+This package provides immutable classes for working with complex and rational numbers in PHP.
 
 **Key Features:**
 - **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, and polar/rectangular conversions
@@ -56,15 +56,6 @@ Immutable class for rational numbers (p/q) with support for:
 - Overflow-safe integer operations
 - Comparison operations with mixed types
 - String parsing and formatting
-
-### [FloatWithError](docs/FloatWithError.md)
-
-Immutable class for floating-point numbers with tracked error bounds:
-- Automatic error estimation based on ULP (Unit in Last Place)
-- Error propagation through arithmetic operations (add, sub, mul, div)
-- Tracks both absolute and relative error
-- Exact integers maintain zero error through compatible operations
-- Useful for numerical analysis and precision monitoring
 
 ## Testing
 
