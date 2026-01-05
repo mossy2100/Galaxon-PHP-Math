@@ -1,6 +1,6 @@
 # Galaxon PHP Math
 
-Provides classes for Complex numbers, Rational numbers, and error-tracked floats.
+Provides immutable classes for Complex numbers and Rational numbers.
 
 **[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)**
 
@@ -13,7 +13,6 @@ This package provides immutable classes for working with complex and rational nu
 **Key Features:**
 - **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, and polar/rectangular conversions
 - **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow detection
-- **Error-tracked floats** - Automatic error propagation through arithmetic operations for precision monitoring
 - **Immutability** - All operations return new instances
 - **Type flexibility** - Methods accept int, float, string, or the respective class type
 - **Comprehensive testing** - 100% code coverage with extensive test suites
@@ -87,11 +86,11 @@ Contributions are welcome! Please:
 4. Ensure all tests pass
 5. Submit a pull request
 
-For questions or suggestions, please [open an issue](https://github.com/mossy2100/PHP-Math/issues).
+For questions or suggestions, please [open an issue](https://github.com/mossy2100/Galaxon-PHP-Math/issues).
 
 ## Support
 
-- **Issues**: https://github.com/mossy2100/PHP-Math/issues
+- **Issues**: https://github.com/mossy2100/Galaxon-PHP-Math/issues
 - **Documentation**: See [docs/](docs/) directory for detailed class documentation
 - **Examples**: See test files for comprehensive usage examples
 

@@ -6,9 +6,10 @@ namespace Galaxon\Math\Tests\Rational;
 
 use DomainException;
 use Galaxon\Math\Rational;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RangeException;
+use UnderflowException;
 
 #[CoversClass(Rational::class)]
 class RationalConversionTest extends TestCase
@@ -214,7 +215,7 @@ class RationalConversionTest extends TestCase
      */
     public function testFloatToRatioWithPhpIntMinThrows(): void
     {
-        $this->expectException(RangeException::class);
+        $this->expectException(OverflowException::class);
         // (float)PHP_INT_MIN is exactly representable as a float, but is outside valid Rational range
         Rational::floatToRatio((float)PHP_INT_MIN);
     }
@@ -224,7 +225,7 @@ class RationalConversionTest extends TestCase
      */
     public function testFloatToRatioTooSmallThrows(): void
     {
-        $this->expectException(RangeException::class);
+        $this->expectException(UnderflowException::class);
         // Value smaller than 1/PHP_INT_MAX
         Rational::floatToRatio(1e-20);
     }
@@ -234,7 +235,7 @@ class RationalConversionTest extends TestCase
      */
     public function testFloatToRatioTooLargeThrows(): void
     {
-        $this->expectException(RangeException::class);
+        $this->expectException(OverflowException::class);
         // Value larger than PHP_INT_MAX
         Rational::floatToRatio((float)PHP_INT_MAX * 2);
     }

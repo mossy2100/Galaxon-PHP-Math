@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-01-05
+
+### First Stable Release
+
+This is the first stable release of Galaxon Math, ready for publication on Packagist.
+
+### Breaking Changes
+
+- **Exception types standardized** - All exceptions now use SPL exception types consistently:
+  - `Rational::compare()` - Throws `IncomparableTypesException` for type mismatches (was `TypeError`)
+  - `Rational` constructor/parse - Throws `UnderflowException`/`OverflowException` for range errors (was `RangeException`)
+  - `Complex` and `Rational` - Use `DomainException` for invalid values consistently
+
+### Added
+
+- **Rational::simplify()** - Now tolerates `PHP_INT_MIN` when the other value is a multiple of 2
+  - Allows fractions like `PHP_INT_MIN/2` or `4/PHP_INT_MIN` to be created and simplified
+  - Still throws for cases that cannot be simplified (e.g., `PHP_INT_MIN/1`)
+
+### Changed
+
+- **composer.json** - Updated for Packagist publication:
+  - Added keywords for discoverability
+  - Added author information
+  - Added homepage and support URLs
+  - Updated dependencies to use Packagist versions (galaxon/core ^1.0)
+  - Improved description
+
+### Fixed
+
+- Fixed GitHub URLs in README.md (`PHP-Math` → `Galaxon-PHP-Math`)
+- Removed FloatWithError reference from README.md (class is in Quantities package)
+
 ## [0.2.0] - 2025-12-09
 
 ### Changed (Breaking Changes)

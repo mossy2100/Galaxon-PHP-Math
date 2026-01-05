@@ -279,7 +279,7 @@ class ComplexPolarTest extends TestCase
             new Complex(-1, -1),
             new Complex(1, -1),
             Complex::fromPolar(1, -M_PI),
-            Complex::fromPolar(1, 5 * M_PI),
+            Complex::fromPolar(1, 5 * M_PI)
         ];
 
         foreach ($testCases as $z) {

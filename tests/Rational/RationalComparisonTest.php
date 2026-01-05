@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Rational;
 
+use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use TypeError;
 
 #[CoversClass(Rational::class)]
 class RationalComparisonTest extends TestCase
@@ -128,11 +128,11 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
-     * Test compare with invalid type throws TypeError.
+     * Test compare with invalid type throws IncomparableTypesException.
      */
     public function testCompareInvalidTypeThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(IncomparableTypesException::class);
         $r = new Rational(3, 4);
         $r->compare('string');
     }
@@ -373,41 +373,41 @@ class RationalComparisonTest extends TestCase
     // region Ordering method tests
 
     /**
-     * Test lessThan with invalid type throws TypeError.
+     * Test lessThan with invalid type throws IncomparableTypesException.
      */
     public function testLessThanInvalidTypeThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(IncomparableTypesException::class);
         $r = new Rational(3, 4);
         $r->lessThan('string');
     }
 
     /**
-     * Test lessThanOrEqual with invalid type throws TypeError.
+     * Test lessThanOrEqual with invalid type throws IncomparableTypesException.
      */
     public function testLessThanOrEqualInvalidTypeThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(IncomparableTypesException::class);
         $r = new Rational(3, 4);
         $r->lessThanOrEqual([]);
     }
 
     /**
-     * Test greaterThan with invalid type throws TypeError.
+     * Test greaterThan with invalid type throws IncomparableTypesException.
      */
     public function testGreaterThanInvalidTypeThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(IncomparableTypesException::class);
         $r = new Rational(3, 4);
         $r->greaterThan(new stdClass());
     }
 
     /**
-     * Test greaterThanOrEqual with invalid type throws TypeError.
+     * Test greaterThanOrEqual with invalid type throws IncomparableTypesException.
      */
     public function testGreaterThanOrEqualInvalidTypeThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(IncomparableTypesException::class);
         $r = new Rational(3, 4);
         $r->greaterThanOrEqual(null);
     }
@@ -699,11 +699,11 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
-     * Test approxCompare with invalid type throws TypeError.
+     * Test approxCompare with invalid type throws IncomparableTypesException.
      */
     public function testApproxCompareInvalidTypeThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(IncomparableTypesException::class);
         $r = new Rational(3, 4);
         $r->approxCompare('string');
     }

@@ -6,9 +6,9 @@ namespace Galaxon\Math\Tests\Rational;
 
 use DomainException;
 use Galaxon\Math\Rational;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RangeException;
 
 #[CoversClass(Rational::class)]
 class RationalConstructorTest extends TestCase
@@ -195,20 +195,74 @@ class RationalConstructorTest extends TestCase
     }
 
     /**
-     * Test that creating a rational number with a numerator equal to the minimum integer throws an exception.
+     * Test that creating a rational number with a numerator equal to the minimum integer, and a denominator that is a
+     * multiple of 2, does not throws an exception.
      */
-    public function testConstructorWithMinIntNumeratorThrows(): void
+    public function testConstructorWithMinIntNumeratorAndDenominatorMultipleOf2(): void
     {
-        $this->expectException(RangeException::class);
+        $r = new Rational(PHP_INT_MIN, 2);
+        $this->assertSame(PHP_INT_MIN / 2, $r->num);
+        $this->assertSame(1, $r->den);
+    }
+
+    /**
+     * Test that creating a rational number with a numerator equal to the minimum integer, and a denominator that is not
+     * a multiple of 2, throws an exception.
+     */
+    public function testConstructorWithMinIntNumeratorAndDenominatorNotAMultipleOf2Throws(): void
+    {
+        $this->expectException(OverflowException::class);
         $r = new Rational(PHP_INT_MIN);
     }
 
     /**
-     * Test that creating a rational number with a denominator equal to the minimum integer throws an exception.
+     * Test that creating a rational number with a denominator equal to the minimum integer, and a numerator that is a
+     * multiple of 2, does not throw an exception.
      */
-    public function testConstructorWithMinIntDenominatorThrows(): void
+    public function testConstructorWithMinIntDenominatorAndNumeratorMultipleOf2(): void
     {
-        $this->expectException(RangeException::class);
-        $r = new Rational(1, PHP_INT_MIN);
+        $r = new Rational(2, PHP_INT_MIN);
+        $this->assertSame(-1, $r->num);
+        $this->assertSame(PHP_INT_MIN / -2, $r->den);
+    }
+
+    /**
+     * Test that creating a rational number with a denominator equal to the minimum integer, and a numerator that is not
+     * a multiple of 2, throws an exception.
+     */
+    public function testConstructorWithMinIntDenominatorAndNumeratorNotAMultipleOf2Throws(): void
+    {
+        $this->expectException(OverflowException::class);
+        new Rational(1, PHP_INT_MIN);
+    }
+
+    /**
+     * Test PHP_INT_MIN numerator with a larger even denominator.
+     */
+    public function testConstructorWithMinIntNumeratorAndLargerEvenDenominator(): void
+    {
+        $r = new Rational(PHP_INT_MIN, 4);
+        $this->assertSame(PHP_INT_MIN / 4, $r->num);
+        $this->assertSame(1, $r->den);
+    }
+
+    /**
+     * Test PHP_INT_MIN numerator with negative even denominator.
+     */
+    public function testConstructorWithMinIntNumeratorAndNegativeEvenDenominator(): void
+    {
+        $r = new Rational(PHP_INT_MIN, -2);
+        $this->assertSame(PHP_INT_MIN / -2, $r->num);
+        $this->assertSame(1, $r->den);
+    }
+
+    /**
+     * Test larger even numerator with PHP_INT_MIN denominator.
+     */
+    public function testConstructorWithLargerEvenNumeratorAndMinIntDenominator(): void
+    {
+        $r = new Rational(4, PHP_INT_MIN);
+        $this->assertSame(-1, $r->num);
+        $this->assertSame(PHP_INT_MIN / -4, $r->den);
     }
 }

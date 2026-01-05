@@ -116,21 +116,21 @@ class ComplexParseTest extends TestCase
     /**
      * Data provider for invalid input strings.
      *
-     * @return array<string, string[]>
+     * @return array<string, list<string>>
      */
     public static function invalidInputProvider(): array
     {
         return [
-            'empty string' => [''],
-            'random text' => ['abc'],
-            'incomplete expression' => ['3+'],
-            'double signs' => ['++i'],
-            'missing imaginary unit' => ['3+4'],
-            'incomplete imaginary' => ['i+'],
-            'wrong imaginary unit' => ['3+4k'],
-            'multiple decimal points' => ['3.4.5'],
+            'empty string'                   => [''],
+            'random text'                    => ['abc'],
+            'incomplete expression'          => ['3+'],
+            'double signs'                   => ['++i'],
+            'missing imaginary unit'         => ['3+4'],
+            'incomplete imaginary'           => ['i+'],
+            'wrong imaginary unit'           => ['3+4k'],
+            'multiple decimal points'        => ['3.4.5'],
             'incomplete scientific notation' => ['3e'],
-            'double e' => ['3ee4'],
+            'double e'                       => ['3ee4'],
         ];
     }
 

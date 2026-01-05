@@ -14,7 +14,6 @@ use LogicException;
 use OutOfRangeException;
 use Override;
 use Stringable;
-use ValueError;
 
 /**
  * Encapsulates a complex number and provides a number of useful methods.
@@ -434,7 +433,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for ln(0), which is undefined.
         if ($this->equal(0)) {
-            throw new ValueError('The logarithm of 0 is undefined.');
+            throw new DomainException('The logarithm of 0 is undefined.');
         }
 
         // Use shortcuts where possible.
@@ -631,7 +630,7 @@ final class Complex implements Stringable, ArrayAccess
      * Returns all n complex roots using De Moivre's theorem.
      *
      * @param int $n The root to calculate (e.g. 2 for square root, 3 for cube root).
-     * @return self[] An array of Complex numbers representing all nth roots.
+     * @return list<self> An array of Complex numbers representing all nth roots.
      * @throws DomainException If n is not a positive integer.
      */
     public function roots(int $n): array
@@ -1077,7 +1076,7 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Convert the complex number to an array.
      *
-     * @return float[] An array containing the real and imaginary parts of the complex number.
+     * @return list<float> An array containing the real and imaginary parts of the complex number.
      */
     public function toArray(): array
     {

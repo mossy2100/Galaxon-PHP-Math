@@ -9,7 +9,6 @@ use Galaxon\Core\Floats;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ValueError;
 
 #[CoversClass(Complex::class)]
 class ComplexTranscendentalTest extends TestCase
@@ -69,7 +68,7 @@ class ComplexTranscendentalTest extends TestCase
      */
     public function testLnZero(): void
     {
-        $this->expectException(ValueError::class);
+        $this->expectException(DomainException::class);
         new Complex(0)->ln();
     }
 

@@ -45,6 +45,9 @@
                 "check": [
                     "vendor/bin/phpcs -s"
                 ],
+                "report": [
+                    "vendor/bin/phpcs -q --report=summary"
+                ],
                 "analyze": [
                     "vendor/bin/phpstan analyze -l 9"
                 ],
@@ -174,7 +177,7 @@
             "dist": {
                 "type": "path",
                 "url": "../CodingStandard",
-                "reference": "816604c984cc0bf00852dd020b22fec6a38471a1"
+                "reference": "03d1cb06254e9185482d6069c50530dd37278db8"
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -195,6 +198,9 @@
                 ],
                 "check": [
                     "vendor/bin/phpcs -s"
+                ],
+                "report": [
+                    "vendor/bin/phpcs -q --report=summary"
                 ],
                 "analyze": [
                     "vendor/bin/phpstan analyze -l 9"
