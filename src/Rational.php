@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Math;
 
 use DomainException;
+use Galaxon\Core\Exceptions\FormatException;
 use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Integers;
@@ -140,7 +141,7 @@ final class Rational implements Stringable
      *
      * @param string $s The string to parse.
      * @return self The parsed rational number.
-     * @throws DomainException If the string cannot be parsed into a rational number.
+     * @throws FormatException If the string cannot be parsed into a rational number.
      * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
      * @throws OverflowException If the value is too large to represent as a Rational.
      */
@@ -168,7 +169,7 @@ final class Rational implements Stringable
             }
         }
 
-        throw new DomainException("Invalid rational number: $s");
+        throw new FormatException("Invalid rational number: $s");
     }
 
     /**

@@ -1,0 +1,399 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Galaxon\Math\Tests\Matrix;
+
+use DivisionByZeroError;
+use DomainException;
+use Galaxon\Math\Matrix;
+use Galaxon\Math\Vector;
+use LengthException;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+
+#[CoversClass(Matrix::class)]
+class MatrixArithmeticTest extends TestCase
+{
+    /**
+     * Test adding two matrices.
+     */
+    public function testAdd(): void
+    {
+        $a = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $b = Matrix::fromArray([
+            [5, 6],
+            [7, 8],
+        ]);
+        $result = $a->add($b);
+        $this->assertSame([
+            [6, 8],
+            [10, 12],
+        ], $result->toArray());
+    }
+
+    /**
+     * Test adding matrices with different dimensions throws LengthException.
+     */
+    public function testAddDifferentDimensionsThrows(): void
+    {
+        $a = new Matrix(2, 2);
+        $b = new Matrix(2, 3);
+        $this->expectException(LengthException::class);
+        $a->add($b);
+    }
+
+    /**
+     * Test subtracting two matrices.
+     */
+    public function testSub(): void
+    {
+        $a = Matrix::fromArray([
+            [5, 6],
+            [7, 8],
+        ]);
+        $b = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $result = $a->sub($b);
+        $this->assertSame([
+            [4, 4],
+            [4, 4],
+        ], $result->toArray());
+    }
+
+    /**
+     * Test subtracting matrices with different dimensions throws LengthException.
+     */
+    public function testSubDifferentDimensionsThrows(): void
+    {
+        $a = new Matrix(2, 3);
+        $b = new Matrix(3, 2);
+        $this->expectException(LengthException::class);
+        $a->sub($b);
+    }
+
+    /**
+     * Test multiplying a matrix by an integer scalar.
+     */
+    public function testMulByIntScalar(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $result = $m->mul(3);
+        $this->assertSame([
+            [3, 6],
+            [9, 12],
+        ], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a matrix by a float scalar.
+     */
+    public function testMulByFloatScalar(): void
+    {
+        $m = Matrix::fromArray([
+            [2, 4],
+            [6, 8],
+        ]);
+        $result = $m->mul(0.5);
+        $this->assertSame([
+            [1.0, 2.0],
+            [3.0, 4.0],
+        ], $result->toArray());
+    }
+
+    /**
+     * Test multiplying two matrices with known result.
+     */
+    public function testMulByMatrix(): void
+    {
+        // 2x3 * 3x2 = 2x2
+        $a = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $b = Matrix::fromArray([
+            [7, 8],
+            [9, 10],
+            [11, 12],
+        ]);
+        $result = $a->mul($b);
+        $this->assertSame(2, $result->rowCount);
+        $this->assertSame(2, $result->columnCount);
+        // Row 0: 1*7+2*9+3*11=58, 1*8+2*10+3*12=64
+        // Row 1: 4*7+5*9+6*11=139, 4*8+5*10+6*12=154
+        $this->assertEqualsWithDelta(58.0, $result->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(64.0, $result->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(139.0, $result->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(154.0, $result->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test multiplying matrices with incompatible dimensions throws LengthException.
+     */
+    public function testMulByMatrixIncompatibleDimensionsThrows(): void
+    {
+        $a = new Matrix(2, 3);
+        $b = new Matrix(2, 2);
+        $this->expectException(LengthException::class);
+        $a->mul($b);
+    }
+
+    /**
+     * Test multiplying a matrix by a Vector (treated as a column vector).
+     */
+    public function testMulByVector(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $v = Vector::fromArray([1, 2, 3]);
+        $result = $m->mul($v);
+        $this->assertInstanceOf(Vector::class, $result);
+        // Row 0: 1*1+2*2+3*3=14
+        // Row 1: 4*1+5*2+6*3=32
+        $this->assertEqualsWithDelta(14.0, $result->toArray()[0], 1e-10);
+        $this->assertEqualsWithDelta(32.0, $result->toArray()[1], 1e-10);
+    }
+
+    /**
+     * Test multiplying a 0-row matrix by a Vector returns a size-0 Vector.
+     */
+    public function testMulByVectorWithZeroRowMatrix(): void
+    {
+        $m = new Matrix(0, 3);
+        $v = Vector::fromArray([1, 2, 3]);
+        $result = $m->mul($v);
+        $this->assertInstanceOf(Vector::class, $result);
+        $this->assertSame(0, $result->size);
+    }
+
+    /**
+     * Test dividing a matrix by a scalar.
+     */
+    public function testDivByScalar(): void
+    {
+        $m = Matrix::fromArray([
+            [4, 8],
+            [12, 16],
+        ]);
+        $result = $m->div(4);
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(2.0, $result->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(3.0, $result->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(4.0, $result->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test dividing a matrix by zero throws DivisionByZeroError.
+     */
+    public function testDivByZeroThrows(): void
+    {
+        $m = new Matrix(2, 2);
+        $this->expectException(DivisionByZeroError::class);
+        $m->div(0);
+    }
+
+    /**
+     * Test dividing a matrix by another matrix (A * B^-1).
+     */
+    public function testDivByMatrix(): void
+    {
+        $a = Matrix::fromArray([
+            [1, 0],
+            [0, 1],
+        ]);
+        $b = Matrix::fromArray([
+            [2, 0],
+            [0, 2],
+        ]);
+        $result = $a->div($b);
+        // I * (2I)^-1 = 0.5I
+        $this->assertEqualsWithDelta(0.5, $result->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(0.5, $result->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test transposing a matrix.
+     */
+    public function testTranspose(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $t = $m->transpose();
+        $this->assertSame(3, $t->rowCount);
+        $this->assertSame(2, $t->columnCount);
+        $this->assertSame(1, $t->get(0, 0));
+        $this->assertSame(2, $t->get(1, 0));
+        $this->assertSame(3, $t->get(2, 0));
+        $this->assertSame(4, $t->get(0, 1));
+        $this->assertSame(5, $t->get(1, 1));
+        $this->assertSame(6, $t->get(2, 1));
+    }
+
+    /**
+     * Test determinant of a 1x1 matrix.
+     */
+    public function testDetOneByOne(): void
+    {
+        $m = Matrix::fromArray([
+            [5],
+        ]);
+        $this->assertEqualsWithDelta(5.0, $m->det(), 1e-10);
+    }
+
+    /**
+     * Test determinant of a 2x2 matrix.
+     */
+    public function testDetTwoByTwo(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        // det = 1*4 - 2*3 = -2
+        $this->assertEqualsWithDelta(-2.0, $m->det(), 1e-10);
+    }
+
+    /**
+     * Test determinant of a 3x3 matrix.
+     */
+    public function testDetThreeByThree(): void
+    {
+        $m = Matrix::fromArray([
+            [6, 1, 1],
+            [4, -2, 5],
+            [2, 8, 7],
+        ]);
+        // det = 6(-2*7 - 5*8) - 1(4*7 - 5*2) + 1(4*8 - (-2)*2)
+        //     = 6(-14-40) - 1(28-10) + 1(32+4)
+        //     = 6(-54) - 18 + 36 = -324 - 18 + 36 = -306
+        $this->assertEqualsWithDelta(-306.0, $m->det(), 1e-10);
+    }
+
+    /**
+     * Test determinant of a non-square matrix throws DomainException.
+     */
+    public function testDetNonSquareThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(DomainException::class);
+        $m->det();
+    }
+
+    /**
+     * Test inverse of a 2x2 matrix.
+     */
+    public function testInvTwoByTwo(): void
+    {
+        $a = Matrix::fromArray([
+            [4, 7],
+            [2, 6],
+        ]);
+        $inv = $a->inv();
+
+        // Verify A * A^-1 = I.
+        $product = $a->mul($inv);
+        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test inverse of a non-square matrix throws DomainException.
+     */
+    public function testInvNonSquareThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(DomainException::class);
+        $m->inv();
+    }
+
+    /**
+     * Test inverse of a singular matrix throws DomainException.
+     */
+    public function testInvSingularMatrixThrows(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2],
+            [2, 4],
+        ]);
+        $this->expectException(DomainException::class);
+        $m->inv();
+    }
+
+    /**
+     * Test power with a positive exponent.
+     */
+    public function testPowPositive(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 1],
+            [0, 1],
+        ]);
+        $result = $m->pow(3);
+        // [[1,1],[0,1]]^3 = [[1,3],[0,1]]
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(3.0, $result->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test power with zero exponent returns identity.
+     */
+    public function testPowZero(): void
+    {
+        $m = Matrix::fromArray([
+            [2, 3],
+            [4, 5],
+        ]);
+        $result = $m->pow(0);
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test power with a negative exponent.
+     */
+    public function testPowNegative(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 1],
+            [0, 1],
+        ]);
+        $result = $m->pow(-1);
+
+        // Verify M * M^-1 = I.
+        $product = $m->mul($result);
+        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), 1e-10);
+        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), 1e-10);
+    }
+
+    /**
+     * Test power of a non-square matrix throws DomainException.
+     */
+    public function testPowNonSquareThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(DomainException::class);
+        $m->pow(2);
+    }
+}

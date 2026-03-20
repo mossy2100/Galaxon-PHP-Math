@@ -14,6 +14,11 @@ use LogicException;
 use OutOfRangeException;
 use Stringable;
 
+/**
+ * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
+ *
+ * @implements ArrayAccess<int, list<float>>
+ */
 final class Matrix implements Stringable, ArrayAccess
 {
     // region Properties

@@ -6,6 +6,7 @@ namespace Galaxon\Math;
 
 use ArrayAccess;
 use DomainException;
+use Galaxon\Core\Exceptions\FormatException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Stringify;
@@ -176,7 +177,7 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @param string $str The string to parse
      * @return self The parsed complex number
-     * @throws DomainException If the string cannot be parsed
+     * @throws FormatException If the string cannot be parsed.
      */
     public static function parse(string $str): self
     {
@@ -186,7 +187,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle empty string
         if ($str === '') {
-            throw new DomainException('Cannot parse empty string as complex number.');
+            throw new FormatException('Cannot parse empty string as complex number.');
         }
 
         // Handle pure real numbers (no imaginary unit)
@@ -219,7 +220,7 @@ final class Complex implements Stringable, ArrayAccess
         } elseif (preg_match($rxImagFirst, $str, $matches)) {
             [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
-            throw new DomainException("Cannot parse '$str' as complex number.");
+            throw new FormatException("Cannot parse '$str' as complex number.");
         }
 
         // Get the imaginary part. Handle cases where the imaginary coefficient is omitted (like +i or -i).

@@ -17,6 +17,11 @@ use OutOfRangeException;
 use Override;
 use Stringable;
 
+/**
+ * Encapsulates a vector and provides a number of useful methods.
+ *
+ * @implements ArrayAccess<int, float>
+ */
 final class Vector implements Stringable, ArrayAccess
 {
     use ApproxEquatable;
@@ -161,7 +166,7 @@ final class Vector implements Stringable, ArrayAccess
      */
     public function div(int|float $scalar): self
     {
-        if ($scalar == 0) {
+        if ($scalar === 0) {
             throw new DivisionByZeroError('Division by zero is not allowed.');
         }
 

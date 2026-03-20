@@ -1,0 +1,552 @@
+# Matrix
+
+Mutable class representing a two-dimensional matrix of numbers with comprehensive linear algebra operations.
+
+## Overview
+
+The `Matrix` class provides a complete implementation of matrix arithmetic with support for:
+- Basic arithmetic (addition, subtraction, scalar/matrix multiplication, division)
+- Matrix-vector multiplication using column vector convention
+- Matrix power with binary exponentiation (including negative powers via inverse)
+- Transpose, determinant, and inverse operations
+- Element and row/column access with bounds checking
+- ArrayAccess interface for row-level get/set operations
+- String representation using box-drawing characters
+- Support for 0x0 and 0xn empty matrices
+
+Matrix data is stored privately to prevent non-rectangular or non-numeric mutation.
+
+## Properties
+
+### rowCount
+
+```php
+public int $rowCount { get; }
+```
+
+The number of rows in the matrix. Derived from the internal data array.
+
+### columnCount
+
+```php
+private(set) int $columnCount
+```
+
+The number of columns in the matrix. Read-only from outside the class. Stored explicitly (not derived) to support 0-row matrices where the column count cannot be inferred from data.
+
+## Constructor
+
+### \_\_construct()
+
+```php
+public function __construct(int $rowCount, int $columnCount)
+```
+
+Create a new zero-filled matrix with the specified dimensions.
+
+**Parameters:**
+- `$rowCount` (int) - Number of rows (must be non-negative)
+- `$columnCount` (int) - Number of columns (must be non-negative)
+
+**Throws:** `DomainException` if either dimension is negative.
+
+**Examples:**
+```php
+$m1 = new Matrix(3, 3);     // 3x3 zero matrix
+$m2 = new Matrix(2, 4);     // 2x4 zero matrix
+$m3 = new Matrix(0, 0);     // 0x0 empty matrix
+$m4 = new Matrix(0, 3);     // 0x3 empty matrix
+```
+
+---
+
+## Factory Methods
+
+### fromArray()
+
+```php
+public static function fromArray(array $data): self
+```
+
+Create a matrix from a 2D array. The array must be rectangular (all rows the same length) and contain only numeric values. Array keys are ignored; values are re-indexed.
+
+**Parameters:**
+- `$data` (array) - Rectangular array of numbers
+
+**Returns:** `self` - New matrix populated with the provided data.
+
+**Throws:**
+- `InvalidArgumentException` if any row is not an array, or contains non-numeric values.
+- `LengthException` if rows have different numbers of items.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([
+    [1, 2, 3],
+    [4, 5, 6],
+]);
+// 2x3 matrix
+
+$empty = Matrix::fromArray([]);
+// 0x0 matrix
+```
+
+### identity()
+
+```php
+public static function identity(int $size): self
+```
+
+Create an identity matrix of the specified size. The identity matrix has 1s on the main diagonal and 0s elsewhere.
+
+**Parameters:**
+- `$size` (int) - Size of the identity matrix (both rows and columns)
+
+**Returns:** `self` - Identity matrix.
+
+**Examples:**
+```php
+$i3 = Matrix::identity(3);
+// ┌         ┐
+// │ 1  0  0 │
+// │ 0  1  0 │
+// │ 0  0  1 │
+// └         ┘
+```
+
+---
+
+## Element Access
+
+### get()
+
+```php
+public function get(int $row, int $col): int|float
+```
+
+Get a matrix element by row and column index.
+
+**Parameters:**
+- `$row` (int) - Row index (0-based)
+- `$col` (int) - Column index (0-based)
+
+**Returns:** `int|float` - The value at the specified position.
+
+**Throws:** `OutOfRangeException` if either index is outside the valid range.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->get(0, 0);  // 1
+echo $m->get(1, 1);  // 4
+```
+
+### set()
+
+```php
+public function set(int $row, int $col, int|float $value): void
+```
+
+Set a matrix element by row and column index.
+
+**Parameters:**
+- `$row` (int) - Row index (0-based)
+- `$col` (int) - Column index (0-based)
+- `$value` (int|float) - Value to set
+
+**Throws:** `OutOfRangeException` if either index is outside the valid range.
+
+**Examples:**
+```php
+$m = new Matrix(2, 2);
+$m->set(0, 0, 5);
+$m->set(1, 1, 10);
+```
+
+### getRow()
+
+```php
+public function getRow(int $row): Vector
+```
+
+Get a row as a Vector.
+
+**Parameters:**
+- `$row` (int) - Row index (0-based)
+
+**Returns:** `Vector` - The row as a Vector.
+
+**Throws:** `OutOfRangeException` if row index is outside the valid range.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$row = $m->getRow(0);  // Vector(1, 2, 3)
+```
+
+### getColumn()
+
+```php
+public function getColumn(int $col): Vector
+```
+
+Get a column as a Vector.
+
+**Parameters:**
+- `$col` (int) - Column index (0-based)
+
+**Returns:** `Vector` - The column as a Vector.
+
+**Throws:** `OutOfRangeException` if column index is outside the valid range.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
+$col = $m->getColumn(0);  // Vector(1, 3, 5)
+```
+
+---
+
+## Inspection
+
+### isSquare()
+
+```php
+public function isSquare(?int $size = null): bool
+```
+
+Check if the matrix is square, optionally of a specific size.
+
+**Parameters:**
+- `$size` (int|null) - If specified, check for exact size; otherwise any square matrix returns true.
+
+**Returns:** `bool` - True if the matrix is square (and of the specified size, if given).
+
+**Examples:**
+```php
+$m = Matrix::identity(3);
+var_dump($m->isSquare());     // true
+var_dump($m->isSquare(3));    // true
+var_dump($m->isSquare(2));    // false
+
+$m2 = new Matrix(2, 3);
+var_dump($m2->isSquare());    // false
+```
+
+---
+
+## Matrix Operations
+
+### add()
+
+```php
+public function add(self $other): self
+```
+
+Add another matrix to this one. Both matrices must have the same dimensions.
+
+**Parameters:**
+- `$other` (self) - Matrix to add
+
+**Returns:** `self` - New matrix representing the sum.
+
+**Throws:** `LengthException` if matrices have different dimensions.
+
+**Examples:**
+```php
+$a = Matrix::fromArray([[1, 2], [3, 4]]);
+$b = Matrix::fromArray([[5, 6], [7, 8]]);
+$sum = $a->add($b);
+// [[6, 8], [10, 12]]
+```
+
+### sub()
+
+```php
+public function sub(self $other): self
+```
+
+Subtract another matrix from this one. Both matrices must have the same dimensions.
+
+**Parameters:**
+- `$other` (self) - Matrix to subtract
+
+**Returns:** `self` - New matrix representing the difference.
+
+**Throws:** `LengthException` if matrices have different dimensions.
+
+**Examples:**
+```php
+$a = Matrix::fromArray([[5, 6], [7, 8]]);
+$b = Matrix::fromArray([[1, 2], [3, 4]]);
+$diff = $a->sub($b);
+// [[4, 4], [4, 4]]
+```
+
+### mul()
+
+```php
+public function mul(int|float|Vector|self $other): self|Vector
+```
+
+Multiply this matrix by a scalar, vector, or another matrix.
+
+When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is performed (the number of columns in this matrix must equal the number of rows in the other). When multiplying by a Vector, it is treated as a column vector (n x 1 matrix) and the result is returned as a Vector.
+
+**Parameters:**
+- `$other` (int|float|Vector|self) - Number, vector, or matrix to multiply by
+
+**Returns:** `self|Vector` - A Matrix for scalar/matrix operands, or a Vector for vector operands.
+
+**Throws:** `LengthException` if dimensions are incompatible for matrix multiplication.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+
+// Scalar multiplication
+$scaled = $m->mul(2);
+// [[2, 4], [6, 8]]
+
+// Matrix multiplication
+$m2 = Matrix::fromArray([[5, 6], [7, 8]]);
+$product = $m->mul($m2);
+// [[19, 22], [43, 50]]
+
+// Vector multiplication (column vector convention)
+$v = Vector::fromArray([1, 2]);
+$result = $m->mul($v);  // Vector(5, 11)
+```
+
+### div()
+
+```php
+public function div(int|float|self $other): self
+```
+
+Divide this matrix by a scalar or another matrix. Division by a matrix is defined as A x B^-1.
+
+**Parameters:**
+- `$other` (int|float|self) - Number or matrix to divide by
+
+**Returns:** `self` - New matrix representing the quotient.
+
+**Throws:**
+- `DivisionByZeroError` if dividing by zero.
+- `DomainException` if dividing by a non-invertible matrix.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[2, 4], [6, 8]]);
+
+// Scalar division
+$result = $m->div(2);
+// [[1, 2], [3, 4]]
+
+// Matrix division (A * B^-1)
+$a = Matrix::fromArray([[1, 0], [0, 1]]);
+$b = Matrix::fromArray([[2, 0], [0, 2]]);
+$result = $a->div($b);
+// [[0.5, 0], [0, 0.5]]
+```
+
+### pow()
+
+```php
+public function pow(int $power): self
+```
+
+Raise this matrix to an integer power. Uses binary exponentiation for efficiency. Negative powers use the matrix inverse. The matrix must be square.
+
+**Parameters:**
+- `$power` (int) - Power to raise to
+
+**Returns:** `self` - New matrix representing the result.
+
+**Throws:** `DomainException` if the matrix is not square, or not invertible for negative powers.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 1], [0, 1]]);
+
+$m0 = $m->pow(0);   // Identity matrix
+$m2 = $m->pow(2);   // [[1, 2], [0, 1]]
+$m3 = $m->pow(3);   // [[1, 3], [0, 1]]
+$mi = $m->pow(-1);  // Inverse matrix
+```
+
+### transpose()
+
+```php
+public function transpose(): self
+```
+
+Get the transpose of this matrix. Rows become columns and columns become rows.
+
+**Returns:** `self` - New matrix representing the transpose.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$t = $m->transpose();
+// [[1, 4], [2, 5], [3, 6]]
+```
+
+### det()
+
+```php
+public function det(): float
+```
+
+Calculate the determinant of this matrix using recursive cofactor expansion. The matrix must be square.
+
+**Returns:** `float` - The determinant.
+
+**Throws:** `DomainException` if the matrix is not square.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->det();  // -2.0
+
+$i = Matrix::identity(3);
+echo $i->det();  // 1.0
+```
+
+### inv()
+
+```php
+public function inv(): self
+```
+
+Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and invertible (non-zero determinant).
+
+**Returns:** `self` - New matrix representing the inverse.
+
+**Throws:** `DomainException` if the matrix is not square or not invertible (determinant is zero).
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$inv = $m->inv();
+
+// Verify: M * M^-1 = I
+$identity = $m->mul($inv);
+```
+
+---
+
+## Conversion Methods
+
+### toArray()
+
+```php
+public function toArray(): array
+```
+
+Get a copy of the matrix data as a rectangular array.
+
+**Returns:** `list<list<int|float>>` - Rectangular array of matrix elements.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$arr = $m->toArray();  // [[1, 2], [3, 4]]
+```
+
+### \_\_toString()
+
+```php
+public function __toString(): string
+```
+
+Convert the matrix to a string representation using box-drawing characters. Values are right-aligned within columns.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m;
+// ┌       ┐
+// │ 1  2  │
+// │ 3  4  │
+// └       ┘
+
+// Empty matrices
+$e = new Matrix(0, 0);
+echo $e;
+// ┌ ┐
+// └ ┘
+```
+
+---
+
+## ArrayAccess Interface
+
+The `ArrayAccess` interface operates on rows. Reading a row returns a `Vector`; setting a row accepts a `Vector` or array.
+
+```php
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+
+// Read access (returns Vector)
+$row = $m[0];  // Vector(1, 2, 3)
+
+// Check existence
+var_dump(isset($m[0]));  // true
+var_dump(isset($m[5]));  // false
+
+// Set a row
+$m[0] = Vector::fromArray([7, 8, 9]);
+$m[1] = [10, 11, 12];
+
+// Cannot unset rows
+unset($m[0]);  // Throws LogicException
+```
+
+**Throws:**
+- `OutOfRangeException` if the row index is outside the valid range.
+- `InvalidArgumentException` if the value is not a Vector or array, or contains non-numeric values.
+- `LengthException` if the value has the wrong number of elements.
+- `LogicException` if attempting to unset a row.
+
+---
+
+## Usage Examples
+
+### Building a Matrix
+
+```php
+// From constructor + set
+$m = new Matrix(3, 3);
+$m->set(0, 0, 1);
+$m->set(1, 1, 1);
+$m->set(2, 2, 1);
+
+// From array
+$m = Matrix::fromArray([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+]);
+
+// Identity shorthand
+$i = Matrix::identity(3);
+```
+
+### Solving a Linear System
+
+```php
+// Solve Ax = b using x = A^-1 * b
+$a = Matrix::fromArray([[2, 1], [5, 3]]);
+$b = Vector::fromArray([4, 7]);
+
+$x = $a->inv()->mul($b);  // Vector(5, -6)
+```
+
+### Matrix Powers
+
+```php
+// Fibonacci via matrix exponentiation
+$fib = Matrix::fromArray([[1, 1], [1, 0]]);
+$f10 = $fib->pow(10);
+echo $f10->get(0, 0);  // 89 (the 10th Fibonacci number)
+```
