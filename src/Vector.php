@@ -1,0 +1,388 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Galaxon\Math;
+
+use ArrayAccess;
+use DivisionByZeroError;
+use DomainException;
+use Galaxon\Core\Floats;
+use Galaxon\Core\Numbers;
+use Galaxon\Core\Traits\ApproxEquatable;
+use InvalidArgumentException;
+use LengthException;
+use LogicException;
+use OutOfRangeException;
+use Override;
+use Stringable;
+
+final class Vector implements Stringable, ArrayAccess
+{
+    use ApproxEquatable;
+
+    // region Properties
+
+    /**
+     * The vector data.
+     *
+     * @var list<int|float>
+     */
+    private array $data;
+
+    /**
+     * The magnitude (norm) of the vector.
+     */
+    public float $magnitude {
+        get => sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
+    }
+
+    /**
+     * The number of elements in the vector.
+     */
+    public int $size {
+        get => count($this->data);
+    }
+
+    // endregion
+
+    // region Constructor
+
+    /**
+     * Create a new vector with the specified size.
+     *
+     * @param int $size Number of elements.
+     * @throws DomainException If size is negative.
+     */
+    public function __construct(int $size)
+    {
+        if ($size < 0) {
+            throw new DomainException('Vector size must not be negative.');
+        }
+
+        $this->data = array_fill(0, $size, 0);
+    }
+
+    // endregion
+
+    // region Factory methods
+
+    /**
+     * Create a vector from an array.
+     *
+     * @param array<array-key, int|float> $data Array of numbers.
+     * @return self
+     * @throws InvalidArgumentException If any array items are not numbers.
+     */
+    public static function fromArray(array $data): self
+    {
+        // Check if all elements are numbers.
+        foreach ($data as $value) {
+            if (!Numbers::isNumber($value)) {
+                throw new InvalidArgumentException('Vector elements must be numbers (int or float).');
+            }
+        }
+
+        // Create the vector.
+        $vector = new self(count($data));
+        $vector->data = array_values($data);
+
+        return $vector;
+    }
+
+    // endregion
+
+    // region Vector operations
+
+    /**
+     * Add another vector to this one.
+     *
+     * @param self $other Vector to add.
+     * @return self New vector representing the sum.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function add(self $other): self
+    {
+        if ($this->size !== $other->size) {
+            throw new LengthException('Vectors must have the same size for addition.');
+        }
+
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->data[$i] = $this->data[$i] + $other->data[$i];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Subtract another vector from this one.
+     *
+     * @param self $other Vector to subtract.
+     * @return self New vector representing the difference.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function sub(self $other): self
+    {
+        if ($this->size !== $other->size) {
+            throw new LengthException('Vectors must have the same size for subtraction.');
+        }
+
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->data[$i] = $this->data[$i] - $other->data[$i];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Multiply this vector by a scalar.
+     *
+     * @param int|float $scalar Number to multiply by.
+     * @return self New vector representing the product.
+     */
+    public function mul(int|float $scalar): self
+    {
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->data[$i] = $this->data[$i] * $scalar;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Divide this vector by a scalar.
+     *
+     * @param int|float $scalar Number to divide by.
+     * @return self New vector representing the quotient.
+     * @throws DivisionByZeroError If scalar is zero.
+     */
+    public function div(int|float $scalar): self
+    {
+        if ($scalar == 0) {
+            throw new DivisionByZeroError('Division by zero is not allowed.');
+        }
+
+        return $this->mul(1.0 / $scalar);
+    }
+
+    /**
+     * Calculate the dot product of this vector with another vector.
+     *
+     * @param self $other Vector to calculate dot product with.
+     * @return float The dot product.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function dot(self $other): float
+    {
+        // Check if vectors have the same size.
+        if ($this->size !== $other->size) {
+            throw new LengthException('Vectors must have the same size for dot product.');
+        }
+
+        $result = 0.0;
+        for ($i = 0; $i < $this->size; $i++) {
+            $result += $this->data[$i] * $other->data[$i];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate the cross product of this vector with another vector (both must be size 3).
+     *
+     * @param self $other Vector to calculate cross product with.
+     * @return self New vector representing the cross product.
+     * @throws DomainException If vectors are not size 3.
+     */
+    public function cross(self $other): self
+    {
+        // Check if vectors are size 3.
+        if ($this->size !== 3) {
+            throw new DomainException('First operand must be a vector of size 3.');
+        }
+        if ($other->size !== 3) {
+            throw new DomainException('Second operand must be a vector of size 3.');
+        }
+
+        return self::fromArray([
+            $this->data[1] * $other->data[2] - $this->data[2] * $other->data[1],
+            $this->data[2] * $other->data[0] - $this->data[0] * $other->data[2],
+            $this->data[0] * $other->data[1] - $this->data[1] * $other->data[0],
+        ]);
+    }
+
+    // endregion
+
+    // region Comparison methods
+
+    /**
+     * Check if this vector equals another.
+     *
+     * Two vectors are equal if they have the same size and all corresponding elements are exactly equal.
+     * Returns false for non-Vector values.
+     *
+     * @param mixed $other The value to compare with.
+     * @return bool True if the vectors are the same size and all elements are equal.
+     */
+    #[Override]
+    public function equal(mixed $other): bool
+    {
+        if (!$other instanceof self) {
+            return false;
+        }
+
+        if ($this->size !== $other->size) {
+            return false;
+        }
+
+        for ($i = 0; $i < $this->size; $i++) {
+            if ($this->data[$i] !== $other->data[$i]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if this vector approximately equals another, within given tolerances.
+     *
+     * Each pair of corresponding elements is compared using Floats::approxEqual(), which checks
+     * absolute tolerance first, then relative tolerance.
+     *
+     * @param mixed $other The value to compare with.
+     * @param float $relTol The relative tolerance.
+     * @param float $absTol The absolute tolerance.
+     * @return bool True if the vectors are the same size and all elements are approximately equal.
+     * @throws DomainException If either tolerance is negative.
+     * @see Floats::approxEqual()
+     */
+    #[Override]
+    public function approxEqual(
+        mixed $other,
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+    ): bool {
+        if (!$other instanceof self) {
+            return false;
+        }
+
+        if ($this->size !== $other->size) {
+            return false;
+        }
+
+        for ($i = 0; $i < $this->size; $i++) {
+            if (!Floats::approxEqual($this->data[$i], $other->data[$i], $relTol, $absTol)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // endregion
+
+    // region Conversion methods
+
+    /**
+     * Get a copy of the vector data as an array.
+     *
+     * @return list<int|float> Array of vector elements.
+     */
+    public function toArray(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Convert this vector to a Matrix.
+     *
+     * By default, returns an n×1 column matrix. If $asRow is true, returns a 1×n row matrix.
+     *
+     * @param bool $asRow If true, return a 1×n row matrix; if false (default), return an n×1 column matrix.
+     * @return Matrix The matrix representation.
+     */
+    public function toMatrix(bool $asRow = false): Matrix
+    {
+        $matrixData = $asRow ? [$this->data] : array_map(static fn ($x) => [$x], $this->data);
+        return Matrix::fromArray($matrixData);
+    }
+
+    /**
+     * Convert the vector to a string representation.
+     *
+     * @return string String representation.
+     */
+    public function __toString(): string
+    {
+        return $this->toMatrix()->__toString();
+    }
+
+    // endregion
+
+    // region ArrayAccess methods
+
+    /**
+     * Check if an offset exists.
+     *
+     * @param mixed $offset Index to check.
+     * @return bool
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        return is_int($offset) && $offset >= 0 && $offset < $this->size;
+    }
+
+    /**
+     * Get value at an offset.
+     *
+     * @param mixed $offset Index to get.
+     * @return int|float
+     * @throws OutOfRangeException If offset is out of bounds.
+     */
+    public function offsetGet(mixed $offset): int|float
+    {
+        if (!$this->offsetExists($offset)) {
+            throw new OutOfRangeException('Vector index outside valid range.');
+        }
+
+        return $this->data[$offset];
+    }
+
+    /**
+     * Set value at an offset.
+     *
+     * @param mixed $offset Index to set.
+     * @param mixed $value Value to set.
+     * @throws OutOfRangeException If offset is outside valid range.
+     * @throws InvalidArgumentException If value is not a number.
+     */
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if (!$this->offsetExists($offset)) {
+            throw new OutOfRangeException('Vector index outside valid range.');
+        }
+
+        if (!Numbers::isNumber($value)) {
+            throw new InvalidArgumentException('Vector elements must be numbers (int or float).');
+        }
+
+        $this->data[$offset] = $value;
+    }
+
+    /**
+     * Unset is not supported for vectors.
+     *
+     * @param mixed $offset Index.
+     * @throws LogicException Always throws.
+     */
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new LogicException('Cannot unset elements in a vector.');
+    }
+
+    // endregion
+}

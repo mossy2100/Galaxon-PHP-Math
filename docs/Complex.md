@@ -674,7 +674,7 @@ $z = new Complex(3, 4);
 $array = $z->toArray();  // [3.0, 4.0]
 ```
 
-### __toString()
+### \_\_toString()
 
 ```php
 public function __toString(): string

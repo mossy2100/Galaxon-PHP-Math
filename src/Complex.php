@@ -642,7 +642,9 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle special case of 0.
         if ($this->equal(0)) {
-            return [new self()];
+            return [
+                new self(),
+            ];
         }
 
         // Calculate the magnitude of the roots.

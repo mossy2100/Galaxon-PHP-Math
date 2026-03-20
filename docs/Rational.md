@@ -555,7 +555,7 @@ $r3 = new Rational(1, 2);
 echo $r3->toInt();  // 0
 ```
 
-### __toString()
+### \_\_toString()
 
 ```php
 public function __toString(): string
