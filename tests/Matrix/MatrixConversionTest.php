@@ -21,12 +21,54 @@ class MatrixConversionTest extends TestCase
      */
     public function testToArray(): void
     {
-        $data = [
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
-        ];
-        $m = Matrix::fromArray($data);
-        $this->assertSame($data, $m->toArray());
+        ]);
+        $this->assertSame([
+            [1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0],
+        ], $m->toArray());
+    }
+
+    /**
+     * Test format() uses box-drawing characters.
+     */
+    public function testFormatUsesBoxDrawingCharacters(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $str = $m->format();
+        $this->assertStringContainsString('┌', $str);
+        $this->assertStringContainsString('┐', $str);
+        $this->assertStringContainsString('└', $str);
+        $this->assertStringContainsString('┘', $str);
+        $this->assertStringContainsString('│', $str);
+    }
+
+    /**
+     * Test format() with an empty matrix.
+     */
+    public function testFormatWithEmptyMatrix(): void
+    {
+        $m = new Matrix(0, 0);
+        $str = $m->format();
+        $this->assertStringContainsString('┌', $str);
+        $this->assertStringContainsString('┘', $str);
+    }
+
+    /**
+     * Test __toString delegates to format().
+     */
+    public function testToStringDelegatesToFormat(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $this->assertSame($m->format(), (string)$m);
     }
 
     /**
@@ -83,9 +125,9 @@ class MatrixConversionTest extends TestCase
     public function testOffsetExistsValid(): void
     {
         $m = new Matrix(3, 2);
-        $this->assertTrue(isset($m[0]));
-        $this->assertTrue(isset($m[1]));
-        $this->assertTrue(isset($m[2]));
+        $this->assertTrue($m->offsetExists(0));
+        $this->assertTrue($m->offsetExists(1));
+        $this->assertTrue($m->offsetExists(2));
     }
 
     /**
@@ -94,8 +136,8 @@ class MatrixConversionTest extends TestCase
     public function testOffsetExistsInvalid(): void
     {
         $m = new Matrix(3, 2);
-        $this->assertFalse(isset($m[3]));
-        $this->assertFalse(isset($m[-1]));
+        $this->assertFalse($m->offsetExists(3));
+        $this->assertFalse($m->offsetExists(-1));
     }
 
     /**
@@ -109,7 +151,7 @@ class MatrixConversionTest extends TestCase
         ]);
         $row = $m[0];
         $this->assertInstanceOf(Vector::class, $row);
-        $this->assertSame([1, 2, 3], $row->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $row->toArray());
     }
 
     /**
@@ -130,7 +172,7 @@ class MatrixConversionTest extends TestCase
         $m = new Matrix(2, 3);
         $v = Vector::fromArray([7, 8, 9]);
         $m[0] = $v;
-        $this->assertSame([7, 8, 9], $m->getRow(0)->toArray());
+        $this->assertSame([7.0, 8.0, 9.0], $m->getRow(0)->toArray());
     }
 
     /**
@@ -140,7 +182,7 @@ class MatrixConversionTest extends TestCase
     {
         $m = new Matrix(2, 3);
         $m[1] = [10, 11, 12];
-        $this->assertSame([10, 11, 12], $m->getRow(1)->toArray());
+        $this->assertSame([10.0, 11.0, 12.0], $m->getRow(1)->toArray());
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Galaxon\Math\Tests\Vector;
 
 use DivisionByZeroError;
-use DomainException;
 use Galaxon\Math\Vector;
 use LengthException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,7 +21,7 @@ class VectorArithmeticTest extends TestCase
         $a = Vector::fromArray([1, 2, 3]);
         $b = Vector::fromArray([4, 5, 6]);
         $result = $a->add($b);
-        $this->assertSame([5, 7, 9], $result->toArray());
+        $this->assertSame([5.0, 7.0, 9.0], $result->toArray());
     }
 
     /**
@@ -44,7 +43,7 @@ class VectorArithmeticTest extends TestCase
         $a = Vector::fromArray([10, 20, 30]);
         $b = Vector::fromArray([1, 2, 3]);
         $result = $a->sub($b);
-        $this->assertSame([9, 18, 27], $result->toArray());
+        $this->assertSame([9.0, 18.0, 27.0], $result->toArray());
     }
 
     /**
@@ -65,7 +64,7 @@ class VectorArithmeticTest extends TestCase
     {
         $v = Vector::fromArray([1, 2, 3]);
         $result = $v->mul(3);
-        $this->assertSame([3, 6, 9], $result->toArray());
+        $this->assertSame([3.0, 6.0, 9.0], $result->toArray());
     }
 
     /**
@@ -85,7 +84,7 @@ class VectorArithmeticTest extends TestCase
     {
         $v = Vector::fromArray([1, 2, 3]);
         $result = $v->mul(0);
-        $this->assertSame([0, 0, 0], $result->toArray());
+        $this->assertSame([0.0, 0.0, 0.0], $result->toArray());
     }
 
     /**
@@ -95,7 +94,7 @@ class VectorArithmeticTest extends TestCase
     {
         $v = Vector::fromArray([1, -2, 3]);
         $result = $v->mul(-2);
-        $this->assertSame([-2, 4, -6], $result->toArray());
+        $this->assertSame([-2.0, 4.0, -6.0], $result->toArray());
     }
 
     /**
@@ -149,7 +148,7 @@ class VectorArithmeticTest extends TestCase
         $j = Vector::fromArray([0, 1, 0]);
         $result = $i->cross($j);
         // i × j = k => [0, 0, 1]
-        $this->assertSame([0, 0, 1], $result->toArray());
+        $this->assertSame([0.0, 0.0, 1.0], $result->toArray());
     }
 
     /**
@@ -161,28 +160,28 @@ class VectorArithmeticTest extends TestCase
         $b = Vector::fromArray([5, 6, 7]);
         $result = $a->cross($b);
         // (3*7 - 4*6, 4*5 - 2*7, 2*6 - 3*5) = (21-24, 20-14, 12-15) = (-3, 6, -3)
-        $this->assertSame([-3, 6, -3], $result->toArray());
+        $this->assertSame([-3.0, 6.0, -3.0], $result->toArray());
     }
 
     /**
-     * Test cross product with first vector not size 3 throws DomainException.
+     * Test cross product with first vector not size 3 throws LengthException.
      */
     public function testCrossWithFirstVectorNotSize3Throws(): void
     {
         $a = Vector::fromArray([1, 2]);
         $b = Vector::fromArray([3, 4, 5]);
-        $this->expectException(DomainException::class);
+        $this->expectException(LengthException::class);
         $a->cross($b);
     }
 
     /**
-     * Test cross product with second vector not size 3 throws DomainException.
+     * Test cross product with second vector not size 3 throws LengthException.
      */
     public function testCrossWithSecondVectorNotSize3Throws(): void
     {
         $a = Vector::fromArray([1, 2, 3]);
         $b = Vector::fromArray([4, 5]);
-        $this->expectException(DomainException::class);
+        $this->expectException(LengthException::class);
         $a->cross($b);
     }
 }

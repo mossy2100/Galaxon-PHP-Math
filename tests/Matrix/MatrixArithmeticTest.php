@@ -30,8 +30,8 @@ class MatrixArithmeticTest extends TestCase
         ]);
         $result = $a->add($b);
         $this->assertSame([
-            [6, 8],
-            [10, 12],
+            [6.0, 8.0],
+            [10.0, 12.0],
         ], $result->toArray());
     }
 
@@ -61,8 +61,8 @@ class MatrixArithmeticTest extends TestCase
         ]);
         $result = $a->sub($b);
         $this->assertSame([
-            [4, 4],
-            [4, 4],
+            [4.0, 4.0],
+            [4.0, 4.0],
         ], $result->toArray());
     }
 
@@ -88,8 +88,8 @@ class MatrixArithmeticTest extends TestCase
         ]);
         $result = $m->mul(3);
         $this->assertSame([
-            [3, 6],
-            [9, 12],
+            [3.0, 6.0],
+            [9.0, 12.0],
         ], $result->toArray());
     }
 
@@ -125,6 +125,7 @@ class MatrixArithmeticTest extends TestCase
             [11, 12],
         ]);
         $result = $a->mul($b);
+        $this->assertInstanceOf(Matrix::class, $result);
         $this->assertSame(2, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
         // Row 0: 1*7+2*9+3*11=58, 1*8+2*10+3*12=64
@@ -235,12 +236,12 @@ class MatrixArithmeticTest extends TestCase
         $t = $m->transpose();
         $this->assertSame(3, $t->rowCount);
         $this->assertSame(2, $t->columnCount);
-        $this->assertSame(1, $t->get(0, 0));
-        $this->assertSame(2, $t->get(1, 0));
-        $this->assertSame(3, $t->get(2, 0));
-        $this->assertSame(4, $t->get(0, 1));
-        $this->assertSame(5, $t->get(1, 1));
-        $this->assertSame(6, $t->get(2, 1));
+        $this->assertSame(1.0, $t->get(0, 0));
+        $this->assertSame(2.0, $t->get(1, 0));
+        $this->assertSame(3.0, $t->get(2, 0));
+        $this->assertSame(4.0, $t->get(0, 1));
+        $this->assertSame(5.0, $t->get(1, 1));
+        $this->assertSame(6.0, $t->get(2, 1));
     }
 
     /**

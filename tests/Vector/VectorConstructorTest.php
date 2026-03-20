@@ -55,7 +55,7 @@ class VectorConstructorTest extends TestCase
     public function testConstructorInitialisesElementsToZero(): void
     {
         $v = new Vector(3);
-        $this->assertSame([0, 0, 0], $v->toArray());
+        $this->assertSame([0.0, 0.0, 0.0], $v->toArray());
     }
 
     /**
@@ -64,7 +64,7 @@ class VectorConstructorTest extends TestCase
     public function testFromArrayWithInts(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $this->assertSame([1, 2, 3], $v->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $v->toArray());
         $this->assertSame(3, $v->size);
     }
 
@@ -83,7 +83,7 @@ class VectorConstructorTest extends TestCase
     public function testFromArrayWithMixed(): void
     {
         $v = Vector::fromArray([1, 2.5, 3]);
-        $this->assertSame([1, 2.5, 3], $v->toArray());
+        $this->assertSame([1.0, 2.5, 3.0], $v->toArray());
     }
 
     /**
@@ -102,7 +102,7 @@ class VectorConstructorTest extends TestCase
     public function testFromArrayWithNonNumericThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        Vector::fromArray([1, 'hello', 3]);
+        Vector::fromArray([1, 'hello', 3]); // @phpstan-ignore argument.type
     }
 
     /**
@@ -115,7 +115,7 @@ class VectorConstructorTest extends TestCase
             10 => 20,
             15 => 30,
         ]);
-        $this->assertSame([10, 20, 30], $v->toArray());
+        $this->assertSame([10.0, 20.0, 30.0], $v->toArray());
         $this->assertSame(3, $v->size);
     }
 

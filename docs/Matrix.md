@@ -65,13 +65,13 @@ $m4 = new Matrix(0, 3);     // 0x3 empty matrix
 ### fromArray()
 
 ```php
-public static function fromArray(array $data): self
+public static function fromArray(array $arr): self
 ```
 
-Create a matrix from a 2D array. The array must be rectangular (all rows the same length) and contain only numeric values. Array keys are ignored; values are re-indexed.
+Create a matrix from a 2D array. The array must be rectangular (all rows the same length) and contain only numeric values. Integer values are cast to float. Array keys are ignored; values are re-indexed.
 
 **Parameters:**
-- `$data` (array) - Rectangular array of numbers
+- `$arr` (array) - Rectangular array of numbers.
 
 **Returns:** `self` - New matrix populated with the provided data.
 
@@ -107,11 +107,11 @@ Create an identity matrix of the specified size. The identity matrix has 1s on t
 **Examples:**
 ```php
 $i3 = Matrix::identity(3);
-// ┌         ┐
-// │ 1  0  0 │
-// │ 0  1  0 │
-// │ 0  0  1 │
-// └         ┘
+// ┌               ┐
+// │ 1.0  0.0  0.0 │
+// │ 0.0  1.0  0.0 │
+// │ 0.0  0.0  1.0 │
+// └               ┘
 ```
 
 ---
@@ -121,16 +121,16 @@ $i3 = Matrix::identity(3);
 ### get()
 
 ```php
-public function get(int $row, int $col): int|float
+public function get(int $row, int $col): float
 ```
 
 Get a matrix element by row and column index.
 
 **Parameters:**
-- `$row` (int) - Row index (0-based)
-- `$col` (int) - Column index (0-based)
+- `$row` (int) - Row index (0-based).
+- `$col` (int) - Column index (0-based).
 
-**Returns:** `int|float` - The value at the specified position.
+**Returns:** `float` - The value at the specified position.
 
 **Throws:** `OutOfRangeException` if either index is outside the valid range.
 
@@ -235,6 +235,82 @@ var_dump($m2->isSquare());    // false
 
 ---
 
+## Comparison Methods
+
+### equal()
+
+```php
+public function equal(mixed $other): bool
+```
+
+Check if this matrix exactly equals another value.
+
+Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal. Returns `false` for non-Matrix values.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with.
+
+**Returns:**
+- `bool` - True if the matrices have the same dimensions and all elements are exactly equal.
+
+**Examples:**
+```php
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m2 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m3 = Matrix::fromArray([[1.0000000001, 2], [3, 4]]);
+
+var_dump($m1->equal($m2));  // true (exact match)
+var_dump($m1->equal($m3));  // false (not exact)
+
+// Invalid types return false
+var_dump($m1->equal('string'));  // false
+var_dump($m1->equal(null));      // false
+```
+
+### approxEqual()
+
+```php
+public function approxEqual(
+    mixed $other,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+): bool
+```
+
+Check if this matrix approximately equals another value within specified tolerances.
+
+Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first, then relative tolerance. Returns `false` for non-Matrix values.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with.
+- `$relTol` (float) - Relative tolerance (default: 1e-9).
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
+
+**Returns:**
+- `bool` - True if the matrices have the same dimensions and all elements are approximately equal.
+
+**Throws:**
+- `DomainException` if either tolerance is negative.
+
+**@see** `Floats::approxEqual()`
+
+**Examples:**
+```php
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m2 = Matrix::fromArray([[1.00000001, 2.00000001], [3.00000001, 4.00000001]]);
+
+// Within default tolerance
+var_dump($m1->approxEqual($m2));  // true
+
+// With tight tolerance
+var_dump($m1->approxEqual($m2, 1e-15, 1e-15));  // false
+
+// Invalid types return false
+var_dump($m1->approxEqual('string'));  // false
+```
+
+---
+
 ## Matrix Operations
 
 ### add()
@@ -291,7 +367,7 @@ public function mul(int|float|Vector|self $other): self|Vector
 
 Multiply this matrix by a scalar, vector, or another matrix.
 
-When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is performed (the number of columns in this matrix must equal the number of rows in the other). When multiplying by a Vector, it is treated as a column vector (n x 1 matrix) and the result is returned as a Vector.
+When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is performed (the number of columns in this matrix must equal the number of rows in the other). When multiplying by a Vector, it is treated as a column vector (n x 1 matrix) and the result is a Vector.
 
 **Parameters:**
 - `$other` (int|float|Vector|self) - Number, vector, or matrix to multiply by
@@ -324,7 +400,7 @@ $result = $m->mul($v);  // Vector(5, 11)
 public function div(int|float|self $other): self
 ```
 
-Divide this matrix by a scalar or another matrix. Division by a matrix is defined as A x B^-1.
+Divide this matrix by a scalar or another matrix. Division by a matrix is defined as A × B⁻¹.
 
 **Parameters:**
 - `$other` (int|float|self) - Number or matrix to divide by
@@ -343,7 +419,7 @@ $m = Matrix::fromArray([[2, 4], [6, 8]]);
 $result = $m->div(2);
 // [[1, 2], [3, 4]]
 
-// Matrix division (A * B^-1)
+// Matrix division (A × B⁻¹)
 $a = Matrix::fromArray([[1, 0], [0, 1]]);
 $b = Matrix::fromArray([[2, 0], [0, 2]]);
 $result = $a->div($b);
@@ -430,7 +506,7 @@ Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate 
 $m = Matrix::fromArray([[1, 2], [3, 4]]);
 $inv = $m->inv();
 
-// Verify: M * M^-1 = I
+// Verify: M × M⁻¹ = I
 $identity = $m->mul($inv);
 ```
 
@@ -446,12 +522,39 @@ public function toArray(): array
 
 Get a copy of the matrix data as a rectangular array.
 
-**Returns:** `list<list<int|float>>` - Rectangular array of matrix elements.
+**Returns:** `list<list<float>>` - Rectangular array of matrix elements.
 
 **Examples:**
 ```php
 $m = Matrix::fromArray([[1, 2], [3, 4]]);
 $arr = $m->toArray();  // [[1, 2], [3, 4]]
+```
+
+### format()
+
+```php
+public function format(): string
+```
+
+Format the matrix as a string using box-drawing characters. Values are right-aligned within columns.
+
+**Returns:**
+- `string` - The formatted string.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->format();
+// ┌           ┐
+// │ 1.0  2.0  │
+// │ 3.0  4.0  │
+// └           ┘
+
+// Empty matrices
+$e = new Matrix(0, 0);
+echo $e->format();
+// ┌ ┐
+// └ ┘
 ```
 
 ### \_\_toString()
@@ -460,22 +563,16 @@ $arr = $m->toArray();  // [[1, 2], [3, 4]]
 public function __toString(): string
 ```
 
-Convert the matrix to a string representation using box-drawing characters. Values are right-aligned within columns.
+Convert the matrix to a string representation. Delegates to `format()`.
 
 **Examples:**
 ```php
 $m = Matrix::fromArray([[1, 2], [3, 4]]);
 echo $m;
-// ┌       ┐
-// │ 1  2  │
-// │ 3  4  │
-// └       ┘
-
-// Empty matrices
-$e = new Matrix(0, 0);
-echo $e;
-// ┌ ┐
-// └ ┘
+// ┌           ┐
+// │ 1.0  2.0  │
+// │ 3.0  4.0  │
+// └           ┘
 ```
 
 ---
@@ -535,11 +632,41 @@ $i = Matrix::identity(3);
 ### Solving a Linear System
 
 ```php
-// Solve Ax = b using x = A^-1 * b
+// Solve Ax = b using x = A⁻¹b
 $a = Matrix::fromArray([[2, 1], [5, 3]]);
 $b = Vector::fromArray([4, 7]);
 
 $x = $a->inv()->mul($b);  // Vector(5, -6)
+```
+
+### 3D Transformations
+
+```php
+// Rotate a point 90° around the Z-axis.
+// The rotation matrix for angle θ around Z is:
+//   [ cos θ  -sin θ  0 ]
+//   [ sin θ   cos θ  0 ]
+//   [   0       0    1 ]
+$rot90 = Matrix::fromArray([
+    [0, -1, 0],
+    [1,  0, 0],
+    [0,  0, 1],
+]);
+
+$point = Vector::fromArray([1, 0, 0]);
+$rotated = $rot90->mul($point);  // Vector(0, 1, 0)
+
+// Scale by 2x in all axes.
+$scale = Matrix::fromArray([
+    [2, 0, 0],
+    [0, 2, 0],
+    [0, 0, 2],
+]);
+$scaled = $scale->mul($point);  // Vector(2, 0, 0)
+
+// Chain transformations: scale then rotate.
+$combined = $rot90->mul($scale);
+$result = $combined->mul($point);  // Vector(0, 2, 0)
 ```
 
 ### Matrix Powers

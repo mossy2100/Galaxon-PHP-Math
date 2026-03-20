@@ -22,9 +22,9 @@ class MatrixElementsTest extends TestCase
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $this->assertSame(1, $m->get(0, 0));
-        $this->assertSame(5, $m->get(1, 1));
-        $this->assertSame(6, $m->get(1, 2));
+        $this->assertSame(1.0, $m->get(0, 0));
+        $this->assertSame(5.0, $m->get(1, 1));
+        $this->assertSame(6.0, $m->get(1, 2));
     }
 
     /**
@@ -64,7 +64,7 @@ class MatrixElementsTest extends TestCase
     {
         $m = new Matrix(2, 2);
         $m->set(0, 1, 42);
-        $this->assertSame(42, $m->get(0, 1));
+        $this->assertSame(42.0, $m->get(0, 1));
     }
 
     /**
@@ -108,10 +108,10 @@ class MatrixElementsTest extends TestCase
         ]);
         $row = $m->getRow(0);
         $this->assertInstanceOf(Vector::class, $row);
-        $this->assertSame([1, 2, 3], $row->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $row->toArray());
 
         $row1 = $m->getRow(1);
-        $this->assertSame([4, 5, 6], $row1->toArray());
+        $this->assertSame([4.0, 5.0, 6.0], $row1->toArray());
     }
 
     /**
@@ -145,10 +145,10 @@ class MatrixElementsTest extends TestCase
         ]);
         $col = $m->getColumn(0);
         $this->assertInstanceOf(Vector::class, $col);
-        $this->assertSame([1, 4], $col->toArray());
+        $this->assertSame([1.0, 4.0], $col->toArray());
 
         $col2 = $m->getColumn(2);
-        $this->assertSame([3, 6], $col2->toArray());
+        $this->assertSame([3.0, 6.0], $col2->toArray());
     }
 
     /**

@@ -7,21 +7,26 @@ namespace Galaxon\Math;
 use ArrayAccess;
 use DivisionByZeroError;
 use DomainException;
+use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
+use Galaxon\Core\Traits\ApproxEquatable;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
 use OutOfRangeException;
+use Override;
 use Stringable;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
  *
- * @implements ArrayAccess<int, list<float>>
+ * @implements ArrayAccess<int, Vector>
  */
 final class Matrix implements Stringable, ArrayAccess
 {
-    // region Properties
+    use ApproxEquatable;
+
+    // region Private properties
 
     /**
      * The matrix data.
@@ -30,9 +35,13 @@ final class Matrix implements Stringable, ArrayAccess
      * (inadvertently sizing the matrix without changing rowCount/colCount or making it non-rectangular) or they
      * could set elements to non-numbers.
      *
-     * @var list<list<int|float>>
+     * @var list<list<float>>
      */
     private array $data;
+
+    // endregion
+
+    // region Public properties
 
     /**
      * The number of rows in the matrix.
@@ -66,7 +75,7 @@ final class Matrix implements Stringable, ArrayAccess
 
         // Initialize matrix properties.
         $this->columnCount = $columnCount;
-        $this->data = array_fill(0, $rowCount, array_fill(0, $columnCount, 0));
+        $this->data = array_fill(0, $rowCount, array_fill(0, $columnCount, 0.0));
     }
 
     // endregion
@@ -76,18 +85,19 @@ final class Matrix implements Stringable, ArrayAccess
     /**
      * Create a matrix from a 2D array.
      *
-     * @param array<array-key, array<array-key, int|float>> $data Rectangular array of numbers.
+     * @param array<array-key, array<array-key, int|float>> $arr Rectangular array of numbers.
      * @return self
      * @throws InvalidArgumentException If any row is not an array, or contains non-numeric values.
      * @throws LengthException If rows have different numbers of items.
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $arr): self
     {
-        $rowCount = count($data);
+        $rowCount = count($arr);
         $columnCount = null;
+        $data = [];
 
         // Validate data and ensure rectangular matrix.
-        foreach ($data as $row) {
+        foreach ($arr as $row) {
             // Check if each row is an array.
             if (!is_array($row)) {
                 throw new InvalidArgumentException('Each row must be an array.');
@@ -100,21 +110,25 @@ final class Matrix implements Stringable, ArrayAccess
                 throw new LengthException('All rows must have the same number of items.');
             }
 
+            $dataRow = [];
+
             // Check each row contains only numbers.
             foreach ($row as $value) {
+                // Check if each value is a number.
                 if (!Numbers::isNumber($value)) {
                     throw new InvalidArgumentException('Matrix elements must be numbers (int or float).');
                 }
+
+                // Convert the value to a float and store it in the matrix.
+                $dataRow[] = (float)$value;
             }
+
+            $data[] = $dataRow;
         }
 
         // Create the matrix.
         $matrix = new self($rowCount, $columnCount ?? 0);
-        foreach (array_values($data) as $i => $row) {
-            foreach (array_values($row) as $j => $value) {
-                $matrix->data[$i][$j] = $value;
-            }
-        }
+        $matrix->data = $data;
 
         return $matrix;
     }
@@ -129,7 +143,7 @@ final class Matrix implements Stringable, ArrayAccess
     {
         $result = new self($size, $size);
         for ($i = 0; $i < $size; $i++) {
-            $result->data[$i][$i] = 1;
+            $result->set($i, $i, 1);
         }
         return $result;
     }
@@ -143,10 +157,10 @@ final class Matrix implements Stringable, ArrayAccess
      *
      * @param int $row Row index (0-based).
      * @param int $col Column index (0-based).
-     * @return int|float Value of the matrix element.
+     * @return float Value of the matrix element.
      * @throws OutOfRangeException If indexes are outside valid range.
      */
-    public function get(int $row, int $col): int|float
+    public function get(int $row, int $col): float
     {
         // Check if indexes are within bounds.
         if ($row < 0 || $row >= $this->rowCount || $col < 0 || $col >= $this->columnCount) {
@@ -171,7 +185,8 @@ final class Matrix implements Stringable, ArrayAccess
             throw new OutOfRangeException('Matrix indexes outside valid range.');
         }
 
-        $this->data[$row][$col] = $value;
+        assert($row < count($this->data) && $col < count($this->data[$row]));
+        $this->data[$row][$col] = (float)$value;
     }
 
     /**
@@ -230,6 +245,85 @@ final class Matrix implements Stringable, ArrayAccess
 
     // endregion
 
+    // region Comparison methods
+
+    /**
+     * Check if this matrix equals another.
+     *
+     * Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal.
+     * Returns false for non-Matrix values.
+     *
+     * @param mixed $other The value to compare with.
+     * @return bool True if the matrices have the same dimensions and all elements are equal.
+     */
+    #[Override]
+    public function equal(mixed $other): bool
+    {
+        // Check both are Matrix objects.
+        if (!$other instanceof self) {
+            return false;
+        }
+
+        // Check sizes are equal.
+        if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
+            return false;
+        }
+
+        // Check elements are equal.
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                if ($this->data[$i][$j] !== $other->data[$i][$j]) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if this matrix approximately equals another, within given tolerances.
+     *
+     * Each pair of corresponding elements is compared using Floats::approxEqual(), which checks
+     * absolute tolerance first, then relative tolerance.
+     *
+     * @param mixed $other The value to compare with.
+     * @param float $relTol The relative tolerance.
+     * @param float $absTol The absolute tolerance.
+     * @return bool True if the matrices have the same dimensions and all elements are approximately equal.
+     * @throws DomainException If either tolerance is negative.
+     * @see Floats::approxEqual()
+     */
+    #[Override]
+    public function approxEqual(
+        mixed $other,
+        float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+    ): bool {
+        // Check both are Matrix objects.
+        if (!$other instanceof self) {
+            return false;
+        }
+
+        // Check sizes are equal.
+        if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
+            return false;
+        }
+
+        // Check elements are approximately equal.
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                if (!Floats::approxEqual($this->data[$i][$j], $other->data[$i][$j], $relTol, $absTol)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    // endregion
+
     // region Matrix operations
 
     /**
@@ -250,7 +344,7 @@ final class Matrix implements Stringable, ArrayAccess
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->data[$i][$j] = $this->data[$i][$j] + $other->data[$i][$j];
+                $result->set($i, $j, $this->data[$i][$j] + $other->data[$i][$j]);
             }
         }
         return $result;
@@ -274,7 +368,7 @@ final class Matrix implements Stringable, ArrayAccess
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->data[$i][$j] = $this->data[$i][$j] - $other->data[$i][$j];
+                $result->set($i, $j, $this->data[$i][$j] - $other->data[$i][$j]);
             }
         }
         return $result;
@@ -306,7 +400,7 @@ final class Matrix implements Stringable, ArrayAccess
             for ($j = 0; $j < $n; $j++) {
                 $minor = $this->getMinor($i, $j);
                 $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
-                $adjugate->data[$j][$i] = $cofactor / $det; // Note: transposed
+                $adjugate->set($j, $i, $cofactor / $det); // Note: transposed
             }
         }
 
@@ -327,25 +421,32 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Multiplying matrix by a vector (treated as a column vector).
         if ($other instanceof Vector) {
+            // Convert the Vector to a column matrix.
             $result = $this->mul($other->toMatrix());
+
+            // Handle 0-row result where getColumn() would fail.
+            assert($result instanceof self);
             if ($result->rowCount === 0) {
                 return new Vector(0);
             }
+
+            // If we were given a Vector, assume the desired result should be a Vector.
             return $result->getColumn(0);
         }
 
-        // Check if multiplying matrix by a number.
+        // Multiplying matrix by a scalar.
         if (Numbers::isNumber($other)) {
+            // Multiply each element of the matrix by the scalar.
             $scaled = new self($this->rowCount, $this->columnCount);
             for ($i = 0; $i < $this->rowCount; $i++) {
                 for ($j = 0; $j < $this->columnCount; $j++) {
-                    $scaled->data[$i][$j] = $this->data[$i][$j] * $other;
+                    $scaled->set($i, $j, $this->data[$i][$j] * $other);
                 }
             }
             return $scaled;
         }
 
-        // Multiplying a matrix by a matrix.
+        // Multiply a matrix by a matrix.
         // Check if dimensions are compatible for multiplication.
         if ($this->columnCount !== $other->rowCount) {
             throw new LengthException(
@@ -361,7 +462,7 @@ final class Matrix implements Stringable, ArrayAccess
                 for ($k = 0; $k < $this->columnCount; $k++) {
                     $sum += $this->data[$i][$k] * $other->data[$k][$j];
                 }
-                $result->data[$i][$j] = $sum;
+                $result->set($i, $j, $sum);
             }
         }
 
@@ -369,7 +470,7 @@ final class Matrix implements Stringable, ArrayAccess
     }
 
     /**
-     * Divide this matrix by a number or another matrix (A * B^-1).
+     * Divide this matrix by a number or another matrix (A × B⁻¹).
      *
      * @param int|float|self $other Number or matrix to divide by.
      * @return self New matrix representing the quotient.
@@ -378,17 +479,27 @@ final class Matrix implements Stringable, ArrayAccess
      */
     public function div(int|float|self $other): self
     {
+        // Check if dividing by a scalar.
         if (Numbers::isNumber($other)) {
+            // Guard against division by zero.
             if (Numbers::equal($other, 0)) {
                 throw new DivisionByZeroError('Division by zero is not allowed.');
             }
-            $m = 1.0 / $other;
-        } else {
-            // Multiply by the inverse.
-            $m = $other->inv();
+
+            // Divide each element of the matrix by the scalar.
+            $scaled = new self($this->rowCount, $this->columnCount);
+            for ($i = 0; $i < $this->rowCount; $i++) {
+                for ($j = 0; $j < $this->columnCount; $j++) {
+                    $scaled->set($i, $j, $this->data[$i][$j] / $other);
+                }
+            }
+            return $scaled;
         }
 
-        return $this->mul($m);
+        // Multiply by the inverse.
+        $result = $this->mul($other->inv());
+        assert($result instanceof self);
+        return $result;
     }
 
     /**
@@ -415,7 +526,7 @@ final class Matrix implements Stringable, ArrayAccess
             return $this->inv()->pow(-$power);
         }
 
-        $result = $this->identity($this->rowCount);
+        $result = self::identity($this->rowCount);
         $base = clone $this;
 
         while ($power > 0) {
@@ -426,6 +537,7 @@ final class Matrix implements Stringable, ArrayAccess
             $power = (int)($power / 2);
         }
 
+        assert($result instanceof self);
         return $result;
     }
 
@@ -439,9 +551,10 @@ final class Matrix implements Stringable, ArrayAccess
         $result = new self($this->columnCount, $this->rowCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->data[$j][$i] = $this->data[$i][$j];
+                $result->set($j, $i, $this->data[$i][$j]);
             }
         }
+
         return $result;
     }
 
@@ -468,7 +581,7 @@ final class Matrix implements Stringable, ArrayAccess
     /**
      * Recursive helper method to calculate determinant.
      *
-     * @param list<list<int|float>> $matrix Matrix data.
+     * @param list<list<float>> $matrix Matrix data.
      * @return float Determinant of the matrix.
      */
     private function calcDet(array $matrix): float
@@ -508,7 +621,7 @@ final class Matrix implements Stringable, ArrayAccess
      *
      * @param int $excludeRow Row to exclude.
      * @param int $excludeColumn Column to exclude.
-     * @return list<list<int|float>> Minor matrix.
+     * @return list<list<float>> Minor matrix.
      */
     private function getMinor(int $excludeRow, int $excludeColumn): array
     {
@@ -534,19 +647,23 @@ final class Matrix implements Stringable, ArrayAccess
     /**
      * Get a copy of the matrix data as a rectangular array.
      *
-     * @return list<list<int|float>> Rectangular array of matrix elements.
+     * @return list<list<float>> Rectangular array of matrix elements.
      */
     public function toArray(): array
     {
         return $this->data;
     }
 
+    // endregion
+
+    // region String methods
+
     /**
      * Convert the matrix to a string representation using box-drawing characters.
      *
-     * @return string String representation with box-drawing brackets and aligned columns.
+     * @return string String representation of the Matrix.
      */
-    public function __toString(): string
+    public function format(): string
     {
         if ($this->rowCount === 0 || $this->columnCount === 0) {
             return '┌ ┐' . "\n" . '└ ┘';
@@ -560,10 +677,8 @@ final class Matrix implements Stringable, ArrayAccess
             }
         }
 
-        // Inner width: 1 space + values separated by 2 spaces + 1 space.
-        $innerWidth = 1 + $this->columnCount * $maxWidth + ($this->columnCount - 1) * 2 + 1;
-
         // Top border.
+        $innerWidth = $this->columnCount * ($maxWidth + 2);
         $result = '┌' . str_repeat(' ', $innerWidth) . '┐' . "\n";
 
         // Data rows.
@@ -582,6 +697,16 @@ final class Matrix implements Stringable, ArrayAccess
         $result .= '└' . str_repeat(' ', $innerWidth) . '┘';
 
         return $result;
+    }
+
+    /**
+     * Convert the matrix to a string representation using box-drawing characters.
+     *
+     * @return string String representation of the Matrix.
+     */
+    public function __toString(): string
+    {
+        return $this->format();
     }
 
     // endregion
@@ -604,10 +729,16 @@ final class Matrix implements Stringable, ArrayAccess
      *
      * @param mixed $offset Row index to get.
      * @return Vector The row vector.
-     * @throws OutOfRangeException If row index is outside valid range.
+     * @throws OutOfRangeException If the offset is invalid.
      */
     public function offsetGet(mixed $offset): Vector
     {
+        // Check offset exists.
+        if (!$this->offsetExists($offset)) {
+            throw new OutOfRangeException('Row index must be an integer within the valid range.');
+        }
+
+        assert(is_int($offset));
         return $this->getRow($offset);
     }
 
@@ -616,16 +747,19 @@ final class Matrix implements Stringable, ArrayAccess
      *
      * @param mixed $offset Row index to set.
      * @param mixed $value Vector or array of numbers.
-     * @throws OutOfRangeException If row index is outside valid range.
-     * @throws InvalidArgumentException If value is not a Vector or array, or contains non-numeric values.
-     * @throws LengthException If value has wrong number of elements.
+     * @throws OutOfRangeException If the offset is invalid.
+     * @throws InvalidArgumentException If the value is not a Vector or array, or the value contains non-numeric values.
+     * @throws LengthException If the value has the wrong number of elements.
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
+        // Check offset exists.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Matrix row index outside valid range.');
+            throw new OutOfRangeException('Row index must be an integer within the valid range.');
         }
+        assert(is_int($offset));
 
+        // Convert Vector to array.
         if ($value instanceof Vector) {
             $value = $value->toArray();
         }
@@ -638,13 +772,15 @@ final class Matrix implements Stringable, ArrayAccess
             throw new LengthException("Row must have exactly {$this->columnCount} elements.");
         }
 
+        $data = [];
         foreach ($value as $v) {
             if (!Numbers::isNumber($v)) {
                 throw new InvalidArgumentException('Row elements must be numbers (int or float).');
             }
+            $data[] = (float)$v;
         }
 
-        $this->data[$offset] = array_values($value);
+        $this->data[$offset] = $data;
     }
 
     /**

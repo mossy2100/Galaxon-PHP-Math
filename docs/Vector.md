@@ -19,14 +19,6 @@ Size-0 vectors are allowed.
 
 ## Properties
 
-### data
-
-```php
-private array $data
-```
-
-The vector data. A list of `int|float` values, not directly accessible from outside the class.
-
 ### magnitude
 
 ```php
@@ -35,7 +27,7 @@ public float $magnitude { get; }
 
 The magnitude (Euclidean norm) of the vector, computed on every access.
 
-For v = (x1, x2, ..., xn): ||v|| = sqrt(x1^2 + x2^2 + ... + xn^2)
+For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 
 ### size
 
@@ -65,7 +57,7 @@ Create a new vector with the specified number of elements, all initialised to ze
 
 **Examples:**
 ```php
-$v1 = new Vector(3);    // [0, 0, 0]
+$v1 = new Vector(3);    // [0.0, 0.0, 0.0]
 $v2 = new Vector(0);    // [] (empty vector)
 ```
 
@@ -76,13 +68,13 @@ $v2 = new Vector(0);    // [] (empty vector)
 ### fromArray()
 
 ```php
-public static function fromArray(array $data): self
+public static function fromArray(array $arr): self
 ```
 
-Create a vector from an array of numbers. Array keys are ignored; values are re-indexed from zero.
+Create a vector from an array of numbers. Integer values are cast to float. Array keys are ignored; values are re-indexed from zero.
 
 **Parameters:**
-- `$data` (array<array-key, int|float>) - Array of numbers.
+- `$arr` (array<array-key, int|float>) - Array of numbers.
 
 **Returns:**
 - `self` - A new vector containing the array values.
@@ -95,6 +87,56 @@ Create a vector from an array of numbers. Array keys are ignored; values are re-
 $v1 = Vector::fromArray([1, 2, 3]);
 $v2 = Vector::fromArray([3.14, -1, 0]);
 $v3 = Vector::fromArray([]);  // Size-0 vector
+```
+
+---
+
+## Element Access
+
+### get()
+
+```php
+public function get(int $index): float
+```
+
+Get a vector element by index.
+
+**Parameters:**
+- `$index` (int) - Element index (0-based).
+
+**Returns:**
+- `float` - Value of the vector element.
+
+**Throws:**
+- `OutOfRangeException` if the index is outside the valid range.
+
+**Examples:**
+```php
+$v = Vector::fromArray([10, 20, 30]);
+echo $v->get(0);  // 10.0
+echo $v->get(2);  // 30.0
+```
+
+### set()
+
+```php
+public function set(int $index, int|float $value): void
+```
+
+Set a vector element by index. Integer values are cast to float.
+
+**Parameters:**
+- `$index` (int) - Element index (0-based).
+- `$value` (int|float) - Value to set.
+
+**Throws:**
+- `OutOfRangeException` if the index is outside the valid range.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+$v->set(1, 99);
+echo $v->get(1);  // 99.0
 ```
 
 ---
@@ -231,7 +273,7 @@ Calculate the cross product of this vector with another vector. Both vectors mus
 - `self` - New vector representing the cross product.
 
 **Throws:**
-- `DomainException` if either vector is not size 3.
+- `LengthException` if either vector is not size 3.
 
 **Examples:**
 ```php
@@ -327,12 +369,12 @@ public function toArray(): array
 Get a copy of the vector data as an array.
 
 **Returns:**
-- `list<int|float>` - Array of vector elements.
+- `list<float>` - Array of vector elements.
 
 **Examples:**
 ```php
 $v = Vector::fromArray([1, 2, 3]);
-$array = $v->toArray();  // [1, 2, 3]
+$array = $v->toArray();  // [1.0, 2.0, 3.0]
 ```
 
 ### toMatrix()
@@ -366,18 +408,53 @@ $row = $v->toMatrix(true);
 // [[1, 2, 3]]
 ```
 
+### format()
+
+```php
+public function format(bool $asRow = false): string
+```
+
+Format the vector as a string using box-drawing characters.
+
+**Parameters:**
+- `$asRow` (bool) - If true, format as a row vector; if false (default), format as a column vector.
+
+**Returns:**
+- `string` - The formatted string.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+echo $v->format();
+// ┌     ┐
+// │ 1.0 │
+// │ 2.0 │
+// │ 3.0 │
+// └     ┘
+
+echo $v->format(true);
+// ┌               ┐
+// │ 1.0  2.0  3.0 │
+// └               ┘
+```
+
 ### \_\_toString()
 
 ```php
 public function __toString(): string
 ```
 
-Convert the vector to a string representation. Uses the matrix string format via `toMatrix()`.
+Convert the vector to a string representation. Delegates to `format()`, rendering as a column vector by default.
 
 **Examples:**
 ```php
 $v = Vector::fromArray([1, 2, 3]);
 echo $v;
+// ┌     ┐
+// │ 1.0 │
+// │ 2.0 │
+// │ 3.0 │
+// └     ┘
 ```
 
 ---
@@ -423,7 +500,7 @@ Check if an offset exists. Returns true if the offset is an integer within the v
 ### offsetGet()
 
 ```php
-public function offsetGet(mixed $offset): int|float
+public function offsetGet(mixed $offset): float
 ```
 
 Get value at an offset.
@@ -432,7 +509,7 @@ Get value at an offset.
 - `$offset` (mixed) - Index to get.
 
 **Returns:**
-- `int|float` - The value at the given index.
+- `float` - The value at the given index.
 
 **Throws:**
 - `OutOfRangeException` if offset is out of bounds.

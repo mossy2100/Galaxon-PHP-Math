@@ -99,7 +99,7 @@ class MatrixConstructorTest extends TestCase
         $m = new Matrix(2, 3);
         for ($i = 0; $i < 2; $i++) {
             for ($j = 0; $j < 3; $j++) {
-                $this->assertSame(0, $m->get($i, $j));
+                $this->assertSame(0.0, $m->get($i, $j));
             }
         }
     }
@@ -115,8 +115,8 @@ class MatrixConstructorTest extends TestCase
         ]);
         $this->assertSame(2, $m->rowCount);
         $this->assertSame(3, $m->columnCount);
-        $this->assertSame(1, $m->get(0, 0));
-        $this->assertSame(6, $m->get(1, 2));
+        $this->assertSame(1.0, $m->get(0, 0));
+        $this->assertSame(6.0, $m->get(1, 2));
     }
 
     /**
@@ -148,7 +148,7 @@ class MatrixConstructorTest extends TestCase
     public function testFromArrayWithNonArrayRowThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        Matrix::fromArray([1, 2, 3]);
+        Matrix::fromArray([1, 2, 3]); // @phpstan-ignore argument.type
     }
 
     /**
@@ -157,6 +157,7 @@ class MatrixConstructorTest extends TestCase
     public function testFromArrayWithNonNumericValuesThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        // @phpstan-ignore argument.type
         Matrix::fromArray([
             [1, 'two', 3],
         ]);
@@ -182,7 +183,7 @@ class MatrixConstructorTest extends TestCase
         $m = Matrix::identity(1);
         $this->assertSame(1, $m->rowCount);
         $this->assertSame(1, $m->columnCount);
-        $this->assertSame(1, $m->get(0, 0));
+        $this->assertSame(1.0, $m->get(0, 0));
     }
 
     /**
@@ -198,9 +199,9 @@ class MatrixConstructorTest extends TestCase
         for ($i = 0; $i < 3; $i++) {
             for ($j = 0; $j < 3; $j++) {
                 if ($i === $j) {
-                    $this->assertSame(1, $m->get($i, $j));
+                    $this->assertSame(1.0, $m->get($i, $j));
                 } else {
-                    $this->assertSame(0, $m->get($i, $j));
+                    $this->assertSame(0.0, $m->get($i, $j));
                 }
             }
         }

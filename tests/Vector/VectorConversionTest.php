@@ -22,11 +22,11 @@ class VectorConversionTest extends TestCase
     {
         $v = Vector::fromArray([1, 2, 3]);
         $arr = $v->toArray();
-        $this->assertSame([1, 2, 3], $arr);
+        $this->assertSame([1.0, 2.0, 3.0], $arr);
 
         // Modifying the returned array should not affect the vector.
         $arr[0] = 99;
-        $this->assertSame([1, 2, 3], $v->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $v->toArray());
     }
 
     /**
@@ -65,14 +65,39 @@ class VectorConversionTest extends TestCase
     }
 
     /**
-     * Test __toString returns a string.
+     * Test format() defaults to column vector with box-drawing characters.
      */
-    public function testToString(): void
+    public function testFormatDefaultColumn(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $str = (string)$v;
-        $this->assertIsString($str);
-        $this->assertNotEmpty($str);
+        $str = $v->format();
+        $this->assertStringContainsString('┌', $str);
+        $this->assertStringContainsString('│', $str);
+        $this->assertStringContainsString('└', $str);
+        // Column vector should have 3 data rows.
+        $lines = explode("\n", $str);
+        $this->assertCount(5, $lines); // top + 3 data + bottom
+    }
+
+    /**
+     * Test format() with asRow=true renders as a row vector.
+     */
+    public function testFormatAsRow(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $str = $v->format(asRow: true);
+        // Row vector should have 1 data row.
+        $lines = explode("\n", $str);
+        $this->assertCount(3, $lines); // top + 1 data + bottom
+    }
+
+    /**
+     * Test __toString delegates to format().
+     */
+    public function testToStringDelegatesToFormat(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $this->assertSame($v->format(), (string)$v);
     }
 
     /**
@@ -81,9 +106,9 @@ class VectorConversionTest extends TestCase
     public function testOffsetExistsWithValidIndex(): void
     {
         $v = Vector::fromArray([10, 20, 30]);
-        $this->assertTrue(isset($v[0]));
-        $this->assertTrue(isset($v[1]));
-        $this->assertTrue(isset($v[2]));
+        $this->assertTrue($v->offsetExists(0));
+        $this->assertTrue($v->offsetExists(1));
+        $this->assertTrue($v->offsetExists(2));
     }
 
     /**
@@ -92,8 +117,8 @@ class VectorConversionTest extends TestCase
     public function testOffsetExistsWithInvalidIndex(): void
     {
         $v = Vector::fromArray([10, 20, 30]);
-        $this->assertFalse(isset($v[3]));
-        $this->assertFalse(isset($v[-1]));
+        $this->assertFalse($v->offsetExists(3));
+        $this->assertFalse($v->offsetExists(-1));
     }
 
     /**
@@ -102,9 +127,9 @@ class VectorConversionTest extends TestCase
     public function testOffsetGetWithValidIndex(): void
     {
         $v = Vector::fromArray([10, 20, 30]);
-        $this->assertSame(10, $v[0]);
-        $this->assertSame(20, $v[1]);
-        $this->assertSame(30, $v[2]);
+        $this->assertSame(10.0, $v[0]);
+        $this->assertSame(20.0, $v[1]);
+        $this->assertSame(30.0, $v[2]);
     }
 
     /**
@@ -124,7 +149,7 @@ class VectorConversionTest extends TestCase
     {
         $v = Vector::fromArray([1, 2, 3]);
         $v[1] = 99;
-        $this->assertSame(99, $v[1]);
+        $this->assertSame(99.0, $v[1]);
     }
 
     /**
@@ -165,15 +190,15 @@ class VectorConversionTest extends TestCase
         $v = Vector::fromArray([10, 20, 30]);
 
         // Read via brackets.
-        $this->assertSame(10, $v[0]);
-        $this->assertSame(30, $v[2]);
+        $this->assertSame(10.0, $v[0]);
+        $this->assertSame(30.0, $v[2]);
 
         // Write via brackets.
         $v[1] = 5;
-        $this->assertSame(5, $v[1]);
+        $this->assertSame(5.0, $v[1]);
 
-        // Existence check via isset.
-        $this->assertTrue(isset($v[0]));
-        $this->assertFalse(isset($v[3]));
+        // Existence check via offsetExists.
+        $this->assertTrue($v->offsetExists(0));
+        $this->assertFalse($v->offsetExists(3));
     }
 }

@@ -26,14 +26,18 @@ final class Vector implements Stringable, ArrayAccess
 {
     use ApproxEquatable;
 
-    // region Properties
+    // region Private properties
 
     /**
      * The vector data.
      *
-     * @var list<int|float>
+     * @var list<float>
      */
     private array $data;
+
+    // endregion
+
+    // region Public properties
 
     /**
      * The magnitude (norm) of the vector.
@@ -65,7 +69,7 @@ final class Vector implements Stringable, ArrayAccess
             throw new DomainException('Vector size must not be negative.');
         }
 
-        $this->data = array_fill(0, $size, 0);
+        $this->data = array_fill(0, $size, 0.0);
     }
 
     // endregion
@@ -75,24 +79,68 @@ final class Vector implements Stringable, ArrayAccess
     /**
      * Create a vector from an array.
      *
-     * @param array<array-key, int|float> $data Array of numbers.
+     * @param array<array-key, int|float> $arr Array of numbers.
      * @return self
      * @throws InvalidArgumentException If any array items are not numbers.
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $arr): self
     {
+        $data = [];
+
         // Check if all elements are numbers.
-        foreach ($data as $value) {
+        foreach ($arr as $value) {
+            // Check if the value is a number.
             if (!Numbers::isNumber($value)) {
                 throw new InvalidArgumentException('Vector elements must be numbers (int or float).');
             }
+
+            // Convert the value to a float.
+            $data[] = (float)$value;
         }
 
-        // Create the vector.
+        // Create the Vector.
         $vector = new self(count($data));
-        $vector->data = array_values($data);
+        $vector->data = $data;
 
         return $vector;
+    }
+
+    // endregion
+
+    // region Element access
+
+    /**
+     * Get a vector element.
+     *
+     * @param int $index Element index (0-based).
+     * @return float Value of the vector element.
+     * @throws OutOfRangeException If the index is outside the valid range.
+     */
+    public function get(int $index): float
+    {
+        // Check index is valid.
+        if ($index < 0 || $index >= count($this->data)) {
+            throw new OutOfRangeException('Vector index outside valid range.');
+        }
+
+        return $this->data[$index];
+    }
+
+    /**
+     * Set a vector element.
+     *
+     * @param int $index Element index (0-based).
+     * @param int|float $value Value to set.
+     * @throws OutOfRangeException If the index is outside the valid range.
+     */
+    public function set(int $index, int|float $value): void
+    {
+        // Check index is valid.
+        if ($index < 0 || $index >= count($this->data)) {
+            throw new OutOfRangeException('Vector index outside valid range.');
+        }
+
+        $this->data[$index] = (float)$value;
     }
 
     // endregion
@@ -108,13 +156,15 @@ final class Vector implements Stringable, ArrayAccess
      */
     public function add(self $other): self
     {
+        // Check if vectors have the same size.
         if ($this->size !== $other->size) {
             throw new LengthException('Vectors must have the same size for addition.');
         }
 
+        // Add the vectors element-wise.
         $result = new self($this->size);
         for ($i = 0; $i < $this->size; $i++) {
-            $result->data[$i] = $this->data[$i] + $other->data[$i];
+            $result->set($i, $this->data[$i] + $other->data[$i]);
         }
 
         return $result;
@@ -129,13 +179,15 @@ final class Vector implements Stringable, ArrayAccess
      */
     public function sub(self $other): self
     {
+        // Check if vectors have the same size.
         if ($this->size !== $other->size) {
             throw new LengthException('Vectors must have the same size for subtraction.');
         }
 
+        // Subtract the vectors element-wise.
         $result = new self($this->size);
         for ($i = 0; $i < $this->size; $i++) {
-            $result->data[$i] = $this->data[$i] - $other->data[$i];
+            $result->set($i, $this->data[$i] - $other->data[$i]);
         }
 
         return $result;
@@ -149,9 +201,10 @@ final class Vector implements Stringable, ArrayAccess
      */
     public function mul(int|float $scalar): self
     {
+        // Multiply the vectors element-wise.
         $result = new self($this->size);
         for ($i = 0; $i < $this->size; $i++) {
-            $result->data[$i] = $this->data[$i] * $scalar;
+            $result->set($i, $this->data[$i] * $scalar);
         }
 
         return $result;
@@ -166,11 +219,18 @@ final class Vector implements Stringable, ArrayAccess
      */
     public function div(int|float $scalar): self
     {
-        if ($scalar === 0) {
+        // Guard.
+        if (Numbers::equal($scalar, 0)) {
             throw new DivisionByZeroError('Division by zero is not allowed.');
         }
 
-        return $this->mul(1.0 / $scalar);
+        // Divide the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] / $scalar);
+        }
+
+        return $result;
     }
 
     /**
@@ -187,6 +247,7 @@ final class Vector implements Stringable, ArrayAccess
             throw new LengthException('Vectors must have the same size for dot product.');
         }
 
+        // Calculate the dot product element-wise.
         $result = 0.0;
         for ($i = 0; $i < $this->size; $i++) {
             $result += $this->data[$i] * $other->data[$i];
@@ -196,20 +257,20 @@ final class Vector implements Stringable, ArrayAccess
     }
 
     /**
-     * Calculate the cross product of this vector with another vector (both must be size 3).
+     * Calculate the cross product of this vector with another vector. Both must be size 3.
      *
      * @param self $other Vector to calculate cross product with.
      * @return self New vector representing the cross product.
-     * @throws DomainException If vectors are not size 3.
+     * @throws LengthException If either vector is not of size 3.
      */
     public function cross(self $other): self
     {
         // Check if vectors are size 3.
         if ($this->size !== 3) {
-            throw new DomainException('First operand must be a vector of size 3.');
+            throw new LengthException('First operand must be a vector of size 3.');
         }
         if ($other->size !== 3) {
-            throw new DomainException('Second operand must be a vector of size 3.');
+            throw new LengthException('Second operand must be a vector of size 3.');
         }
 
         return self::fromArray([
@@ -235,14 +296,17 @@ final class Vector implements Stringable, ArrayAccess
     #[Override]
     public function equal(mixed $other): bool
     {
+        // Check both are Vector objects.
         if (!$other instanceof self) {
             return false;
         }
 
+        // Check sizes are equal.
         if ($this->size !== $other->size) {
             return false;
         }
 
+        // Check elements are equal.
         for ($i = 0; $i < $this->size; $i++) {
             if ($this->data[$i] !== $other->data[$i]) {
                 return false;
@@ -271,14 +335,17 @@ final class Vector implements Stringable, ArrayAccess
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
+        // Check both are Vector objects.
         if (!$other instanceof self) {
             return false;
         }
 
+        // Check sizes are equal.
         if ($this->size !== $other->size) {
             return false;
         }
 
+        // Check elements are approximately equal.
         for ($i = 0; $i < $this->size; $i++) {
             if (!Floats::approxEqual($this->data[$i], $other->data[$i], $relTol, $absTol)) {
                 return false;
@@ -295,7 +362,7 @@ final class Vector implements Stringable, ArrayAccess
     /**
      * Get a copy of the vector data as an array.
      *
-     * @return list<int|float> Array of vector elements.
+     * @return list<float> Array of vector elements.
      */
     public function toArray(): array
     {
@@ -306,6 +373,7 @@ final class Vector implements Stringable, ArrayAccess
      * Convert this vector to a Matrix.
      *
      * By default, returns an n×1 column matrix. If $asRow is true, returns a 1×n row matrix.
+     * NB: You can also get a row vector by calling $vec->toMatrix()->transpose()
      *
      * @param bool $asRow If true, return a 1×n row matrix; if false (default), return an n×1 column matrix.
      * @return Matrix The matrix representation.
@@ -316,14 +384,33 @@ final class Vector implements Stringable, ArrayAccess
         return Matrix::fromArray($matrixData);
     }
 
+    // endregion
+
+    // region String methods
+
+    /**
+     * Format the vector as a string.
+     *
+     * @param bool $asRow If true, format as a row vector; if false (default), format as a column vector.
+     * @return string String representation of the Vector.
+     */
+    public function format(bool $asRow = false): string
+    {
+        return $this->toMatrix($asRow)->__toString();
+    }
+
     /**
      * Convert the vector to a string representation.
      *
-     * @return string String representation.
+     * By default, this will format the Vector as a column vector.
+     * If you want to format the column as a row vector, you can use:
+     * @example echo (string)$vec->toMatrix(true);
+     *
+     * @return string String representation of the Vector.
      */
     public function __toString(): string
     {
-        return $this->toMatrix()->__toString();
+        return $this->format();
     }
 
     // endregion
@@ -345,16 +432,18 @@ final class Vector implements Stringable, ArrayAccess
      * Get value at an offset.
      *
      * @param mixed $offset Index to get.
-     * @return int|float
-     * @throws OutOfRangeException If offset is out of bounds.
+     * @return float
+     * @throws OutOfRangeException If the offset is invalid.
      */
-    public function offsetGet(mixed $offset): int|float
+    public function offsetGet(mixed $offset): float
     {
+        // Check offset exists.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Vector index outside valid range.');
+            throw new OutOfRangeException('Offset must be an integer within the valid range.');
         }
+        assert(is_int($offset));
 
-        return $this->data[$offset];
+        return $this->get($offset);
     }
 
     /**
@@ -367,15 +456,18 @@ final class Vector implements Stringable, ArrayAccess
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
+        // Check offset exists.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Vector index outside valid range.');
+            throw new OutOfRangeException('Offset must be an integer within the valid range.');
         }
+        assert(is_int($offset));
 
+        // Check value is a number.
         if (!Numbers::isNumber($value)) {
             throw new InvalidArgumentException('Vector elements must be numbers (int or float).');
         }
 
-        $this->data[$offset] = $value;
+        $this->set($offset, $value);
     }
 
     /**
