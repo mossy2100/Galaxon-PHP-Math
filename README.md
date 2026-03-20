@@ -1,6 +1,6 @@
 # Galaxon PHP Math
 
-Provides immutable classes for Complex numbers and Rational numbers.
+Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 
 **[License](LICENSE)** | **[Changelog](CHANGELOG.md)** | **[Documentation](docs/)**
 
@@ -8,12 +8,13 @@ Provides immutable classes for Complex numbers and Rational numbers.
 
 ## Description
 
-This package provides immutable classes for working with complex and rational numbers in PHP.
+This package provides classes for working with complex numbers, rational numbers, vectors, and matrices in PHP.
 
 **Key Features:**
 - **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, and polar/rectangular conversions
 - **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow detection
-- **Immutability** - All operations return new instances
+- **Vectors** - Element-wise arithmetic, dot and cross products, and array-style access
+- **Matrices** - Matrix arithmetic, inverse, determinant, transpose, power, and matrix-vector multiplication
 - **Type flexibility** - Methods accept int, float, string, or the respective class type
 - **Comprehensive testing** - 100% code coverage with extensive test suites
 
@@ -56,6 +57,26 @@ Immutable class for rational numbers (p/q) with support for:
 - Comparison operations with mixed types
 - String parsing and formatting
 
+### [Vector](docs/Vector.md)
+
+Mutable numeric vector with support for:
+- Element-wise arithmetic (add, subtract, scalar multiply, scalar divide)
+- Dot product and cross product operations
+- Exact and approximate equality comparison
+- Conversion to arrays and matrices
+- Array-style element access via the `ArrayAccess` interface
+- String representation using box-drawing characters
+
+### [Matrix](docs/Matrix.md)
+
+Mutable two-dimensional matrix with support for:
+- Matrix arithmetic (add, subtract, multiply, divide)
+- Matrix-vector multiplication using column vector convention
+- Transpose, determinant, and inverse operations
+- Matrix power with binary exponentiation (including negative powers)
+- Row-level `ArrayAccess` interface (get/set rows as Vectors)
+- String representation using box-drawing characters
+
 ## Testing
 
 The library includes comprehensive test coverage:
@@ -67,6 +88,8 @@ vendor/bin/phpunit
 # Run tests for specific class
 vendor/bin/phpunit tests/Complex
 vendor/bin/phpunit tests/Rational
+vendor/bin/phpunit tests/Vector
+vendor/bin/phpunit tests/Matrix
 
 # Run with coverage (generates HTML report and clover.xml)
 composer test

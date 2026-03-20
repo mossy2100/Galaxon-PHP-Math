@@ -286,6 +286,8 @@ $result = $v1->cross($v2);  // [0, 0, 1]
 
 ## Comparison Methods
 
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+
 ### equal()
 
 ```php

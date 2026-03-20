@@ -154,6 +154,8 @@ $z2 = new Complex(3, 4);
 var_dump($z2->isReal());  // false
 ```
 
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+
 ### equal()
 
 ```php
