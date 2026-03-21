@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-21
+
+### Added
+
+- **Vector** - Mutable class for mathematical vectors with float-only storage
+  - Constructor and factory method: `fromArray()`
+  - Element access: `get()`, `set()`, `ArrayAccess` interface
+  - Arithmetic: `add()`, `sub()`, `mul()`, `div()`, `dot()`, `cross()`
+  - Properties: `magnitude()`, `normalize()`, `size`
+  - Comparison: `equal()`, `approxEqual()` via `ApproxEquatable` trait
+  - Conversion: `toArray()`, `toMatrix()`, `format()`, `__toString()`
+  - Comprehensive test suite (5 test files, 59 tests)
+  - Full documentation (Vector.md)
+
+- **Matrix** - Mutable class for mathematical matrices with float-only storage
+  - Constructor with rows/columns dimensions
+  - Element access: `get()`, `set()`, `ArrayAccess` for row-level access
+  - Arithmetic: `add()`, `sub()`, `mul()`, `div()`, `pow()`
+  - Operations: `determinant()`, `transpose()`, `inverse()`, `identity()`
+  - Vector multiplication support
+  - Comparison: `equal()`, `approxEqual()` via `ApproxEquatable` trait
+  - Conversion: `toArray()`, `format()`, `__toString()` with box-drawing characters
+  - Comprehensive test suite (5 test files)
+  - Full documentation (Matrix.md)
+
+### Changed
+
+- **Complex** and **Rational** - Use `FormatException` for parse errors on empty strings
+- README updated with Vector and Matrix sections
+- Documentation cross-references to Core `ApproxEquatable` trait
+
+### Fixed
+
+- **Rational::floatToRatio()** - Fixed PHP warnings from `(int)` cast overflow near `PHP_INT_MAX`/`PHP_INT_MIN`; tightened boundary checks
+- **Matrix::pow()** - Fixed static method call (`self::identity()` instead of `$this->identity()`)
+- **Complex::parse()** - Corrected exception type for empty string input
+- **Vector::div()** - Added division by zero protection
+- **Matrix** constructor - Corrected exception type for negative dimensions
+
 ## [1.0.0] - 2026-01-05
 
 ### First Stable Release
