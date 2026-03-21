@@ -9,6 +9,7 @@ use Galaxon\Math\Rational;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use UnderflowException;
 
 #[CoversClass(Rational::class)]
 class RationalConstructorTest extends TestCase
@@ -232,8 +233,30 @@ class RationalConstructorTest extends TestCase
      */
     public function testConstructorWithMinIntDenominatorAndNumeratorNotAMultipleOf2Throws(): void
     {
-        $this->expectException(OverflowException::class);
+        $this->expectException(UnderflowException::class);
         new Rational(1, PHP_INT_MIN);
+    }
+
+    /**
+     * Test that PHP_INT_MAX can be used as numerator or denominator without throwing.
+     */
+    public function testConstructorWithPhpIntMax(): void
+    {
+        $r = new Rational(1, PHP_INT_MAX);
+        $this->assertSame(1, $r->num);
+        $this->assertSame(PHP_INT_MAX, $r->den);
+
+        $r = new Rational(PHP_INT_MAX, 1);
+        $this->assertSame(PHP_INT_MAX, $r->num);
+        $this->assertSame(1, $r->den);
+
+        $r = new Rational(-1, PHP_INT_MAX);
+        $this->assertSame(-1, $r->num);
+        $this->assertSame(PHP_INT_MAX, $r->den);
+
+        $r = new Rational(PHP_INT_MAX, -1);
+        $this->assertSame(-PHP_INT_MAX, $r->num);
+        $this->assertSame(1, $r->den);
     }
 
     /**

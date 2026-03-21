@@ -211,7 +211,7 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with PHP_INT_MIN float throws RangeException.
+     * Test floatToRatio with PHP_INT_MIN float throws OverflowException.
      */
     public function testFloatToRatioWithPhpIntMinThrows(): void
     {
@@ -221,7 +221,17 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with value too small throws RangeException.
+     * Test floatToRatio with PHP_INT_MAX float throws OverflowException.
+     */
+    public function testFloatToRatioWithPhpIntMaxThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        // (float)PHP_INT_MAX rounds up to 2^63, which overflows when cast to int.
+        Rational::floatToRatio((float)PHP_INT_MAX);
+    }
+
+    /**
+     * Test floatToRatio with value too small throws UnderflowException.
      */
     public function testFloatToRatioTooSmallThrows(): void
     {
@@ -231,7 +241,7 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with value too large throws RangeException.
+     * Test floatToRatio with value too large throws OverflowException.
      */
     public function testFloatToRatioTooLargeThrows(): void
     {

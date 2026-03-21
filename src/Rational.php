@@ -81,7 +81,7 @@ final class Rational implements Stringable
         $den2 = 1;
 
         // Check to see if either argument was provided as a float, but could have been an int.
-        // This might enable a call to simplify(), which is preferable to floatToRational().
+        // This might enable a call to simplify(), which is preferable to floatToRatio().
         if (is_float($num)) {
             $iNum = Floats::tryConvertToInt($num);
             if ($iNum !== null) {
@@ -634,24 +634,30 @@ final class Rational implements Stringable
             throw new DomainException('Cannot convert ±INF or NAN to a rational number.');
         }
 
+        $absValue = abs($value);
+        $sign = Numbers::sign($value, false);
+
         // Check if the float equals a valid integer.
-        $iValue = Floats::tryConvertToInt($value);
-        if ($iValue !== null && $iValue > PHP_INT_MIN) {
-            return [$iValue, 1];
+        $i = Floats::tryConvertToInt($absValue);
+        if ($i !== null) {
+            return [$sign * $i, 1];
         }
 
         // Initialise variables.
-        $sign = Numbers::sign($value, false);
-        $absValue = abs($value);
         $rangeErr = 'The value is outside the valid range for representation as a rational number.';
 
-        // Check for values outside the valid range.
-        if ($absValue < 1 / PHP_INT_MAX) {
+        // Using <= because casting 1 / PHP_INT_MAX to float is outside the valid range.
+        if ($absValue <= 1 / PHP_INT_MAX) {
             throw new UnderflowException($rangeErr);
         }
-        if ($absValue > PHP_INT_MAX) {
+        // Using >= because casting PHP_INT_MAX is outside the valid range.
+        if ($absValue >= PHP_INT_MAX) {
             throw new OverflowException($rangeErr);
         }
+
+        // Track the best approximation found so far. Initialize to the nearest integer.
+        $hBest = (int)round($absValue);
+        $kBest = 1;
 
         // Initialize convergents.
         $h0 = 1;
@@ -659,23 +665,14 @@ final class Rational implements Stringable
         $k0 = 0;
         $k1 = 1;
 
-        // Track the best approximation found so far. Initialize to the nearest integer.
-        $hBest = (int)round($absValue);
-        $kBest = 1;
-        $minErr = abs($hBest - $absValue);
-
-        // Get the initial approximation.
+        // Get the initial approximation and minimum error.
         $x = $absValue;
+        $minErr = abs($hBest - $absValue);
 
         // Loop until done.
         while (true) {
             // Extract integer part.
             $a = (int)$x;
-
-            // Check for negative value, indicating integer overflow.
-            if ($a < 0) {
-                throw new OverflowException($rangeErr);
-            }
 
             // Calculate next convergent
             $hNew = $a * $h0 + $h1;
