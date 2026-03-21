@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Constructor with rows/columns dimensions
   - Element access: `get()`, `set()`, `ArrayAccess` for row-level access
   - Arithmetic: `add()`, `sub()`, `mul()`, `div()`, `pow()`
-  - Operations: `determinant()`, `transpose()`, `inverse()`, `identity()`
+  - Operations: `det()`, `transpose()`, `inverse()`, `identity()`
   - Vector multiplication support
   - Comparison: `equal()`, `approxEqual()` via `ApproxEquatable` trait
   - Conversion: `toArray()`, `format()`, `__toString()` with box-drawing characters
