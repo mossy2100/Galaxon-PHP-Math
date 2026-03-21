@@ -1,6 +1,6 @@
 {
     "name": "galaxon/math",
-    "description": "Immutable PHP classes for Complex and Rational number arithmetic with comprehensive mathematical operations.",
+    "description": "PHP classes for Complex and Rational number arithmetic, plus Vector and Matrix operations.",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -10,7 +10,8 @@
         "rational",
         "fraction",
         "arithmetic",
-        "immutable",
+        "vector",
+        "matrix",
         "trigonometry"
     ],
     "authors": [
