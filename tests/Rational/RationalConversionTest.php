@@ -211,23 +211,45 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with PHP_INT_MIN float throws OverflowException.
+     * Test floatToRatio with PHP_INT_MIN float returns -PHP_INT_MAX/1.
      */
-    public function testFloatToRatioWithPhpIntMinThrows(): void
+    public function testFloatToRatioWithPhpIntMin(): void
     {
-        $this->expectException(OverflowException::class);
-        // (float)PHP_INT_MIN is exactly representable as a float, but is outside valid Rational range
-        Rational::floatToRatio((float)PHP_INT_MIN);
+        // (float)PHP_INT_MIN has absolute value equal to (float)PHP_INT_MAX, handled as edge case.
+        [$num, $den] = Rational::floatToRatio((float)PHP_INT_MIN);
+        $this->assertSame(-PHP_INT_MAX, $num);
+        $this->assertSame(1, $den);
     }
 
     /**
-     * Test floatToRatio with PHP_INT_MAX float throws OverflowException.
+     * Test floatToRatio with PHP_INT_MAX float returns PHP_INT_MAX/1.
      */
-    public function testFloatToRatioWithPhpIntMaxThrows(): void
+    public function testFloatToRatioWithPhpIntMax(): void
     {
-        $this->expectException(OverflowException::class);
-        // (float)PHP_INT_MAX rounds up to 2^63, which overflows when cast to int.
-        Rational::floatToRatio((float)PHP_INT_MAX);
+        // (float)PHP_INT_MAX rounds up to 2^63, handled as edge case.
+        [$num, $den] = Rational::floatToRatio((float)PHP_INT_MAX);
+        $this->assertSame(PHP_INT_MAX, $num);
+        $this->assertSame(1, $den);
+    }
+
+    /**
+     * Test floatToRatio with 1/PHP_INT_MAX returns the exact boundary value.
+     */
+    public function testFloatToRatioWithInversePhpIntMax(): void
+    {
+        [$num, $den] = Rational::floatToRatio(1.0 / PHP_INT_MAX);
+        $this->assertSame(1, $num);
+        $this->assertSame(PHP_INT_MAX, $den);
+    }
+
+    /**
+     * Test floatToRatio with -1/PHP_INT_MAX returns the exact boundary value.
+     */
+    public function testFloatToRatioWithNegativeInversePhpIntMax(): void
+    {
+        [$num, $den] = Rational::floatToRatio(-1.0 / PHP_INT_MAX);
+        $this->assertSame(1, $num);
+        $this->assertSame(-PHP_INT_MAX, $den);
     }
 
     /**

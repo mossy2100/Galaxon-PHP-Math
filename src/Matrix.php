@@ -554,7 +554,10 @@ final class Matrix implements Stringable, ArrayAccess
         if (!$this->isSquare()) {
             throw new DomainException('Square can only be calculated for square matrices.');
         }
-        return $this->mul($this);
+
+        $result = $this->mul($this);
+        assert($result instanceof self);
+        return $result;
     }
 
     /**

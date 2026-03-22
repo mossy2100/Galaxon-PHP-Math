@@ -213,11 +213,22 @@ class ComplexTranscendentalTest extends TestCase
     }
 
     /**
-     * Test i^2 = -1
+     * Test i^2 = -1 using sqr().
      */
     public function testISquared(): void
     {
         $result = Complex::i()->sqr();
+
+        $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+    }
+
+    /**
+     * Test i^2 = -1 using pow(2), which has a special-case shortcut.
+     */
+    public function testISquaredViaPow(): void
+    {
+        $result = Complex::i()->pow(2);
 
         $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);

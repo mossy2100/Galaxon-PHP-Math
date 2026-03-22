@@ -260,6 +260,35 @@ class RationalConstructorTest extends TestCase
     }
 
     /**
+     * Test PHP_INT_MIN numerator with denominator 1 throws OverflowException.
+     */
+    public function testConstructorWithMinIntNumeratorAndDenominator1Throws(): void
+    {
+        $this->expectException(OverflowException::class);
+        new Rational(PHP_INT_MIN, 1);
+    }
+
+    /**
+     * Test PHP_INT_MIN numerator with denominator -1 throws OverflowException.
+     */
+    public function testConstructorWithMinIntNumeratorAndDenominatorNeg1Throws(): void
+    {
+        $this->expectException(OverflowException::class);
+        new Rational(PHP_INT_MIN, -1);
+    }
+
+    /**
+     * Test PHP_INT_MIN numerator with odd denominator falls back to float conversion.
+     */
+    public function testConstructorWithMinIntNumeratorAndOddDenominator(): void
+    {
+        // simplify() can't handle PHP_INT_MIN with odd denominator, so the constructor
+        // falls back to floatToRatio(). The result is approximate due to float precision.
+        $r = new Rational(PHP_INT_MIN, 3);
+        $this->assertEqualsWithDelta(PHP_INT_MIN / 3, $r->num / $r->den, 1.0);
+    }
+
+    /**
      * Test PHP_INT_MIN numerator with a larger even denominator.
      */
     public function testConstructorWithMinIntNumeratorAndLargerEvenDenominator(): void

@@ -98,11 +98,27 @@ final class Rational implements Stringable
         // Check if we got two valid integers.
         $convertFloat = false;
         if (is_int($num) && is_int($den)) {
+            // Check for overflow.
+            if ($num === PHP_INT_MIN && abs($den) === 1) {
+                throw new OverflowException(
+                    'If the absolute value of the denominator is 1, the absolute value of the numerator ' .
+                    'must be no greater than ' . PHP_INT_MAX . '.'
+                );
+            }
+
+            // Check for underflow.
+            if (abs($num) === 1 && $den === PHP_INT_MIN) {
+                throw new UnderflowException(
+                    'If the absolute value of the numerator is 1, the absolute value of the denominator ' .
+                    'must be no greater than ' . PHP_INT_MAX . '.'
+                );
+            }
+
+            // Try to simplify the ratio.
             try {
-                // Simplify the ratio.
                 [$num2, $den2] = self::simplify($num, $den);
             } catch (DomainException) {
-                // If either the resulting numerator or denominator is out of range, try converting from float.
+                // If the ratio couldn't be simplified, try converting from float.
                 $convertFloat = true;
             }
         } else {
@@ -498,7 +514,6 @@ final class Rational implements Stringable
      * Equivalent to pow(2), but more efficient and readable.
      *
      * @return self A new rational number representing the square of this number.
-     * @throws OverflowException If the result overflows an integer.
      */
     public function sqr(): self
     {
@@ -656,16 +671,18 @@ final class Rational implements Stringable
             return [$sign * $i, 1];
         }
 
-        // Initialise variables.
-        $rangeErr = 'The value is outside the valid range for representation as a rational number.';
-
-        // Using <= because casting 1 / PHP_INT_MAX to float is outside the valid range.
-        if ($absValue <= 1 / PHP_INT_MAX) {
-            throw new UnderflowException($rangeErr);
+        // Check for values outside of the valid range for Rational.
+        if ($absValue < 1 / PHP_INT_MAX) {
+            throw new UnderflowException("The value $value is too small to be expressed as a rational number.");
+        } elseif ($absValue > PHP_INT_MAX) {
+            throw new OverflowException("The value $value is too large to be expressed as a rational number.");
         }
-        // Using >= because casting PHP_INT_MAX is outside the valid range.
-        if ($absValue >= PHP_INT_MAX) {
-            throw new OverflowException($rangeErr);
+
+        // Check for limits of range, which can't be handled by the continued fraction algorithm.
+        if ($absValue === 1.0 / PHP_INT_MAX) {
+            return [1, $sign * PHP_INT_MAX];
+        } elseif ($absValue === (float)PHP_INT_MAX) {
+            return [$sign * PHP_INT_MAX, 1];
         }
 
         // Track the best approximation found so far. Initialize to the nearest integer.

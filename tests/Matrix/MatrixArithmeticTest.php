@@ -404,10 +404,16 @@ class MatrixArithmeticTest extends TestCase
     public function testSqr(): void
     {
         // [[1, 2], [3, 4]]² = [[7, 10], [15, 22]]
-        $m = Matrix::fromArray([[1, 2], [3, 4]]);
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
         $result = $m->sqr();
 
-        $expected = Matrix::fromArray([[7, 10], [15, 22]]);
+        $expected = Matrix::fromArray([
+            [7, 10],
+            [15, 22],
+        ]);
         $this->assertTrue($result->equal($expected));
     }
 
@@ -416,7 +422,10 @@ class MatrixArithmeticTest extends TestCase
      */
     public function testSqrEqualsPowTwo(): void
     {
-        $m = Matrix::fromArray([[2, 1], [0, 3]]);
+        $m = Matrix::fromArray([
+            [2, 1],
+            [0, 3],
+        ]);
         $this->assertTrue($m->sqr()->equal($m->pow(2)));
     }
 
