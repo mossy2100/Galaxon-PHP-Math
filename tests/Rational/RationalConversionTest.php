@@ -233,6 +233,17 @@ class RationalConversionTest extends TestCase
     }
 
     /**
+     * Test floatToRatio with 1/PHP_INT_MIN returns -1/PHP_INT_MAX.
+     */
+    public function testFloatToRatioWithInversePhpIntMin(): void
+    {
+        // (float)1/PHP_INT_MIN has absolute value equal to (float)(-1/PHP_INT_MAX), handled as edge case.
+        [$num, $den] = Rational::floatToRatio(1.0 / PHP_INT_MIN);
+        $this->assertSame(-1, $num);
+        $this->assertSame(PHP_INT_MAX, $den);
+    }
+
+    /**
      * Test floatToRatio with 1/PHP_INT_MAX returns the exact boundary value.
      */
     public function testFloatToRatioWithInversePhpIntMax(): void
@@ -248,8 +259,8 @@ class RationalConversionTest extends TestCase
     public function testFloatToRatioWithNegativeInversePhpIntMax(): void
     {
         [$num, $den] = Rational::floatToRatio(-1.0 / PHP_INT_MAX);
-        $this->assertSame(1, $num);
-        $this->assertSame(-PHP_INT_MAX, $den);
+        $this->assertSame(-1, $num);
+        $this->assertSame(PHP_INT_MAX, $den);
     }
 
     /**

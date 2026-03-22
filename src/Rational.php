@@ -680,7 +680,7 @@ final class Rational implements Stringable
 
         // Check for limits of range, which can't be handled by the continued fraction algorithm.
         if ($absValue === 1.0 / PHP_INT_MAX) {
-            return [1, $sign * PHP_INT_MAX];
+            return [$sign, PHP_INT_MAX];
         } elseif ($absValue === (float)PHP_INT_MAX) {
             return [$sign * PHP_INT_MAX, 1];
         }

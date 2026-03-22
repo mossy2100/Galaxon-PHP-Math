@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replaced `pow(2)` with `sqr()` in examples and tests where appropriate.
 - `Complex::sqr()` now uses `mul($this)` instead of `pow(2)`.
+- `Rational` constructor now checks for `PHP_INT_MIN` overflow/underflow before calling `simplify()`.
+
+### Fixed
+
+- `Rational::floatToRatio()` — sign is now correctly placed on the numerator (not denominator) for the `1/PHP_INT_MAX` boundary case.
+- `Rational::floatToRatio()` — `(float)PHP_INT_MAX` and `(float)PHP_INT_MIN` now return correct boundary values instead of throwing.
 
 ## [1.1.0] - 2026-03-21
 
