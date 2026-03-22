@@ -445,6 +445,22 @@ $result4 = $r4->pow(0);  // 1/1 (any number^0 = 1)
 - `DomainException` if raising zero to a negative power
 - `OverflowException` if the result overflows
 
+### sqr()
+
+```php
+public function sqr(): self
+```
+
+Square this rational number. Equivalent to `pow(2)`, but more efficient and readable.
+
+**Example:**
+```php
+$r = new Rational(3, 4);
+$result = $r->sqr();  // 9/16
+```
+
+**Throws:** `OverflowException` if the result overflows.
+
 ### abs()
 
 ```php
@@ -635,7 +651,7 @@ echo $r2;                // "3/4"
 
 // Complex calculations
 $r = new Rational(2, 3);
-$result = $r->pow(2)->mul(new Rational(9, 4));
+$result = $r->sqr()->mul(new Rational(9, 4));
 echo $result;  // "1"
 ```
 

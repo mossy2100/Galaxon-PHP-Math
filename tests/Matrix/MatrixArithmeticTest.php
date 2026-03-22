@@ -397,4 +397,36 @@ class MatrixArithmeticTest extends TestCase
         $this->expectException(DomainException::class);
         $m->pow(2);
     }
+
+    /**
+     * Test sqr() squares a matrix.
+     */
+    public function testSqr(): void
+    {
+        // [[1, 2], [3, 4]]² = [[7, 10], [15, 22]]
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
+        $result = $m->sqr();
+
+        $expected = Matrix::fromArray([[7, 10], [15, 22]]);
+        $this->assertTrue($result->equal($expected));
+    }
+
+    /**
+     * Test sqr() is equivalent to pow(2).
+     */
+    public function testSqrEqualsPowTwo(): void
+    {
+        $m = Matrix::fromArray([[2, 1], [0, 3]]);
+        $this->assertTrue($m->sqr()->equal($m->pow(2)));
+    }
+
+    /**
+     * Test sqr() throws for non-square matrix.
+     */
+    public function testSqrNonSquareThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(DomainException::class);
+        $m->sqr();
+    }
 }

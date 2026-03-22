@@ -542,6 +542,22 @@ final class Matrix implements Stringable, ArrayAccess
     }
 
     /**
+     * Square this matrix.
+     *
+     * Equivalent to pow(2), but more efficient and readable.
+     *
+     * @return self A new matrix representing the square of this matrix.
+     * @throws DomainException If the matrix is not square.
+     */
+    public function sqr(): self
+    {
+        if (!$this->isSquare()) {
+            throw new DomainException('Square can only be calculated for square matrices.');
+        }
+        return $this->mul($this);
+    }
+
+    /**
      * Get the transpose of this matrix.
      *
      * @return self New matrix representing the transpose.

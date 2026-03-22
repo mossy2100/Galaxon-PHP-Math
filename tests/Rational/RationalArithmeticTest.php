@@ -322,6 +322,39 @@ class RationalArithmeticTest extends TestCase
     }
 
     /**
+     * Test sqr() squares a rational number.
+     */
+    public function testSqr(): void
+    {
+        // (3/4)² = 9/16
+        $r = new Rational(3, 4);
+        $result = $r->sqr();
+        $this->assertSame(9, $result->num);
+        $this->assertSame(16, $result->den);
+    }
+
+    /**
+     * Test sqr() with a negative rational number.
+     */
+    public function testSqrNegative(): void
+    {
+        // (-2/3)² = 4/9
+        $r = new Rational(-2, 3);
+        $result = $r->sqr();
+        $this->assertSame(4, $result->num);
+        $this->assertSame(9, $result->den);
+    }
+
+    /**
+     * Test sqr() is equivalent to pow(2).
+     */
+    public function testSqrEqualsPowTwo(): void
+    {
+        $r = new Rational(5, 7);
+        $this->assertTrue($r->sqr()->equal($r->pow(2)));
+    }
+
+    /**
      * Test absolute value.
      */
     public function testAbs(): void

@@ -627,6 +627,18 @@ final class Complex implements Stringable, ArrayAccess
     }
 
     /**
+     * Square this complex number.
+     *
+     * Equivalent to pow(2), but more efficient and readable.
+     *
+     * @return self A new complex number representing the square of this number.
+     */
+    public function sqr(): self
+    {
+        return $this->mul($this);
+    }
+
+    /**
      * Calculate the nth roots of this complex number.
      * Returns all n complex roots using De Moivre's theorem.
      *
@@ -661,16 +673,6 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         return $roots;
-    }
-
-    /**
-     * Calculate the square of this complex number.
-     *
-     * @return self
-     */
-    public function sqr(): self
-    {
-        return $this->pow(2);
     }
 
     /**
@@ -802,7 +804,7 @@ final class Complex implements Stringable, ArrayAccess
         // asin(z) = -i·ln(iz + √(1-z²))
         // iz = -y + ix (multiply by i directly)
         $iz = new self(-$this->imaginary, $this->real);
-        // 1 - z² (use sqr() instead of pow(2) for efficiency)
+        // 1 - z²
         $oneMinusZ2 = new self(1)->sub($this->sqr());
         // -i·ln(iz + √(1-z²))
         return $iz->add($oneMinusZ2->sqrt())->ln()->mul(new self(0, -1));
@@ -817,7 +819,7 @@ final class Complex implements Stringable, ArrayAccess
     public function acos(): self
     {
         // acos(z) = -i·ln(z + i·√(1-z²))
-        // 1 - z² (use sqr() instead of pow(2) for efficiency)
+        // 1 - z²
         $oneMinusZ2 = new self(1)->sub($this->sqr());
         // i·√(1-z²) - multiply √(1-z²) by i directly
         $sqrt = $oneMinusZ2->sqrt();

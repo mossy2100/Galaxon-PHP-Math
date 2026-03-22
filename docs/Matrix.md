@@ -453,6 +453,24 @@ $m3 = $m->pow(3);   // [[1, 3], [0, 1]]
 $mi = $m->pow(-1);  // Inverse matrix
 ```
 
+### sqr()
+
+```php
+public function sqr(): self
+```
+
+Square this matrix. Equivalent to `pow(2)`, but more efficient and readable. The matrix must be square.
+
+**Returns:** `self` - New matrix representing the square.
+
+**Throws:** `DomainException` if the matrix is not square.
+
+**Example:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$result = $m->sqr();  // [[7, 10], [15, 22]]
+```
+
 ### transpose()
 
 ```php

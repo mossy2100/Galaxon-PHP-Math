@@ -493,6 +493,19 @@ final class Rational implements Stringable
     }
 
     /**
+     * Square this rational number.
+     *
+     * Equivalent to pow(2), but more efficient and readable.
+     *
+     * @return self A new rational number representing the square of this number.
+     * @throws OverflowException If the result overflows an integer.
+     */
+    public function sqr(): self
+    {
+        return $this->mul($this);
+    }
+
+    /**
      * Calculate the absolute value of this rational number.
      *
      * @return self A new rational number representing the absolute value.

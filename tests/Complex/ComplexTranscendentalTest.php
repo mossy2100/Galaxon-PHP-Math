@@ -217,7 +217,7 @@ class ComplexTranscendentalTest extends TestCase
      */
     public function testISquared(): void
     {
-        $result = Complex::i()->pow(2);
+        $result = Complex::i()->sqr();
 
         $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
@@ -276,6 +276,45 @@ class ComplexTranscendentalTest extends TestCase
     {
         $this->expectException(DomainException::class);
         new Complex(0)->pow(new Complex(1, 1));
+    }
+
+    /**
+     * Test sqr() squares a complex number.
+     */
+    public function testSqr(): void
+    {
+        // (3 + 4i)² = 9 + 24i - 16 = -7 + 24i
+        $z = new Complex(3, 4);
+        $result = $z->sqr();
+
+        $this->assertEqualsWithDelta(-7.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(24.0, $result->imaginary, Complex::EPSILON);
+    }
+
+    /**
+     * Test sqr() with a purely imaginary number.
+     */
+    public function testSqrImaginary(): void
+    {
+        // (2i)² = -4
+        $z = new Complex(0, 2);
+        $result = $z->sqr();
+
+        $this->assertEqualsWithDelta(-4.0, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+    }
+
+    /**
+     * Test sqr() is equivalent to pow(2).
+     */
+    public function testSqrEqualsPowTwo(): void
+    {
+        $z = new Complex(5, -3);
+        $sqr = $z->sqr();
+        $pow2 = $z->pow(2);
+
+        $this->assertEqualsWithDelta($sqr->real, $pow2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($sqr->imaginary, $pow2->imaginary, Complex::EPSILON);
     }
 
     /**
@@ -339,18 +378,6 @@ class ComplexTranscendentalTest extends TestCase
         $this->assertCount(1, $roots);
         $this->assertEqualsWithDelta(0.0, $roots[0]->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $roots[0]->imaginary, Complex::EPSILON);
-    }
-
-    /**
-     * Test sqr (square).
-     */
-    public function testSqr(): void
-    {
-        $z = new Complex(3, 4);
-        $result = $z->sqr();
-
-        $this->assertEqualsWithDelta(-7.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(24.0, $result->imaginary, Complex::EPSILON);
     }
 
     /**
