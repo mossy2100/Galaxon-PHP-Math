@@ -145,143 +145,6 @@ final class Vector implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Vector operations
-
-    /**
-     * Add another vector to this one.
-     *
-     * @param self $other Vector to add.
-     * @return self New vector representing the sum.
-     * @throws LengthException If vectors have different sizes.
-     */
-    public function add(self $other): self
-    {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
-            throw new LengthException('Vectors must have the same size for addition.');
-        }
-
-        // Add the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
-            $result->set($i, $this->data[$i] + $other->data[$i]);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Subtract another vector from this one.
-     *
-     * @param self $other Vector to subtract.
-     * @return self New vector representing the difference.
-     * @throws LengthException If vectors have different sizes.
-     */
-    public function sub(self $other): self
-    {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
-            throw new LengthException('Vectors must have the same size for subtraction.');
-        }
-
-        // Subtract the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
-            $result->set($i, $this->data[$i] - $other->data[$i]);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Multiply this vector by a scalar.
-     *
-     * @param int|float $scalar Number to multiply by.
-     * @return self New vector representing the product.
-     */
-    public function mul(int|float $scalar): self
-    {
-        // Multiply the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
-            $result->set($i, $this->data[$i] * $scalar);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Divide this vector by a scalar.
-     *
-     * @param int|float $scalar Number to divide by.
-     * @return self New vector representing the quotient.
-     * @throws DivisionByZeroError If scalar is zero.
-     */
-    public function div(int|float $scalar): self
-    {
-        // Guard.
-        if (Numbers::equal($scalar, 0)) {
-            throw new DivisionByZeroError('Division by zero is not allowed.');
-        }
-
-        // Divide the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
-            $result->set($i, $this->data[$i] / $scalar);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Calculate the dot product of this vector with another vector.
-     *
-     * @param self $other Vector to calculate dot product with.
-     * @return float The dot product.
-     * @throws LengthException If vectors have different sizes.
-     */
-    public function dot(self $other): float
-    {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
-            throw new LengthException('Vectors must have the same size for dot product.');
-        }
-
-        // Calculate the dot product element-wise.
-        $result = 0.0;
-        for ($i = 0; $i < $this->size; $i++) {
-            $result += $this->data[$i] * $other->data[$i];
-        }
-
-        return $result;
-    }
-
-    /**
-     * Calculate the cross product of this vector with another vector. Both must be size 3.
-     *
-     * @param self $other Vector to calculate cross product with.
-     * @return self New vector representing the cross product.
-     * @throws LengthException If either vector is not of size 3.
-     */
-    public function cross(self $other): self
-    {
-        // Check if vectors are size 3.
-        if ($this->size !== 3) {
-            throw new LengthException('First operand must be a vector of size 3.');
-        }
-        if ($other->size !== 3) {
-            throw new LengthException('Second operand must be a vector of size 3.');
-        }
-
-        return self::fromArray([
-            $this->data[1] * $other->data[2] - $this->data[2] * $other->data[1],
-            $this->data[2] * $other->data[0] - $this->data[0] * $other->data[2],
-            $this->data[0] * $other->data[1] - $this->data[1] * $other->data[0],
-        ]);
-    }
-
-    // endregion
-
     // region Comparison methods
 
     /**
@@ -357,6 +220,157 @@ final class Vector implements Stringable, ArrayAccess
 
     // endregion
 
+    // region Arithmetic methods
+
+    /**
+     * Negate this vector.
+     *
+     * @return self A new vector with all elements negated.
+     */
+    public function neg(): self
+    {
+        return $this->mul(-1);
+    }
+
+    /**
+     * Add another vector to this one.
+     *
+     * @param self $other Vector to add.
+     * @return self New vector representing the sum.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function add(self $other): self
+    {
+        // Check if vectors have the same size.
+        if ($this->size !== $other->size) {
+            throw new LengthException('Vectors must have the same size for addition.');
+        }
+
+        // Add the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] + $other->data[$i]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Subtract another vector from this one.
+     *
+     * @param self $other Vector to subtract.
+     * @return self New vector representing the difference.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function sub(self $other): self
+    {
+        // Check if vectors have the same size.
+        if ($this->size !== $other->size) {
+            throw new LengthException('Vectors must have the same size for subtraction.');
+        }
+
+        // Subtract the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] - $other->data[$i]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Multiply this vector by a scalar.
+     *
+     * @param int|float $scalar Number to multiply by.
+     * @return self New vector representing the product.
+     */
+    public function mul(int|float $scalar): self
+    {
+        // Multiply the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] * $scalar);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Divide this vector by a scalar.
+     *
+     * @param int|float $scalar Number to divide by.
+     * @return self New vector representing the quotient.
+     * @throws DivisionByZeroError If scalar is zero.
+     */
+    public function div(int|float $scalar): self
+    {
+        // Guard.
+        if (Numbers::equal($scalar, 0)) {
+            throw new DivisionByZeroError('Cannot divide by zero.');
+        }
+
+        // Divide the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] / $scalar);
+        }
+
+        return $result;
+    }
+
+    // endregion
+
+    // region Linear algebra methods
+
+    /**
+     * Calculate the dot product of this vector with another vector.
+     *
+     * @param self $other Vector to calculate dot product with.
+     * @return float The dot product.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function dot(self $other): float
+    {
+        // Check if vectors have the same size.
+        if ($this->size !== $other->size) {
+            throw new LengthException('Vectors must have the same size for dot product.');
+        }
+
+        // Calculate the dot product element-wise.
+        $result = 0.0;
+        for ($i = 0; $i < $this->size; $i++) {
+            $result += $this->data[$i] * $other->data[$i];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate the cross product of this vector with another vector. Both must be size 3.
+     *
+     * @param self $other Vector to calculate cross product with.
+     * @return self New vector representing the cross product.
+     * @throws LengthException If either vector is not of size 3.
+     */
+    public function cross(self $other): self
+    {
+        // Check if vectors are size 3.
+        if ($this->size !== 3) {
+            throw new LengthException('First operand must be a vector of size 3.');
+        }
+        if ($other->size !== 3) {
+            throw new LengthException('Second operand must be a vector of size 3.');
+        }
+
+        return self::fromArray([
+            $this->data[1] * $other->data[2] - $this->data[2] * $other->data[1],
+            $this->data[2] * $other->data[0] - $this->data[0] * $other->data[2],
+            $this->data[0] * $other->data[1] - $this->data[1] * $other->data[0],
+        ]);
+    }
+
+    // endregion
+
     // region Conversion methods
 
     /**
@@ -384,10 +398,6 @@ final class Vector implements Stringable, ArrayAccess
         return Matrix::fromArray($matrixData);
     }
 
-    // endregion
-
-    // region String methods
-
     /**
      * Format the vector as a string.
      *
@@ -404,7 +414,9 @@ final class Vector implements Stringable, ArrayAccess
      *
      * By default, this will format the Vector as a column vector.
      * If you want to format the column as a row vector, you can use:
-     * @example echo (string)$vec->toMatrix(true);
+     * @example echo $vec->toMatrix(true);
+     * OR
+     * @example echo $vec->format(true);
      *
      * @return string String representation of the Vector.
      */

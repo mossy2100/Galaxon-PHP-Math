@@ -324,7 +324,19 @@ final class Matrix implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Matrix operations
+    // region Arithmetic methods
+
+    /**
+     * Negate this matrix.
+     *
+     * @return self A new matrix with all elements negated.
+     */
+    public function neg(): self
+    {
+        $result = $this->mul(-1);
+        assert($result instanceof self);
+        return $result;
+    }
 
     /**
      * Add another matrix to this one.
@@ -372,39 +384,6 @@ final class Matrix implements Stringable, ArrayAccess
             }
         }
         return $result;
-    }
-
-    /**
-     * Calculate the inverse of this matrix.
-     *
-     * @return self New matrix representing the inverse.
-     * @throws DomainException If matrix is not square or not invertible.
-     */
-    public function inv(): self
-    {
-        // Check if matrix is square.
-        if (!$this->isSquare()) {
-            throw new DomainException('Inverse can only be calculated for square matrices.');
-        }
-
-        // Calculate the inverse using cofactor expansion and the adjugate matrix.
-        $det = $this->det();
-        if ($det === 0.0) {
-            throw new DomainException('Matrix is not invertible (determinant is zero).');
-        }
-
-        $n = $this->rowCount;
-        $adjugate = new self($n, $n);
-
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                $minor = $this->getMinor($i, $j);
-                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
-                $adjugate->set($j, $i, $cofactor / $det); // Note: transposed
-            }
-        }
-
-        return $adjugate;
     }
 
     /**
@@ -483,7 +462,7 @@ final class Matrix implements Stringable, ArrayAccess
         if (Numbers::isNumber($other)) {
             // Guard against division by zero.
             if (Numbers::equal($other, 0)) {
-                throw new DivisionByZeroError('Division by zero is not allowed.');
+                throw new DivisionByZeroError('Cannot divide by zero.');
             }
 
             // Divide each element of the matrix by the scalar.
@@ -501,6 +480,43 @@ final class Matrix implements Stringable, ArrayAccess
         assert($result instanceof self);
         return $result;
     }
+
+    /**
+     * Calculate the inverse of this matrix.
+     *
+     * @return self New matrix representing the inverse.
+     * @throws DomainException If matrix is not square or not invertible.
+     */
+    public function inv(): self
+    {
+        // Check if matrix is square.
+        if (!$this->isSquare()) {
+            throw new DomainException('Inverse can only be calculated for square matrices.');
+        }
+
+        // Calculate the inverse using cofactor expansion and the adjugate matrix.
+        $det = $this->det();
+        if ($det === 0.0) {
+            throw new DomainException('Matrix is not invertible (determinant is zero).');
+        }
+
+        $n = $this->rowCount;
+        $adjugate = new self($n, $n);
+
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = 0; $j < $n; $j++) {
+                $minor = $this->getMinor($i, $j);
+                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
+                $adjugate->set($j, $i, $cofactor / $det); // Note: transposed
+            }
+        }
+
+        return $adjugate;
+    }
+
+    // endregion
+
+    // region Power methods
 
     /**
      * Raise this matrix to a power.
@@ -559,6 +575,10 @@ final class Matrix implements Stringable, ArrayAccess
         assert($result instanceof self);
         return $result;
     }
+
+    // endregion
+
+    // region Linear algebra methods
 
     /**
      * Get the transpose of this matrix.
@@ -673,16 +693,12 @@ final class Matrix implements Stringable, ArrayAccess
         return $this->data;
     }
 
-    // endregion
-
-    // region String methods
-
     /**
      * Convert the matrix to a string representation using box-drawing characters.
      *
      * @return string String representation of the Matrix.
      */
-    public function format(): string
+    public function __toString(): string
     {
         if ($this->rowCount === 0 || $this->columnCount === 0) {
             return '┌ ┐' . "\n" . '└ ┘';
@@ -716,16 +732,6 @@ final class Matrix implements Stringable, ArrayAccess
         $result .= '└' . str_repeat(' ', $innerWidth) . '┘';
 
         return $result;
-    }
-
-    /**
-     * Convert the matrix to a string representation using box-drawing characters.
-     *
-     * @return string String representation of the Matrix.
-     */
-    public function __toString(): string
-    {
-        return $this->format();
     }
 
     // endregion

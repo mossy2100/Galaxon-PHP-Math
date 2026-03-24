@@ -2,6 +2,8 @@
 
 Mutable class representing a two-dimensional matrix of numbers with comprehensive linear algebra operations.
 
+---
+
 ## Overview
 
 The `Matrix` class provides a complete implementation of matrix arithmetic with support for:
@@ -15,6 +17,8 @@ The `Matrix` class provides a complete implementation of matrix arithmetic with 
 - Support for 0x0 and 0xn empty matrices
 
 Matrix data is stored privately to prevent non-rectangular or non-numeric mutation.
+
+---
 
 ## Properties
 
@@ -33,6 +37,8 @@ private(set) int $columnCount
 ```
 
 The number of columns in the matrix. Read-only from outside the class. Stored explicitly (not derived) to support 0-row matrices where the column count cannot be inferred from data.
+
+---
 
 ## Constructor
 
@@ -116,7 +122,7 @@ $i3 = Matrix::identity(3);
 
 ---
 
-## Element Access
+## Get/Set Matrix Elements
 
 ### get()
 
@@ -207,7 +213,7 @@ $col = $m->getColumn(0);  // Vector(1, 3, 5)
 
 ---
 
-## Inspection
+## Inspection Methods
 
 ### isSquare()
 
@@ -313,7 +319,24 @@ var_dump($m1->approxEqual('string'));  // false
 
 ---
 
-## Matrix Operations
+## Arithmetic Methods
+
+### neg()
+
+```php
+public function neg(): self
+```
+
+Negate this matrix. Returns a new matrix with all elements negated.
+
+**Returns:** `self` - A new matrix with all elements negated.
+
+**Example:**
+```php
+$m = Matrix::fromArray([[1, -2], [3, -4]]);
+$result = $m->neg();
+// [[-1, 2], [-3, 4]]
+```
 
 ### add()
 
@@ -428,6 +451,31 @@ $result = $a->div($b);
 // [[0.5, 0], [0, 0.5]]
 ```
 
+### inv()
+
+```php
+public function inv(): self
+```
+
+Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and invertible (non-zero determinant).
+
+**Returns:** `self` - New matrix representing the inverse.
+
+**Throws:** `DomainException` if the matrix is not square or not invertible (determinant is zero).
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$inv = $m->inv();
+
+// Verify: M × M⁻¹ = I
+$identity = $m->mul($inv);
+```
+
+---
+
+## Power Methods
+
 ### pow()
 
 ```php
@@ -471,6 +519,10 @@ $m = Matrix::fromArray([[1, 2], [3, 4]]);
 $result = $m->sqr();  // [[7, 10], [15, 22]]
 ```
 
+---
+
+## Linear Algebra Methods
+
 ### transpose()
 
 ```php
@@ -509,27 +561,6 @@ $i = Matrix::identity(3);
 echo $i->det();  // 1.0
 ```
 
-### inv()
-
-```php
-public function inv(): self
-```
-
-Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and invertible (non-zero determinant).
-
-**Returns:** `self` - New matrix representing the inverse.
-
-**Throws:** `DomainException` if the matrix is not square or not invertible (determinant is zero).
-
-**Examples:**
-```php
-$m = Matrix::fromArray([[1, 2], [3, 4]]);
-$inv = $m->inv();
-
-// Verify: M × M⁻¹ = I
-$identity = $m->mul($inv);
-```
-
 ---
 
 ## Conversion Methods
@@ -550,40 +581,13 @@ $m = Matrix::fromArray([[1, 2], [3, 4]]);
 $arr = $m->toArray();  // [[1, 2], [3, 4]]
 ```
 
-### format()
-
-```php
-public function format(): string
-```
-
-Format the matrix as a string using box-drawing characters. Values are right-aligned within columns.
-
-**Returns:**
-- `string` - The formatted string.
-
-**Examples:**
-```php
-$m = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $m->format();
-// ┌           ┐
-// │ 1.0  2.0  │
-// │ 3.0  4.0  │
-// └           ┘
-
-// Empty matrices
-$e = new Matrix(0, 0);
-echo $e->format();
-// ┌ ┐
-// └ ┘
-```
-
 ### \_\_toString()
 
 ```php
 public function __toString(): string
 ```
 
-Convert the matrix to a string representation. Delegates to `format()`.
+Convert the matrix to a string representation using box-drawing characters. Values are right-aligned within columns.
 
 **Examples:**
 ```php
@@ -593,11 +597,17 @@ echo $m;
 // │ 1.0  2.0  │
 // │ 3.0  4.0  │
 // └           ┘
+
+// Empty matrices
+$e = new Matrix(0, 0);
+echo $e;
+// ┌ ┐
+// └ ┘
 ```
 
 ---
 
-## ArrayAccess Interface
+## ArrayAccess Methods
 
 The `ArrayAccess` interface operates on rows. Reading a row returns a `Vector`; setting a row accepts a `Vector` or array.
 

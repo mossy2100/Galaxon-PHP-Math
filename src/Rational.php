@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math;
 
+use DivisionByZeroError;
 use DomainException;
 use Galaxon\Core\Exceptions\FormatException;
 use Galaxon\Core\Exceptions\IncomparableTypesException;
@@ -100,18 +101,12 @@ final class Rational implements Stringable
         if (is_int($num) && is_int($den)) {
             // Check for overflow.
             if ($num === PHP_INT_MIN && abs($den) === 1) {
-                throw new OverflowException(
-                    'If the absolute value of the denominator is 1, the absolute value of the numerator ' .
-                    'must be no greater than ' . PHP_INT_MAX . '.'
-                );
+                throw new OverflowException("Cannot simplify $num/$den: numerator would overflow.");
             }
 
             // Check for underflow.
             if (abs($num) === 1 && $den === PHP_INT_MIN) {
-                throw new UnderflowException(
-                    'If the absolute value of the numerator is 1, the absolute value of the denominator ' .
-                    'must be no greater than ' . PHP_INT_MAX . '.'
-                );
+                throw new UnderflowException("Cannot simplify $num/$den: denominator would overflow.");
             }
 
             // Try to simplify the ratio.
@@ -219,41 +214,6 @@ final class Rational implements Stringable
 
     // endregion
 
-    // region Conversion methods
-
-    /**
-     * Convert the rational number to a float.
-     *
-     * @return float The equivalent float.
-     */
-    public function toFloat(): float
-    {
-        return $this->num / $this->den;
-    }
-
-    /**
-     * Convert the rational number to an int.
-     *
-     * @return int The closest integer, rounding towards zero.
-     */
-    public function toInt(): int
-    {
-        return intdiv($this->num, $this->den);
-    }
-
-    /**
-     * Convert the rational number to a string. (Stringable implementation.)
-     *
-     * @return string The string representation of the rational number.
-     */
-    #[Override]
-    public function __toString(): string
-    {
-        return $this->num . ($this->den === 1 ? '' : '/' . $this->den);
-    }
-
-    // endregion
-
     // region Comparison methods
 
     /**
@@ -357,7 +317,7 @@ final class Rational implements Stringable
 
     // endregion
 
-    // region Arithmetic operations
+    // region Arithmetic methods
 
     /**
      * Calculate the negative of this rational number.
@@ -403,24 +363,6 @@ final class Rational implements Stringable
     }
 
     /**
-     * Calculate the reciprocal of this rational number.
-     *
-     * @return self A new rational number representing the reciprocal.
-     */
-    public function inv(): self
-    {
-        // Guard.
-        if ($this->num === 0) {
-            throw new DomainException('Cannot take reciprocal of zero.');
-        }
-
-        // Preserve sign: if num is negative, swap and negate.
-        return $this->num > 0
-            ? new self($this->den, $this->num)
-            : new self(-$this->den, -$this->num);
-    }
-
-    /**
      * Multiply this rational number by another value.
      *
      * @param int|float|self $other The value to multiply by.
@@ -454,19 +396,44 @@ final class Rational implements Stringable
      *
      * @param int|float|self $other The value to divide by.
      * @return self A new rational number representing the quotient.
-     * @throws DomainException If dividing by zero.
-     * @throws OverflowException If the result overflows an integer.
+     * @throws DivisionByZeroError If dividing by zero.
+     * @throws UnderflowException If the other value is non-zero but too small to represent as a Rational.
+     * @throws OverflowException If the other value is non-zero but too large to represent as a Rational, or if the
+     * result overflows an integer.
      */
     public function div(int|float|self $other): self
     {
         // Guard.
         $other = self::toRational($other);
         if ($other->num === 0) {
-            throw new DomainException('Cannot divide by zero.');
+            throw new DivisionByZeroError('Cannot divide by zero.');
         }
 
         return $this->mul($other->inv());
     }
+
+    /**
+     * Calculate the reciprocal of this rational number.
+     *
+     * @return self A new rational number representing the reciprocal.
+     * @throws DivisionByZeroError If the value is zero.
+     */
+    public function inv(): self
+    {
+        // Guard.
+        if ($this->num === 0) {
+            throw new DivisionByZeroError('Cannot take reciprocal of zero.');
+        }
+
+        // Preserve sign: if num is negative, swap and negate.
+        return $this->num > 0
+            ? new self($this->den, $this->num)
+            : new self(-$this->den, -$this->num);
+    }
+
+    // endregion
+
+    // region Power methods
 
     /**
      * Raise this rational number to an integer power.
@@ -495,17 +462,28 @@ final class Rational implements Stringable
             return new self(0);
         }
 
+        // Handle exponent = 1. Any number to power 1 is itself.
+        if ($exponent === 1) {
+            return $this;
+        }
+
+        // Handle exponent = 2. Delegate to sqr().
+        if ($exponent === 2) {
+            return $this->sqr();
+        }
+
+        // Handle exponent = -1. Delegate to inv().
+        if ($exponent === -1) {
+            return $this->inv();
+        }
+
         // Handle negative exponents by taking reciprocal.
         if ($exponent < 0) {
             return $this->inv()->pow(-$exponent);
         }
 
-        // Calculate the new numerator and denominator with overflow checks.
-        $h = Integers::pow($this->num, $exponent);
-        $k = Integers::pow($this->den, $exponent);
-
-        // Return the result.
-        return new self($h, $k);
+        // General solution. Calculate the new numerator and denominator with overflow checks.
+        return new self(Integers::pow($this->num, $exponent), Integers::pow($this->den, $exponent));
     }
 
     /**
@@ -520,6 +498,10 @@ final class Rational implements Stringable
         return $this->mul($this);
     }
 
+    // endregion
+
+    // region Magnitude and rounding methods
+
     /**
      * Calculate the absolute value of this rational number.
      *
@@ -528,6 +510,33 @@ final class Rational implements Stringable
     public function abs(): self
     {
         return new self(abs($this->num), $this->den);
+    }
+
+    /**
+     * Find the integer closest to the rational number.
+     *
+     * The rounding method used here is "half away from zero", to match the default rounding mode used by PHP's
+     * round() function. A future version of this method could include a RoundingMode parameter.
+     *
+     * @return int The closest integer.
+     */
+    public function round(): int
+    {
+        if ($this->den === 1) {
+            return $this->num;
+        }
+
+        $q = intdiv($this->num, $this->den);
+        $r = $this->num % $this->den;
+
+        // Round away from zero if remainder ≥ half denominator.
+        if (abs($r) * 2 >= $this->den) {
+            $result = $this->num > 0 ? $q + 1 : $q - 1;
+        } else {
+            $result = $q;
+        }
+
+        return $result;
     }
 
     /**
@@ -556,33 +565,6 @@ final class Rational implements Stringable
         }
         $q = intdiv($this->num, $this->den);
         return $this->num > 0 ? $q + 1 : $q;
-    }
-
-    /**
-     * Find the integer closest to the rational number.
-     *
-     * The rounding method used here is "half away from zero", to match the default rounding mode used by PHP's
-     * round() function. A future version of this method could include a RoundingMode parameter.
-     *
-     * @return int The closest integer.
-     */
-    public function round(): int
-    {
-        if ($this->den === 1) {
-            return $this->num;
-        }
-
-        $q = intdiv($this->num, $this->den);
-        $r = $this->num % $this->den;
-
-        // Round away from zero if remainder ≥ half denominator.
-        if (abs($r) * 2 >= $this->den) {
-            $result = $this->num > 0 ? $q + 1 : $q - 1;
-        } else {
-            $result = $q;
-        }
-
-        return $result;
     }
 
     // endregion
@@ -671,7 +653,7 @@ final class Rational implements Stringable
             return [$sign * $i, 1];
         }
 
-        // Check for values outside of the valid range for Rational.
+        // Check for values outside the valid range for Rational.
         if ($absValue < 1 / PHP_INT_MAX) {
             throw new UnderflowException("The value $value is too small to be expressed as a rational number.");
         } elseif ($absValue > PHP_INT_MAX) {
@@ -745,6 +727,31 @@ final class Rational implements Stringable
             // Calculate next approximation.
             $x = 1.0 / $rem;
         }
+    }
+
+    // endregion
+
+    // region Conversion methods
+
+    /**
+     * Convert the rational number to a float.
+     *
+     * @return float The equivalent float.
+     */
+    public function toFloat(): float
+    {
+        return $this->num / $this->den;
+    }
+
+    /**
+     * Convert the rational number to a string. (Stringable implementation.)
+     *
+     * @return string The string representation of the rational number.
+     */
+    #[Override]
+    public function __toString(): string
+    {
+        return $this->num . ($this->den === 1 ? '' : '/' . $this->den);
     }
 
     // endregion

@@ -2,6 +2,8 @@
 
 Immutable class representing complex numbers with comprehensive mathematical operations.
 
+---
+
 ## Overview
 
 The `Complex` class provides a complete implementation of complex number arithmetic with support for:
@@ -12,6 +14,8 @@ The `Complex` class provides a complete implementation of complex number arithme
 - Epsilon-based equality comparison for floating-point precision
 
 All operations return new instances, maintaining immutability.
+
+---
 
 ## Properties
 
@@ -53,6 +57,8 @@ For z = a + bi: arg(z) = atan2(b, a), then wrapped to (-π, π]
 
 The range excludes -π but includes π, following the standard mathematical convention for complex number arguments.
 
+---
+
 ## Constructor
 
 ```php
@@ -75,6 +81,8 @@ $z4 = new Complex();            // 0 + 0i (zero)
 
 **Note:** To create a complex number from a string, use the `parse()` method.
 
+---
+
 ## Factory Methods
 
 ### i()
@@ -91,7 +99,7 @@ $i = Complex::i();
 echo $i;  // "i"
 ```
 
-    ### fromPolar()
+### fromPolar()
 
 ```php
 public static function fromPolar(int|float $magnitude, int|float $phase): self
@@ -133,9 +141,11 @@ $z3 = Complex::parse("i");
 $z4 = Complex::parse("4i+3");
 ```
 
-**Throws:** `DomainException` if the string is invalid.
+**Throws:** `FormatException` if the string is invalid.
 
-## Inspection and Comparison Methods
+---
+
+## Inspection Methods
 
 ### isReal()
 
@@ -153,6 +163,10 @@ var_dump($z1->isReal());  // true
 $z2 = new Complex(3, 4);
 var_dump($z2->isReal());  // false
 ```
+
+---
+
+## Comparison Methods
 
 The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
 
@@ -243,7 +257,23 @@ var_dump($z3->approxEqual(5.0000001, 1e-6));  // true
 var_dump($z1->approxEqual('string'));  // false
 ```
 
-## Arithmetic Operations
+---
+
+## Arithmetic Methods
+
+### neg()
+
+```php
+public function neg(): self
+```
+
+Get the negative of this complex number.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$result = $z->neg();  // -3 - 4i
+```
 
 ### add()
 
@@ -311,35 +341,7 @@ $z2 = new Complex(3, 4);
 $quotient = $z1->div($z2);
 ```
 
-**Throws:** `DomainException` if dividing by zero.
-
-### neg()
-
-```php
-public function neg(): self
-```
-
-Get the negative of this complex number.
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$result = $z->neg();  // -3 - 4i
-```
-
-### conj()
-
-```php
-public function conj(): self
-```
-
-Get the complex conjugate (negate the imaginary part).
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$result = $z->conj();  // 3 - 4i
-```
+**Throws:** `DivisionByZeroError` if dividing by zero.
 
 ### inv()
 
@@ -355,9 +357,25 @@ $z = new Complex(3, 4);
 $result = $z->inv();  // 0.12 - 0.16i
 ```
 
-**Throws:** `DomainException` if the number is zero.
+**Throws:** `DivisionByZeroError` if the number is zero.
 
-## Transcendental Functions
+### conj()
+
+```php
+public function conj(): self
+```
+
+Get the complex conjugate (negate the imaginary part).
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$result = $z->conj();  // 3 - 4i
+```
+
+---
+
+## Power, Roots, and Transcendental Methods
 
 ### exp()
 
@@ -387,7 +405,7 @@ $z = new Complex(3, 4);
 $result = $z->ln();
 ```
 
-**Throws:** `ValueError` if the number is zero.
+**Throws:** `DomainException` if the number is zero.
 
 ### log()
 
@@ -405,7 +423,7 @@ $result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
 
 **Throws:**
 - `DomainException` if base is 0 or 1
-- `ValueError` if the number is zero
+- `DomainException` if the number is zero
 
 ### pow()
 
@@ -428,6 +446,33 @@ $result = $i->pow(2);  // -1 + 0i
 - z^0 = 1 for any z (including 0 by convention)
 - 0^(positive) = 0
 - 0^(negative or complex) throws `DomainException`
+
+### roots()
+
+```php
+public function roots(int $n): array
+```
+
+Calculate all nth roots of this complex number.
+
+**Parameters:**
+- `$n` (int) - The degree of the root (must be positive)
+
+**Returns:**
+- `self[]` - Array of n complex roots
+
+**Examples:**
+```php
+// Cube roots of 1
+$z = new Complex(1);
+$roots = $z->roots(3);  // Returns 3 roots
+
+// Square roots of -1
+$z = new Complex(-1);
+$roots = $z->roots(2);  // Returns [i, -i]
+```
+
+**Throws:** `DomainException` if n ≤ 0.
 
 ### sqr()
 
@@ -457,62 +502,9 @@ $z = new Complex(-1);
 $result = $z->sqrt();  // 0 + 1i
 ```
 
-### cube()
+---
 
-```php
-public function cube(): self
-```
-
-Calculate the cube of this complex number.
-
-**Example:**
-```php
-$z = new Complex(2);
-$result = $z->cube();  // 8 + 0i
-```
-
-### cbrt()
-
-```php
-public function cbrt(): self
-```
-
-Calculate the principal cube root.
-
-**Example:**
-```php
-$z = new Complex(8);
-$result = $z->cbrt();  // 2 + 0i
-```
-
-### roots()
-
-```php
-public function roots(int $n): array
-```
-
-Calculate all nth roots of this complex number.
-
-**Parameters:**
-- `$n` (int) - The degree of the root (must be positive)
-
-**Returns:**
-- `self[]` - Array of n complex roots
-
-**Examples:**
-```php
-// Cube roots of 1
-$z = new Complex(1);
-$roots = $z->roots(3);  // Returns 3 roots
-
-// Square roots of -1
-$z = new Complex(-1);
-$roots = $z->roots(2);  // Returns [i, -i]
-```
-
-**Throws:** `DomainException` if n ≤ 0.
-
-## Trigonometric Functions
+## Trigonometric Methods
 
 ### sin(), cos(), tan()
 
@@ -547,8 +539,12 @@ Calculate secant, cosecant, and cotangent functions.
 $z = new Complex(1, 1);
 $sec = $z->sec();  // 1/cos(z)
 $csc = $z->csc();  // 1/sin(z)
-$cot = $z->cot();  // 1/tan(z) = cos(z)/sin(z)
+$cot = $z->cot();  // cos(z)/sin(z)
 ```
+
+---
+
+## Inverse Trigonometric Methods
 
 ### asin(), acos(), atan()
 
@@ -586,7 +582,9 @@ $acsc = $z->acsc();  // asin(1/z)
 $acot = $z->acot();  // atan(1/z)
 ```
 
-## Hyperbolic Functions
+---
+
+## Hyperbolic Methods
 
 ### sinh(), cosh(), tanh()
 
@@ -624,6 +622,10 @@ $csch = $z->csch();  // 1/sinh(z)
 $coth = $z->coth();  // cosh(z)/sinh(z)
 ```
 
+---
+
+## Inverse Hyperbolic Methods
+
 ### asinh(), acosh(), atanh()
 
 ```php
@@ -660,6 +662,8 @@ $acsch = $z->acsch();  // asinh(1/z)
 $acoth = $z->acoth();  // atanh(1/z)
 ```
 
+---
+
 ## Conversion Methods
 
 ### toArray()
@@ -675,6 +679,10 @@ Convert to array [real, imaginary].
 $z = new Complex(3, 4);
 $array = $z->toArray();  // [3.0, 4.0]
 ```
+
+---
+
+## String methods
 
 ### \_\_toString()
 
@@ -698,7 +706,9 @@ echo new Complex(3, 4);     // "3 + 4i"
 echo new Complex(3, -4);    // "3 - 4i"
 ```
 
-## ArrayAccess Interface
+---
+
+## ArrayAccess Implementation
 
 Complex numbers can be accessed as arrays:
 
@@ -717,6 +727,8 @@ var_dump(isset($z[2]));  // false
 $z[0] = 5;  // Throws LogicException
 unset($z[0]);  // Throws LogicException
 ```
+
+---
 
 ## Usage Examples
 

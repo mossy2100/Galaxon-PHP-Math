@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Math;
 
 use ArrayAccess;
+use DivisionByZeroError;
 use DomainException;
 use Galaxon\Core\Exceptions\FormatException;
 use Galaxon\Core\Floats;
@@ -242,7 +243,7 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Inspection  methods
+    // region Inspection methods
 
     /**
      * Check if a complex number is real.
@@ -311,7 +312,7 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Arithmetic operations
+    // region Arithmetic methods
 
     /**
      * Negate a complex number.
@@ -379,7 +380,7 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @param self|int|float $other The real or complex number to divide by.
      * @return self A new complex number representing the quotient.
-     * @throws DomainException If the divisor is zero.
+     * @throws DivisionByZeroError If the divisor is zero.
      */
     public function div(self|int|float $other): self
     {
@@ -388,7 +389,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Check for division by zero.
         if ($other->equal(0)) {
-            throw new DomainException('Cannot divide by 0.');
+            throw new DivisionByZeroError('Cannot divide by zero.');
         }
 
         // Do the division.
@@ -422,7 +423,49 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Transcendental operations
+    // region Power, roots, and transcendental methods
+
+    /**
+     * Calculate e^z where z is this complex number.
+     *
+     * @return self A new complex number representing e^z.
+     */
+    public function exp(): self
+    {
+        // Use shortcuts where possible.
+        if ($this->equal(0)) {
+            return new self(1);
+        }
+
+        if ($this->equal(1)) {
+            return new self(M_E);
+        }
+
+        if ($this->equal(M_LN2)) {
+            return new self(2);
+        }
+
+        if ($this->equal(M_LNPI)) {
+            return new self(M_PI);
+        }
+
+        if ($this->equal(M_LN10)) {
+            return new self(10);
+        }
+
+        // Euler's identity with pi: e^iπ = -1
+        if ($this->equal(new self(0, M_PI))) {
+            return new self(-1);
+        }
+
+        // Euler's identity with tau: e^iτ = 1
+        if ($this->equal(new self(0, Floats::TAU))) {
+            return new self(1);
+        }
+
+        // General solution. Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b))
+        return self::fromPolar(exp($this->real), $this->imaginary);
+    }
 
     /**
      * Calculate the natural logarithm of a complex number.
@@ -458,7 +501,7 @@ final class Complex implements Stringable, ArrayAccess
             return new self(M_LN10);
         }
 
-        // Calculate ln(z) = ln|z| + i*arg(z)
+        // General solution. Calculate ln(z) = ln|z| + i*arg(z)
         /** @var float $mag */
         $mag = $this->magnitude;
         /** @var float $phase */
@@ -508,50 +551,8 @@ final class Complex implements Stringable, ArrayAccess
             return new self(log($this->real, $base->real));
         }
 
-        // Compute log_b(z) = ln(z) / ln(b)
+        // General solution. Compute log_b(z) = ln(z) / ln(b)
         return $this->ln()->div($base->ln());
-    }
-
-    /**
-     * Calculate e^z where z is this complex number.
-     *
-     * @return self A new complex number representing e^z.
-     */
-    public function exp(): self
-    {
-        // Use shortcuts where possible.
-        if ($this->equal(0)) {
-            return new self(1);
-        }
-
-        if ($this->equal(M_LN2)) {
-            return new self(2);
-        }
-
-        if ($this->equal(1)) {
-            return new self(M_E);
-        }
-
-        if ($this->equal(M_LNPI)) {
-            return new self(M_PI);
-        }
-
-        if ($this->equal(M_LN10)) {
-            return new self(10);
-        }
-
-        // Euler's identity: e^iπ = -1
-        if ($this->equal(new self(0, M_PI))) {
-            return new self(-1);
-        }
-
-        // Euler's identity, alternate form: e^iτ = 1
-        if ($this->equal(new self(0, Floats::TAU))) {
-            return new self(1);
-        }
-
-        // Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b))
-        return self::fromPolar(exp($this->real), $this->imaginary);
     }
 
     /**
@@ -574,10 +575,19 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function pow(self|int|float $other): self
     {
-        // Make sure $other is Complex.
+        // Get $other as a Complex.
         $other = self::toComplex($other);
 
-        // Handle special cases.
+        // Handle exponent = 0. Any number to power 0 is 1.
+        // Although mathematically 0^0 is undefined, we return 1 for consistency with pow(0, 0).
+        // This is a common result in many programming languages.
+        // (Principle of least astonishment.)
+        // @see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero
+        if ($other->equal(0)) {
+            return new self(1);
+        }
+
+        // Handle base = 0.
         if ($this->equal(0)) {
             // Check for complex exponent.
             if (!$other->isReal()) {
@@ -589,22 +599,8 @@ final class Complex implements Stringable, ArrayAccess
                 throw new DomainException('Cannot raise 0 to a negative real number.');
             }
 
-            // Check for 0 exponent.
-            if ($other->equal(0)) {
-                // Although mathematically 0^0 is undefined, return 1 for consistency with pow(0, 0).
-                // This is a common result in many programming languages.
-                // (Principle of least astonishment.)
-                // @see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero
-                return new self(1);
-            }
-
             // The exponent is a positive real number. 0 raised to any positive real number is 0.
             return new self();
-        }
-
-        // Handle exponent = 0. Any non-zero number to power 0 is 1.
-        if ($other->equal(0)) {
-            return new self(1);
         }
 
         // Handle exponent = 1. Any number to power 1 is itself.
@@ -612,30 +608,23 @@ final class Complex implements Stringable, ArrayAccess
             return $this;
         }
 
-        // Handle i^2 = -1.
-        if ($this->equal(self::i()) && $other->equal(2)) {
-            return new self(-1);
+        // Handle exponent = 2. Delegate to sqr().
+        if ($other->equal(2)) {
+            return $this->sqr();
         }
 
-        // Handle e^w. Skip unnecessary calls to ln() and mul().
+        // Handle exponent = -1. Delegate to inv().
+        if ($other->equal(-1)) {
+            return $this->inv();
+        }
+
+        // Handle base = e. This saves unnecessary calls to ln() and mul().
         if ($this->equal(M_E)) {
             return $other->exp();
         }
 
-        // Calculate z^w = e^(w * ln(z)).
+        // General solution. Calculate z^w = e^(w * ln(z)).
         return $other->mul($this->ln())->exp();
-    }
-
-    /**
-     * Square this complex number.
-     *
-     * Equivalent to pow(2), but more efficient and readable.
-     *
-     * @return self A new complex number representing the square of this number.
-     */
-    public function sqr(): self
-    {
-        return $this->mul($this);
     }
 
     /**
@@ -650,7 +639,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for negative number of roots.
         if ($n <= 0) {
-            throw new DomainException('Root index must be a positive integer');
+            throw new DomainException('Root index must be a positive integer.');
         }
 
         // Handle special case of 0.
@@ -676,6 +665,18 @@ final class Complex implements Stringable, ArrayAccess
     }
 
     /**
+     * Square this complex number.
+     *
+     * Equivalent to pow(2), but more efficient and readable.
+     *
+     * @return self A new complex number representing the square of this number.
+     */
+    public function sqr(): self
+    {
+        return $this->mul($this);
+    }
+
+    /**
      * Calculate the square root of this complex number.
      * Only the principal value is returned. For both square roots, call roots(2).
      *
@@ -686,30 +687,9 @@ final class Complex implements Stringable, ArrayAccess
         return $this->pow(0.5);
     }
 
-    /**
-     * Calculate the cube of this complex number.
-     *
-     * @return self
-     */
-    public function cube(): self
-    {
-        return $this->pow(3);
-    }
-
-    /**
-     * Calculate the cube root of this complex number.
-     * Only the principal value is returned. For all cube roots, call roots(3).
-     *
-     * @return self
-     */
-    public function cbrt(): self
-    {
-        return $this->pow(1 / 3);
-    }
-
     // endregion
 
-    // region Trigonometric functions
+    // region Trigonometric methods
 
     /**
      * Calculate the sine of this complex number.
@@ -791,7 +771,7 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Inverse trigonometric functions
+    // region Inverse trigonometric methods
 
     /**
      * Calculate the inverse sine of this complex number.
@@ -883,7 +863,7 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Hyperbolic functions
+    // region Hyperbolic methods
 
     /**
      * Calculate the hyperbolic sine of this complex number.
@@ -965,7 +945,7 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Inverse hyperbolic functions
+    // region Inverse hyperbolic methods
 
     /**
      * Calculate the inverse hyperbolic sine of this complex number.
@@ -1048,6 +1028,16 @@ final class Complex implements Stringable, ArrayAccess
     // region Conversion methods
 
     /**
+     * Convert the complex number to an array.
+     *
+     * @return list<float> An array containing the real and imaginary parts of the complex number.
+     */
+    public function toArray(): array
+    {
+        return [$this->real, $this->imaginary];
+    }
+
+    /**
      * Convert the complex number to a string representation.
      *
      * @return string String representation in the form "a", "bi", "a + bi", or "a - bi".
@@ -1076,16 +1066,6 @@ final class Complex implements Stringable, ArrayAccess
         $abs = abs($this->imaginary);
         $imag = $abs === 1.0 ? '' : $abs;
         return $this->real . $op . $imag . 'i';
-    }
-
-    /**
-     * Convert the complex number to an array.
-     *
-     * @return list<float> An array containing the real and imaginary parts of the complex number.
-     */
-    public function toArray(): array
-    {
-        return [$this->real, $this->imaginary];
     }
 
     // endregion

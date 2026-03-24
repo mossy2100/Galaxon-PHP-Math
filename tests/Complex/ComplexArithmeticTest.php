@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Complex;
 
-use DomainException;
+use DivisionByZeroError;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -176,7 +176,7 @@ class ComplexArithmeticTest extends TestCase
     {
         $z = new Complex(3, 4);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(DivisionByZeroError::class);
         $z->div(0);
     }
 
@@ -187,7 +187,7 @@ class ComplexArithmeticTest extends TestCase
     {
         $z = new Complex(3, 4);
 
-        $this->expectException(DomainException::class);
+        $this->expectException(DivisionByZeroError::class);
         $z->div(new Complex(0, 0));
     }
 

@@ -2,6 +2,8 @@
 
 Immutable class representing rational numbers as exact integer ratios with automatic simplification.
 
+---
+
 ## Overview
 
 The `Rational` class provides exact representation of rational numbers using two PHP integers for the numerator and denominator. Key features include:
@@ -13,6 +15,8 @@ The `Rational` class provides exact representation of rational numbers using two
 - Overflow detection for safe integer arithmetic
 
 **Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Neither the numerator nor denominator can be PHP_INT_MIN.
+
+---
 
 ## Properties
 
@@ -31,6 +35,8 @@ private(set) int $den
 ```
 
 The denominator. Always positive in canonical form. Read-only from outside the class.
+
+---
 
 ## Constructor
 
@@ -64,7 +70,10 @@ $r7 = new Rational(3, -4);       // -3/4 (sign moved to numerator)
 **Throws:**
 - `DomainException` if denominator is zero
 - `DomainException` if a float argument is infinite or NAN
-- `RangeException` if the value is outside the valid convertible range
+- `OverflowException` if the value is too large to represent as a Rational
+- `UnderflowException` if the value is non-zero but too small to represent as a Rational
+
+---
 
 ## Factory Methods
 
@@ -90,9 +99,9 @@ $r4 = Rational::parse(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 ```
 
 **Throws:**
-- `DomainException` if the string cannot be parsed
-- `DomainException` if denominator is zero
-- `RangeException` if the value is outside the valid range
+- `FormatException` if the string cannot be parsed
+- `OverflowException` if the value is too large to represent as a Rational
+- `UnderflowException` if the value is non-zero but too small to represent as a Rational
 
 ### toRational()
 
@@ -109,6 +118,8 @@ $r2 = Rational::toRational(0.5);            // 1/2
 $r3 = Rational::toRational("3/4");          // 3/4
 $r4 = Rational::toRational(new Rational(2, 3)); // Returns same instance
 ```
+
+---
 
 ## Comparison Methods
 
@@ -229,7 +240,7 @@ $r3 = new Rational(2, 4);
 echo $r1->compare($r3);   // 0 (1/2 == 2/4)
 ```
 
-**Throws:** `TypeError` if the value cannot be compared.
+**Throws:** `IncomparableTypesException` if the value cannot be compared.
 
 ### approxCompare()
 
@@ -269,7 +280,7 @@ $r3 = new Rational(1, 4);
 echo $r3->approxCompare($r1);  // -1 (1/4 < 1/3)
 ```
 
-**Throws:** `TypeError` if the value cannot be compared.
+**Throws:** `IncomparableTypesException` if the value cannot be compared.
 
 ### lessThan(), greaterThan(), etc.
 
@@ -297,7 +308,23 @@ var_dump($r1->lessThan(0.5));           // true (1/3 < 0.5)
 var_dump($r2->greaterThan(0));          // true
 ```
 
-## Arithmetic Operations
+---
+
+## Arithmetic Methods
+
+### neg()
+
+```php
+public function neg(): self
+```
+
+Calculate the negative of this rational number.
+
+**Example:**
+```php
+$r = new Rational(3, 4);
+$result = $r->neg();  // -3/4
+```
 
 ### add()
 
@@ -335,20 +362,6 @@ $diff = $r1->sub($r2);  // 1/2
 ```
 
 **Throws:** `OverflowException` if the result overflows.
-
-### neg()
-
-```php
-public function neg(): self
-```
-
-Calculate the negative of this rational number.
-
-**Example:**
-```php
-$r = new Rational(3, 4);
-$result = $r->neg();  // -3/4
-```
 
 ### mul()
 
@@ -391,7 +404,7 @@ $quotient2 = $r3->div(2);   // 3/8
 ```
 
 **Throws:**
-- `DomainException` if dividing by zero
+- `DivisionByZeroError` if dividing by zero
 - `OverflowException` if the result overflows
 
 ### inv()
@@ -411,7 +424,11 @@ $r2 = new Rational(-2, 5);
 $result2 = $r2->inv();  // -5/2
 ```
 
-**Throws:** `DomainException` if the numerator is zero.
+**Throws:** `DivisionByZeroError` if the numerator is zero.
+
+---
+
+## Power Methods
 
 ### pow()
 
@@ -461,6 +478,10 @@ $result = $r->sqr();  // 9/16
 
 **Throws:** `OverflowException` if the result overflows.
 
+---
+
+## Magnitude and Rounding Methods
+
 ### abs()
 
 ```php
@@ -473,6 +494,29 @@ Calculate the absolute value.
 ```php
 $r = new Rational(-3, 4);
 $result = $r->abs();  // 3/4
+```
+
+### round()
+
+```php
+public function round(): int
+```
+
+Find the closest integer, using "half away from zero" rounding mode.
+
+**Examples:**
+```php
+$r1 = new Rational(7, 3);
+echo $r1->round();  // 2 (2.333...)
+
+$r2 = new Rational(8, 3);
+echo $r2->round();  // 3 (2.666...)
+
+$r3 = new Rational(5, 2);
+echo $r3->round();  // 3 (2.5 rounds away from zero)
+
+$r4 = new Rational(-5, 2);
+echo $r4->round();  // -3 (-2.5 rounds away from zero)
 ```
 
 ### floor()
@@ -509,89 +553,9 @@ $r2 = new Rational(-7, 3);
 echo $r2->ceil();  // -2
 ```
 
-### round()
+---
 
-```php
-public function round(): int
-```
-
-Find the closest integer, using "half away from zero" rounding mode.
-
-**Examples:**
-```php
-$r1 = new Rational(7, 3);
-echo $r1->round();  // 2 (2.333...)
-
-$r2 = new Rational(8, 3);
-echo $r2->round();  // 3 (2.666...)
-
-$r3 = new Rational(5, 2);
-echo $r3->round();  // 3 (2.5 rounds away from zero)
-
-$r4 = new Rational(-5, 2);
-echo $r4->round();  // -3 (-2.5 rounds away from zero)
-```
-
-## Conversion Methods
-
-### toFloat()
-
-```php
-public function toFloat(): float
-```
-
-Convert the rational number to a float.
-
-**Example:**
-```php
-$r = new Rational(1, 2);
-echo $r->toFloat();  // 0.5
-
-$r2 = new Rational(1, 3);
-echo $r2->toFloat();  // 0.33333...
-```
-
-### toInt()
-
-```php
-public function toInt(): int
-```
-
-Convert the rational number to an integer, truncating towards zero.
-
-**Examples:**
-```php
-$r1 = new Rational(7, 3);
-echo $r1->toInt();  // 2
-
-$r2 = new Rational(-7, 3);
-echo $r2->toInt();  // -2
-
-$r3 = new Rational(1, 2);
-echo $r3->toInt();  // 0
-```
-
-### \_\_toString()
-
-```php
-public function __toString(): string
-```
-
-Convert to string representation.
-
-**Format:**
-- Whole numbers: `"5"`, `"-3"`
-- Fractions: `"3/4"`, `"-5/6"`
-
-**Examples:**
-```php
-echo new Rational(5, 1);   // "5"
-echo new Rational(3, 4);   // "3/4"
-echo new Rational(-2, 5);  // "-2/5"
-echo new Rational(6, 8);   // "3/4" (auto-reduced)
-```
-
-## Helper methods
+## Helper Methods
 
 ### floatToRatio()
 
@@ -621,7 +585,51 @@ Convert a float to a pair of integers [numerator, denominator] using continued f
 
 **Throws:**
 - `DomainException` if value is infinite or NAN
-- `RangeException` if value is outside valid range (1/PHP_INT_MAX to PHP_INT_MAX/1)
+- `OverflowException` if value is too large to represent as a Rational
+- `UnderflowException` if value is non-zero but too small to represent as a Rational
+
+---
+
+## Conversion Methods
+
+### toFloat()
+
+```php
+public function toFloat(): float
+```
+
+Convert the rational number to a float.
+
+**Example:**
+```php
+$r = new Rational(1, 2);
+echo $r->toFloat();  // 0.5
+
+$r2 = new Rational(1, 3);
+echo $r2->toFloat();  // 0.33333...
+```
+
+### \_\_toString()
+
+```php
+public function __toString(): string
+```
+
+Convert to string representation.
+
+**Format:**
+- Whole numbers: `"5"`, `"-3"`
+- Fractions: `"3/4"`, `"-5/6"`
+
+**Examples:**
+```php
+echo new Rational(5, 1);   // "5"
+echo new Rational(3, 4);   // "3/4"
+echo new Rational(-2, 5);  // "-2/5"
+echo new Rational(6, 8);   // "3/4" (auto-reduced)
+```
+
+---
 
 ## Usage Examples
 

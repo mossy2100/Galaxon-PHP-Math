@@ -16,6 +16,35 @@ use PHPUnit\Framework\TestCase;
 class MatrixArithmeticTest extends TestCase
 {
     /**
+     * Test negating a matrix.
+     */
+    public function testNeg(): void
+    {
+        $m = Matrix::fromArray([
+            [1, -2],
+            [3, -4],
+        ]);
+        $result = $m->neg();
+        $this->assertSame([
+            [-1.0, 2.0],
+            [-3.0, 4.0],
+        ], $result->toArray());
+    }
+
+    /**
+     * Test negating a zero matrix returns a zero matrix.
+     */
+    public function testNegZeroMatrix(): void
+    {
+        $m = new Matrix(2, 2);
+        $result = $m->neg();
+        $this->assertSame([
+            [0.0, 0.0],
+            [0.0, 0.0],
+        ], $result->toArray());
+    }
+
+    /**
      * Test adding two matrices.
      */
     public function testAdd(): void

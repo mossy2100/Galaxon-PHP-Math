@@ -235,6 +235,24 @@ class ComplexTranscendentalTest extends TestCase
     }
 
     /**
+     * Test pow(-1) delegates to inv().
+     */
+    public function testPowNegativeOne(): void
+    {
+        // (3 + 4i)^(-1) = 1/(3 + 4i) = (3 - 4i)/25
+        $z = new Complex(3, 4);
+        $result = $z->pow(-1);
+        $expected = $z->inv();
+
+        $this->assertEqualsWithDelta($expected->real, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, Complex::EPSILON);
+
+        // Verify actual values: 3/25 - 4i/25
+        $this->assertEqualsWithDelta(0.12, $result->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-0.16, $result->imaginary, Complex::EPSILON);
+    }
+
+    /**
      * Test e^w shortcut.
      */
     public function testPowEBase(): void
@@ -405,28 +423,5 @@ class ComplexTranscendentalTest extends TestCase
         $result2 = new Complex(-1)->sqrt();
         $this->assertEqualsWithDelta(0.0, $result2->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(1.0, $result2->imaginary, Complex::EPSILON);
-    }
-
-    /**
-     * Test cube.
-     */
-    public function testCube(): void
-    {
-        $z = new Complex(2, 0);
-        $result = $z->cube();
-
-        $this->assertEqualsWithDelta(8.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
-    }
-
-    /**
-     * Test cbrt (principal cube root).
-     */
-    public function testCbrt(): void
-    {
-        // cbrt(8) = 2
-        $result = new Complex(8)->cbrt();
-        $this->assertEqualsWithDelta(2.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 }

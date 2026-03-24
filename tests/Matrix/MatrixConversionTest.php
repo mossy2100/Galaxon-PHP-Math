@@ -32,46 +32,6 @@ class MatrixConversionTest extends TestCase
     }
 
     /**
-     * Test format() uses box-drawing characters.
-     */
-    public function testFormatUsesBoxDrawingCharacters(): void
-    {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
-        $str = $m->format();
-        $this->assertStringContainsString('┌', $str);
-        $this->assertStringContainsString('┐', $str);
-        $this->assertStringContainsString('└', $str);
-        $this->assertStringContainsString('┘', $str);
-        $this->assertStringContainsString('│', $str);
-    }
-
-    /**
-     * Test format() with an empty matrix.
-     */
-    public function testFormatWithEmptyMatrix(): void
-    {
-        $m = new Matrix(0, 0);
-        $str = $m->format();
-        $this->assertStringContainsString('┌', $str);
-        $this->assertStringContainsString('┘', $str);
-    }
-
-    /**
-     * Test __toString delegates to format().
-     */
-    public function testToStringDelegatesToFormat(): void
-    {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
-        $this->assertSame($m->format(), (string)$m);
-    }
-
-    /**
      * Test __toString uses box-drawing characters.
      */
     public function testToStringUsesBoxDrawingCharacters(): void

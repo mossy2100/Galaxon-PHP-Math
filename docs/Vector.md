@@ -2,6 +2,8 @@
 
 Numeric vector with element-wise arithmetic, dot and cross products, and array-style access.
 
+---
+
 ## Overview
 
 The `Vector` class provides a general-purpose numeric vector with support for:
@@ -141,7 +143,97 @@ echo $v->get(1);  // 99.0
 
 ---
 
-## Vector Operations
+## Comparison Methods
+
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+
+### equal()
+
+```php
+public function equal(mixed $other): bool
+```
+
+Check if this vector exactly equals another value.
+
+Two vectors are equal if they have the same size and all corresponding elements are exactly equal. Returns `false` for non-Vector values.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with.
+
+**Returns:**
+- `bool` - True if the vectors are the same size and all elements are exactly equal.
+
+**Examples:**
+```php
+$v1 = Vector::fromArray([1, 2, 3]);
+$v2 = Vector::fromArray([1, 2, 3]);
+$v3 = Vector::fromArray([1.0000000001, 2, 3]);
+
+var_dump($v1->equal($v2));  // true (exact match)
+var_dump($v1->equal($v3));  // false (not exact)
+
+// Invalid types return false
+var_dump($v1->equal('string'));  // false
+var_dump($v1->equal(null));      // false
+```
+
+### approxEqual()
+
+```php
+public function approxEqual(
+    mixed $other,
+    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
+    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+): bool
+```
+
+Check if this vector approximately equals another value within specified tolerances.
+
+Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first, then relative tolerance. Returns `false` for non-Vector values.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with.
+- `$relTol` (float) - Relative tolerance (default: 1e-9).
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
+
+**Returns:**
+- `bool` - True if the vectors are the same size and all elements are approximately equal.
+
+**Throws:**
+- `DomainException` if either tolerance is negative.
+
+**Examples:**
+```php
+$v1 = Vector::fromArray([1, 2, 3]);
+$v2 = Vector::fromArray([1.00000001, 2.00000001, 3.00000001]);
+
+// Within default tolerance
+var_dump($v1->approxEqual($v2));  // true
+
+// With tight tolerance
+var_dump($v1->approxEqual($v2, 1e-15, 1e-15));  // false
+
+// Invalid types return false
+var_dump($v1->approxEqual('string'));  // false
+```
+
+---
+
+## Arithmetic Methods
+
+### neg()
+
+```php
+public function neg(): self
+```
+
+Negate this vector. Returns a new vector with all elements negated.
+
+**Example:**
+```php
+$v = Vector::fromArray([1, -2, 3]);
+$result = $v->neg();  // [-1, 2, -3]
+```
 
 ### add()
 
@@ -234,6 +326,10 @@ $v = Vector::fromArray([6, 9, 12]);
 $result = $v->div(3);  // [2, 3, 4]
 ```
 
+---
+
+## Linear Algebra Methods
+
 ### dot()
 
 ```php
@@ -280,82 +376,6 @@ Calculate the cross product of this vector with another vector. Both vectors mus
 $v1 = Vector::fromArray([1, 0, 0]);
 $v2 = Vector::fromArray([0, 1, 0]);
 $result = $v1->cross($v2);  // [0, 0, 1]
-```
-
----
-
-## Comparison Methods
-
-The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
-
-### equal()
-
-```php
-public function equal(mixed $other): bool
-```
-
-Check if this vector exactly equals another value.
-
-Two vectors are equal if they have the same size and all corresponding elements are exactly equal. Returns `false` for non-Vector values.
-
-**Parameters:**
-- `$other` (mixed) - The value to compare with.
-
-**Returns:**
-- `bool` - True if the vectors are the same size and all elements are exactly equal.
-
-**Examples:**
-```php
-$v1 = Vector::fromArray([1, 2, 3]);
-$v2 = Vector::fromArray([1, 2, 3]);
-$v3 = Vector::fromArray([1.0000000001, 2, 3]);
-
-var_dump($v1->equal($v2));  // true (exact match)
-var_dump($v1->equal($v3));  // false (not exact)
-
-// Invalid types return false
-var_dump($v1->equal('string'));  // false
-var_dump($v1->equal(null));      // false
-```
-
-### approxEqual()
-
-```php
-public function approxEqual(
-    mixed $other,
-    float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-    float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
-): bool
-```
-
-Check if this vector approximately equals another value within specified tolerances.
-
-Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first, then relative tolerance. Returns `false` for non-Vector values.
-
-**Parameters:**
-- `$other` (mixed) - The value to compare with.
-- `$relTol` (float) - Relative tolerance (default: 1e-9).
-- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
-
-**Returns:**
-- `bool` - True if the vectors are the same size and all elements are approximately equal.
-
-**Throws:**
-- `DomainException` if either tolerance is negative.
-
-**Examples:**
-```php
-$v1 = Vector::fromArray([1, 2, 3]);
-$v2 = Vector::fromArray([1.00000001, 2.00000001, 3.00000001]);
-
-// Within default tolerance
-var_dump($v1->approxEqual($v2));  // true
-
-// With tight tolerance
-var_dump($v1->approxEqual($v2, 1e-15, 1e-15));  // false
-
-// Invalid types return false
-var_dump($v1->approxEqual('string'));  // false
 ```
 
 ---
@@ -461,7 +481,7 @@ echo $v;
 
 ---
 
-## ArrayAccess Interface
+## ArrayAccess Methods
 
 Vectors can be accessed using bracket syntax:
 

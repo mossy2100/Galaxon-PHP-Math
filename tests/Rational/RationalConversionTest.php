@@ -33,25 +33,6 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test toInt conversion.
-     */
-    public function testToInt(): void
-    {
-        // Truncates towards zero
-        $r = new Rational(7, 3);
-        $this->assertSame(2, $r->toInt());
-
-        $r2 = new Rational(-7, 3);
-        $this->assertSame(-2, $r2->toInt());
-
-        $r3 = new Rational(5, 1);
-        $this->assertSame(5, $r3->toInt());
-
-        $r4 = new Rational(1, 2);
-        $this->assertSame(0, $r4->toInt());
-    }
-
-    /**
      * Test __toString for whole numbers.
      */
     public function testToStringWholeNumber(): void

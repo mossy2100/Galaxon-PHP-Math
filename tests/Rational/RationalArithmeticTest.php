@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Rational;
 
+use DivisionByZeroError;
 use DomainException;
 use Galaxon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -150,7 +151,7 @@ class RationalArithmeticTest extends TestCase
      */
     public function testInvZeroThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(DivisionByZeroError::class);
         $r = new Rational(0);
         $r->inv();
     }
@@ -234,7 +235,7 @@ class RationalArithmeticTest extends TestCase
      */
     public function testDivZeroThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(DivisionByZeroError::class);
         $r = new Rational(3, 4);
         $r->div(0);
     }
@@ -277,6 +278,39 @@ class RationalArithmeticTest extends TestCase
 
         $this->assertSame(1, $result2->num);
         $this->assertSame(1, $result2->den);
+    }
+
+    /**
+     * Test power with exponent 1 returns the same value.
+     */
+    public function testPowOne(): void
+    {
+        // (3/4)^1 = 3/4
+        $r = new Rational(3, 4);
+        $result = $r->pow(1);
+
+        $this->assertSame(3, $result->num);
+        $this->assertSame(4, $result->den);
+    }
+
+    /**
+     * Test power with exponent -1 delegates to inv().
+     */
+    public function testPowNegativeOne(): void
+    {
+        // (3/4)^(-1) = 4/3
+        $r = new Rational(3, 4);
+        $result = $r->pow(-1);
+
+        $this->assertSame(4, $result->num);
+        $this->assertSame(3, $result->den);
+
+        // (-2/5)^(-1) = -5/2
+        $r2 = new Rational(-2, 5);
+        $result2 = $r2->pow(-1);
+
+        $this->assertSame(-5, $result2->num);
+        $this->assertSame(2, $result2->den);
     }
 
     /**
