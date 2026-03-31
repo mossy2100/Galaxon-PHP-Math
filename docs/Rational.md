@@ -20,18 +20,18 @@ The `Rational` class provides exact representation of rational numbers using two
 
 ## Properties
 
-### num
+### numerator
 
 ```php
-private(set) int $num
+private(set) int $numerator
 ```
 
 The numerator. Always in canonical form (sign stored here). Read-only from outside the class.
 
-### den
+### denominator
 
 ```php
-private(set) int $den
+private(set) int $denominator
 ```
 
 The denominator. Always positive in canonical form. Read-only from outside the class.
@@ -57,19 +57,49 @@ Create a new rational number.
 - Uses continued fractions for float conversion when necessary
 
 **Examples:**
+
+Basic usage:
 ```php
 $r1 = new Rational(3, 4);        // 3/4
 $r2 = new Rational(6, 8);        // Automatically reduced to 3/4
 $r3 = new Rational(5);           // 5/1 (integer)
-$r4 = new Rational(0.5);         // Converted to 1/2
-$r5 = new Rational(1, 3);        // 1/3
-$r6 = new Rational(-3, 4);       // -3/4
-$r7 = new Rational(3, -4);       // -3/4 (sign moved to numerator)
+$r4 = new Rational(1, 3);        // 1/3
+$r5 = new Rational(-3, 4);       // -3/4
+$r6 = new Rational(3, -4);       // -3/4 (sign moved to numerator)
+```
+
+Float conversion — simple floats are converted to exact fractions using continued fractions:
+```php
+$r1 = new Rational(0.5);         // 1/2
+$r2 = new Rational(0.75);        // 3/4
+$r3 = new Rational(1/3);         // 1/3 (exact despite 0.333... input)
+```
+
+Irrational numbers are approximated as closely as possible within the integer range:
+```php
+$r = new Rational(M_PI);
+echo $r;                          // "245850922/78256779"
+echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_PI)
+```
+
+**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Values outside this range throw overflow or underflow exceptions:
+```php
+// Too large — exceeds PHP_INT_MAX
+new Rational(1e19);               // OverflowException
+
+// Too small — closer to zero than 1/PHP_INT_MAX
+new Rational(1e-20);              // UnderflowException
+
+// Non-finite values are rejected
+new Rational(INF);                // DomainException
+new Rational(NAN);                // DomainException
+
+// Zero denominator
+new Rational(1, 0);               // DomainException
 ```
 
 **Throws:**
-- `DomainException` if denominator is zero
-- `DomainException` if a float argument is infinite or NAN
+- `DomainException` if denominator is zero, or if a float argument is infinite or NAN
 - `OverflowException` if the value is too large to represent as a Rational
 - `UnderflowException` if the value is non-zero but too small to represent as a Rational
 
@@ -310,7 +340,21 @@ var_dump($r2->greaterThan(0));          // true
 
 ---
 
-## Arithmetic Methods
+## Unary Arithmetic Methods
+
+### abs()
+
+```php
+public function abs(): self
+```
+
+Calculate the absolute value.
+
+**Example:**
+```php
+$r = new Rational(-3, 4);
+$result = $r->abs();  // 3/4
+```
 
 ### neg()
 
@@ -325,6 +369,29 @@ Calculate the negative of this rational number.
 $r = new Rational(3, 4);
 $result = $r->neg();  // -3/4
 ```
+
+### inv()
+
+```php
+public function inv(): self
+```
+
+Calculate the multiplicative inverse (reciprocal).
+
+**Example:**
+```php
+$r = new Rational(3, 4);
+$result = $r->inv();  // 4/3
+
+$r2 = new Rational(-2, 5);
+$result2 = $r2->inv();  // -5/2
+```
+
+**Throws:** `DivisionByZeroError` if the numerator is zero.
+
+---
+
+## Binary Arithmetic Methods
 
 ### add()
 
@@ -407,25 +474,6 @@ $quotient2 = $r3->div(2);   // 3/8
 - `DivisionByZeroError` if dividing by zero
 - `OverflowException` if the result overflows
 
-### inv()
-
-```php
-public function inv(): self
-```
-
-Calculate the multiplicative inverse (reciprocal).
-
-**Example:**
-```php
-$r = new Rational(3, 4);
-$result = $r->inv();  // 4/3
-
-$r2 = new Rational(-2, 5);
-$result2 = $r2->inv();  // -5/2
-```
-
-**Throws:** `DivisionByZeroError` if the numerator is zero.
-
 ---
 
 ## Power Methods
@@ -480,21 +528,7 @@ $result = $r->sqr();  // 9/16
 
 ---
 
-## Magnitude and Rounding Methods
-
-### abs()
-
-```php
-public function abs(): self
-```
-
-Calculate the absolute value.
-
-**Example:**
-```php
-$r = new Rational(-3, 4);
-$result = $r->abs();  // 3/4
-```
+## Rounding Methods
 
 ### round()
 
@@ -555,41 +589,6 @@ echo $r2->ceil();  // -2
 
 ---
 
-## Helper Methods
-
-### floatToRatio()
-
-```php
-public static function floatToRatio(float $value): array
-```
-
-Convert a float to a pair of integers [numerator, denominator] using continued fractions algorithm.
-
-**Parameters:**
-- `$value` (float) - The float to convert
-
-**Returns:**
-- `int[]` - Array of [numerator, denominator]
-
-**Examples:**
-```php
-[$num, $den] = Rational::floatToRatio(0.5);    // [1, 2]
-[$num, $den] = Rational::floatToRatio(0.333...); // [1, 3]
-[$num, $den] = Rational::floatToRatio(M_PI);   // [245850922, 78256779] (close approximation)
-```
-
-**Notes:**
-- Uses continued fractions to find the simplest rational approximation
-- Finds exact match when possible, or closest approximation within denominator limit
-- Maximum denominator is PHP_INT_MAX to stay within valid range
-
-**Throws:**
-- `DomainException` if value is infinite or NAN
-- `OverflowException` if value is too large to represent as a Rational
-- `UnderflowException` if value is non-zero but too small to represent as a Rational
-
----
-
 ## Conversion Methods
 
 ### toFloat()
@@ -607,6 +606,41 @@ echo $r->toFloat();  // 0.5
 
 $r2 = new Rational(1, 3);
 echo $r2->toFloat();  // 0.33333...
+```
+
+### toMixedNumber()
+
+```php
+public function toMixedNumber(): array
+```
+
+Convert to a mixed number representation: an integer part and a fractional part. Uses trunc/frac semantics — the integer part truncates toward zero, and the fractional part carries the same sign as the original. In this way, the two can be added to reconstruct the original value.
+
+**Returns:**
+- `array{int, self}` - A tuple of [integer part, fractional remainder].
+
+**Examples:**
+```php
+$r = new Rational(9, 4);
+[$int, $frac] = $r->toMixedNumber();
+echo $int;   // 2
+echo $frac;  // "1/4"
+
+$r2 = new Rational(-9, 4);
+[$int, $frac] = $r2->toMixedNumber();
+echo $int;   // -2
+echo $frac;  // "-1/4"
+
+// Proper fraction (no integer part)
+$r3 = new Rational(3, 4);
+[$int, $frac] = $r3->toMixedNumber();
+echo $int;   // 0
+echo $frac;  // "3/4"
+
+// Reconstruct: integer + fraction = original
+$r4 = new Rational(-11, 3);
+[$int, $frac] = $r4->toMixedNumber();
+$frac->add($int)->equal($r4);  // true
 ```
 
 ### \_\_toString()
@@ -694,3 +728,12 @@ var_dump($r1->equal($r2));      // true
 var_dump($r1->greaterThan($r3)); // true
 var_dump($r3->lessThan(0.5));  // true (can compare with floats)
 ```
+
+---
+
+## See Also
+
+- **[Complex](Complex.md)** - Complex number arithmetic
+- **[Matrix](Matrix.md)** - Matrix operations
+- **[Vector](Vector.md)** - Numeric vectors
+- **[Floats](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison

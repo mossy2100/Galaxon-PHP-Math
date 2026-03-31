@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexTrigonometricTest extends TestCase
 {
+    // region Trigonometric methods
+
     /**
      * Test sin of real numbers.
      */
@@ -136,6 +138,10 @@ class ComplexTrigonometricTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $sum->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $sum->imaginary, Complex::EPSILON);
     }
+
+    // endregion
+
+    // region Inverse trigonometric methods
 
     /**
      * Test asin (inverse sine).
@@ -434,4 +440,6 @@ class ComplexTrigonometricTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $product3->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $product3->imaginary, Complex::EPSILON);
     }
+
+    // endregion
 }

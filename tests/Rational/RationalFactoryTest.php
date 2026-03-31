@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Rational;
 
+use DivisionByZeroError;
 use DomainException;
 use Galaxon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -18,16 +19,16 @@ class RationalFactoryTest extends TestCase
     public function testParseInteger(): void
     {
         $r = Rational::parse('5');
-        $this->assertSame(5, $r->num);
-        $this->assertSame(1, $r->den);
+        $this->assertSame(5, $r->numerator);
+        $this->assertSame(1, $r->denominator);
 
         $r2 = Rational::parse('-123');
-        $this->assertSame(-123, $r2->num);
-        $this->assertSame(1, $r2->den);
+        $this->assertSame(-123, $r2->numerator);
+        $this->assertSame(1, $r2->denominator);
 
         $r3 = Rational::parse(' 42 ');
-        $this->assertSame(42, $r3->num);
-        $this->assertSame(1, $r3->den);
+        $this->assertSame(42, $r3->numerator);
+        $this->assertSame(1, $r3->denominator);
     }
 
     /**
@@ -36,17 +37,17 @@ class RationalFactoryTest extends TestCase
     public function testParseFloat(): void
     {
         $r = Rational::parse('0.5');
-        $this->assertSame(1, $r->num);
-        $this->assertSame(2, $r->den);
+        $this->assertSame(1, $r->numerator);
+        $this->assertSame(2, $r->denominator);
 
         $r2 = Rational::parse('-0.25');
-        $this->assertSame(-1, $r2->num);
-        $this->assertSame(4, $r2->den);
+        $this->assertSame(-1, $r2->numerator);
+        $this->assertSame(4, $r2->denominator);
 
         $r3 = Rational::parse(' 3.14 ');
         // Should convert to some rational approximation
-        $this->assertIsInt($r3->num); // @phpstan-ignore method.alreadyNarrowedType
-        $this->assertIsInt($r3->den); // @phpstan-ignore method.alreadyNarrowedType
+        $this->assertIsInt($r3->numerator); // @phpstan-ignore method.alreadyNarrowedType
+        $this->assertIsInt($r3->denominator); // @phpstan-ignore method.alreadyNarrowedType
     }
 
     /**
@@ -55,21 +56,21 @@ class RationalFactoryTest extends TestCase
     public function testParseFraction(): void
     {
         $r = Rational::parse('3/4');
-        $this->assertSame(3, $r->num);
-        $this->assertSame(4, $r->den);
+        $this->assertSame(3, $r->numerator);
+        $this->assertSame(4, $r->denominator);
 
         $r2 = Rational::parse('-5/6');
-        $this->assertSame(-5, $r2->num);
-        $this->assertSame(6, $r2->den);
+        $this->assertSame(-5, $r2->numerator);
+        $this->assertSame(6, $r2->denominator);
 
         $r3 = Rational::parse(' 7 / 8 ');
-        $this->assertSame(7, $r3->num);
-        $this->assertSame(8, $r3->den);
+        $this->assertSame(7, $r3->numerator);
+        $this->assertSame(8, $r3->denominator);
 
         // Should reduce
         $r4 = Rational::parse('6/8');
-        $this->assertSame(3, $r4->num);
-        $this->assertSame(4, $r4->den);
+        $this->assertSame(3, $r4->numerator);
+        $this->assertSame(4, $r4->denominator);
     }
 
     /**
@@ -95,7 +96,7 @@ class RationalFactoryTest extends TestCase
      */
     public function testParseFractionZeroDenominatorThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(DivisionByZeroError::class);
         Rational::parse('5/0');
     }
 
@@ -116,8 +117,8 @@ class RationalFactoryTest extends TestCase
     public function testToRationalWithInteger(): void
     {
         $r = Rational::toRational(5);
-        $this->assertSame(5, $r->num);
-        $this->assertSame(1, $r->den);
+        $this->assertSame(5, $r->numerator);
+        $this->assertSame(1, $r->denominator);
     }
 
     /**
@@ -126,8 +127,8 @@ class RationalFactoryTest extends TestCase
     public function testToRationalWithFloat(): void
     {
         $r = Rational::toRational(0.5);
-        $this->assertSame(1, $r->num);
-        $this->assertSame(2, $r->den);
+        $this->assertSame(1, $r->numerator);
+        $this->assertSame(2, $r->denominator);
     }
 
     /**
@@ -136,8 +137,8 @@ class RationalFactoryTest extends TestCase
     public function testToRationalWithString(): void
     {
         $r = Rational::toRational('3/4');
-        $this->assertSame(3, $r->num);
-        $this->assertSame(4, $r->den);
+        $this->assertSame(3, $r->numerator);
+        $this->assertSame(4, $r->denominator);
     }
 
     /**

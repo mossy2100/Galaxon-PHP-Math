@@ -219,7 +219,7 @@ var_dump($v1->approxEqual('string'));  // false
 
 ---
 
-## Arithmetic Methods
+## Unary Arithmetic Methods
 
 ### neg()
 
@@ -234,6 +234,10 @@ Negate this vector. Returns a new vector with all elements negated.
 $v = Vector::fromArray([1, -2, 3]);
 $result = $v->neg();  // [-1, 2, -3]
 ```
+
+---
+
+## Binary Arithmetic Methods
 
 ### add()
 
@@ -376,6 +380,29 @@ Calculate the cross product of this vector with another vector. Both vectors mus
 $v1 = Vector::fromArray([1, 0, 0]);
 $v2 = Vector::fromArray([0, 1, 0]);
 $result = $v1->cross($v2);  // [0, 0, 1]
+```
+
+### normalize()
+
+```php
+public function normalize(): self
+```
+
+Normalize this vector to a unit vector (magnitude 1). The result has the same direction as the original.
+
+**Returns:**
+- `self` - A new vector with magnitude 1.
+
+**Throws:**
+- `DivisionByZeroError` if the vector has zero magnitude.
+
+**Examples:**
+```php
+$v = Vector::fromArray([3, 4]);
+$unit = $v->normalize();
+echo $unit->magnitude;  // 1.0
+echo $unit->get(0);     // 0.6
+echo $unit->get(1);     // 0.8
 ```
 
 ---
@@ -562,3 +589,11 @@ Unsetting elements is not supported.
 
 **Throws:**
 - `LogicException` - Always throws.
+
+---
+
+## See Also
+
+- **[Matrix](Matrix.md)** - Matrix operations, including matrix-vector multiplication
+- **[Complex](Complex.md)** - Complex number arithmetic
+- **[Rational](Rational.md)** - Exact rational number arithmetic

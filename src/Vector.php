@@ -9,6 +9,7 @@ use DivisionByZeroError;
 use DomainException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
+use Galaxon\Core\Stringify;
 use Galaxon\Core\Traits\ApproxEquatable;
 use InvalidArgumentException;
 use LengthException;
@@ -40,17 +41,26 @@ final class Vector implements Stringable, ArrayAccess
     // region Public properties
 
     /**
-     * The magnitude (norm) of the vector.
-     */
-    public float $magnitude {
-        get => sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
-    }
-
-    /**
      * The number of elements in the vector.
      */
-    public int $size {
-        get => count($this->data);
+    private(set) int $size;
+
+    // endregion
+
+    // region Property hooks
+
+    /**
+     * The magnitude (norm) of the vector. Cached on first access and invalidated on mutation.
+     */
+    private(set) ?float $magnitude = null {
+        get {
+            // Compute and cache if necessary.
+            if ($this->magnitude === null) {
+                $this->magnitude = sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
+            }
+
+            return $this->magnitude;
+        }
     }
 
     // endregion
@@ -66,9 +76,10 @@ final class Vector implements Stringable, ArrayAccess
     public function __construct(int $size)
     {
         if ($size < 0) {
-            throw new DomainException('Vector size must not be negative.');
+            throw new DomainException("Cannot create a vector with negative size: $size.");
         }
 
+        $this->size = $size;
         $this->data = array_fill(0, $size, 0.0);
     }
 
@@ -91,7 +102,7 @@ final class Vector implements Stringable, ArrayAccess
         foreach ($arr as $value) {
             // Check if the value is a number.
             if (!Numbers::isNumber($value)) {
-                throw new InvalidArgumentException('Vector elements must be numbers (int or float).');
+                throw new InvalidArgumentException('Cannot use non-numeric elements in a vector.');
             }
 
             // Convert the value to a float.
@@ -120,7 +131,9 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException('Vector index outside valid range.');
+            throw new OutOfRangeException(
+                "Vector index $index is outside the valid range 0-" . ($this->size - 1) . '.'
+            );
         }
 
         return $this->data[$index];
@@ -137,10 +150,13 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException('Vector index outside valid range.');
+            throw new OutOfRangeException(
+                "Vector index $index is outside the valid range 0-" . ($this->size - 1) . '.'
+            );
         }
 
         $this->data[$index] = (float)$value;
+        $this->magnitude = null;
     }
 
     // endregion
@@ -220,7 +236,7 @@ final class Vector implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Arithmetic methods
+    // region Unary arithmetic methods
 
     /**
      * Negate this vector.
@@ -231,6 +247,10 @@ final class Vector implements Stringable, ArrayAccess
     {
         return $this->mul(-1);
     }
+
+    // endregion
+
+    // region Binary arithmetic methods
 
     /**
      * Add another vector to this one.
@@ -243,7 +263,7 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Vectors must have the same size for addition.');
+            throw new LengthException('Cannot add vectors of different sizes.');
         }
 
         // Add the vectors element-wise.
@@ -266,7 +286,7 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Vectors must have the same size for subtraction.');
+            throw new LengthException('Cannot subtract vectors of different sizes.');
         }
 
         // Subtract the vectors element-wise.
@@ -305,7 +325,7 @@ final class Vector implements Stringable, ArrayAccess
     public function div(int|float $scalar): self
     {
         // Guard.
-        if (Numbers::equal($scalar, 0)) {
+        if (Numbers::isZero($scalar)) {
             throw new DivisionByZeroError('Cannot divide by zero.');
         }
 
@@ -333,7 +353,7 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Vectors must have the same size for dot product.');
+            throw new LengthException('Cannot compute dot product of vectors with different sizes.');
         }
 
         // Calculate the dot product element-wise.
@@ -356,10 +376,10 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check if vectors are size 3.
         if ($this->size !== 3) {
-            throw new LengthException('First operand must be a vector of size 3.');
+            throw new LengthException('Cannot compute cross product: first operand is not size 3.');
         }
         if ($other->size !== 3) {
-            throw new LengthException('Second operand must be a vector of size 3.');
+            throw new LengthException('Cannot compute cross product: second operand is not size 3.');
         }
 
         return self::fromArray([
@@ -367,6 +387,18 @@ final class Vector implements Stringable, ArrayAccess
             $this->data[2] * $other->data[0] - $this->data[0] * $other->data[2],
             $this->data[0] * $other->data[1] - $this->data[1] * $other->data[0],
         ]);
+    }
+
+    /**
+     * Normalize this vector to a unit vector (magnitude 1).
+     *
+     * @return self A new vector with the same direction and magnitude 1.
+     * @throws DivisionByZeroError If the vector has zero magnitude.
+     */
+    public function normalize(): self
+    {
+        assert($this->magnitude !== null);
+        return $this->div($this->magnitude);
     }
 
     // endregion
@@ -451,7 +483,7 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check offset exists.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Offset must be an integer within the valid range.');
+            throw new OutOfRangeException('Invalid offset: ' . Stringify::abbrev($offset) . '.');
         }
         assert(is_int($offset));
 
@@ -470,13 +502,13 @@ final class Vector implements Stringable, ArrayAccess
     {
         // Check offset exists.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Offset must be an integer within the valid range.');
+            throw new OutOfRangeException('Invalid offset: ' . Stringify::abbrev($offset) . '.');
         }
         assert(is_int($offset));
 
         // Check value is a number.
         if (!Numbers::isNumber($value)) {
-            throw new InvalidArgumentException('Vector elements must be numbers (int or float).');
+            throw new InvalidArgumentException('Cannot use non-numeric elements in a vector.');
         }
 
         $this->set($offset, $value);

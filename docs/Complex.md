@@ -259,7 +259,7 @@ var_dump($z1->approxEqual('string'));  // false
 
 ---
 
-## Arithmetic Methods
+## Unary Arithmetic Methods
 
 ### neg()
 
@@ -274,6 +274,40 @@ Get the negative of this complex number.
 $z = new Complex(3, 4);
 $result = $z->neg();  // -3 - 4i
 ```
+
+### inv()
+
+```php
+public function inv(): self
+```
+
+Get the multiplicative inverse (reciprocal).
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$result = $z->inv();  // 0.12 - 0.16i
+```
+
+**Throws:** `DivisionByZeroError` if the number is zero.
+
+### conj()
+
+```php
+public function conj(): self
+```
+
+Get the complex conjugate (negate the imaginary part).
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$result = $z->conj();  // 3 - 4i
+```
+
+---
+
+## Binary Arithmetic Methods
 
 ### add()
 
@@ -343,87 +377,9 @@ $quotient = $z1->div($z2);
 
 **Throws:** `DivisionByZeroError` if dividing by zero.
 
-### inv()
-
-```php
-public function inv(): self
-```
-
-Get the multiplicative inverse (reciprocal).
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$result = $z->inv();  // 0.12 - 0.16i
-```
-
-**Throws:** `DivisionByZeroError` if the number is zero.
-
-### conj()
-
-```php
-public function conj(): self
-```
-
-Get the complex conjugate (negate the imaginary part).
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$result = $z->conj();  // 3 - 4i
-```
-
 ---
 
-## Power, Roots, and Transcendental Methods
-
-### exp()
-
-```php
-public function exp(): self
-```
-
-Calculate e raised to the power of this complex number.
-
-**Example:**
-```php
-$z = new Complex(0, M_PI);
-$result = $z->exp();  // -1 + 0i (Euler's identity)
-```
-
-### ln()
-
-```php
-public function ln(): self
-```
-
-Calculate the natural logarithm.
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$result = $z->ln();
-```
-
-**Throws:** `DomainException` if the number is zero.
-
-### log()
-
-```php
-public function log(int|float|self $base): self
-```
-
-Calculate logarithm with specified base using change of base formula: log_b(z) = ln(z) / ln(b).
-
-**Example:**
-```php
-$z = new Complex(8);
-$result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
-```
-
-**Throws:**
-- `DomainException` if base is 0 or 1
-- `DomainException` if the number is zero
+## Power Methods
 
 ### pow()
 
@@ -501,6 +457,58 @@ Calculate the principal square root.
 $z = new Complex(-1);
 $result = $z->sqrt();  // 0 + 1i
 ```
+
+---
+
+## Transcendental Methods
+
+### exp()
+
+```php
+public function exp(): self
+```
+
+Calculate e raised to the power of this complex number.
+
+**Example:**
+```php
+$z = new Complex(0, M_PI);
+$result = $z->exp();  // -1 + 0i (Euler's identity)
+```
+
+### ln()
+
+```php
+public function ln(): self
+```
+
+Calculate the natural logarithm.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$result = $z->ln();
+```
+
+**Throws:** `DomainException` if the number is zero.
+
+### log()
+
+```php
+public function log(int|float|self $base): self
+```
+
+Calculate logarithm with specified base using change of base formula: log_b(z) = ln(z) / ln(b).
+
+**Example:**
+```php
+$z = new Complex(8);
+$result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
+```
+
+**Throws:**
+- `DomainException` if base is 0 or 1
+- `DomainException` if the number is zero
 
 ---
 
@@ -680,10 +688,6 @@ $z = new Complex(3, 4);
 $array = $z->toArray();  // [3.0, 4.0]
 ```
 
----
-
-## String methods
-
 ### \_\_toString()
 
 ```php
@@ -755,21 +759,31 @@ echo $z->magnitude;  // 5.0
 echo $z->phase;      // 0.785... (π/4)
 ```
 
-### Euler's Identity
+### Euler's Identities
 
 ```php
 // e^(iπ) = -1
 $z = new Complex(0, M_PI);
 $result = $z->exp();  // -1 + 0i
+
+// e^(iτ) = 1
+$z = new Complex(0, Floats::TAU);
+$result = $z->exp();  // 1 + 0i
 ```
 
 ### Finding Roots
 
 ```php
-// Find all cube roots of 1
-$one = new Complex(1);
-$roots = $one->roots(3);
-// Returns 3 complex numbers evenly spaced around unit circle
+// Find all cube roots of 8
+$eight = new Complex(8);
+$roots = $eight->roots(3);
+
+echo $roots[0];  // "2"                      (the real cube root)
+echo $roots[1];  // "-1 + 1.7320508075689i"  (-1 + √3 i)
+echo $roots[2];  // "-1 - 1.7320508075689i"  (-1 - √3 i)
+
+// Verify: each root cubed equals 8
+$roots[1]->pow(3)->approxEqual(8);  // true
 ```
 
 ### Complex Trigonometry
@@ -784,3 +798,12 @@ $sin2 = $sin->sqr();
 $cos2 = $cos->sqr();
 $sum = $sin2->add($cos2);  // 1 + 0i
 ```
+
+---
+
+## See Also
+
+- **[Rational](Rational.md)** - Exact rational number arithmetic
+- **[Matrix](Matrix.md)** - Matrix operations (can contain complex-valued computations)
+- **[Vector](Vector.md)** - Vector operations
+- **[Floats](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Floats.md)** - Float utilities including `TAU` constant and approximate comparison

@@ -26,6 +26,15 @@ final class Complex implements Stringable, ArrayAccess
 {
     use ApproxEquatable;
 
+    // region Constants
+
+    /**
+     * Small difference used for comparing values, to circumvent floating point rounding issues.
+     */
+    public const float EPSILON = 1e-10;
+
+    // endregion
+
     // region Properties
 
     /**
@@ -42,9 +51,9 @@ final class Complex implements Stringable, ArrayAccess
      */
     private(set) float $imaginary;
 
-    // PHPCS doesn't know property hooks yet.
-    // phpcs:disable PSR2.Classes.PropertyDeclaration
-    // phpcs:disable Generic.WhiteSpace.ScopeIndent.IncorrectExact
+    // endregion
+
+    // region Property hooks
 
     /**
      * The magnitude (a.k.a. absolute value or modulus) of this complex number.
@@ -87,14 +96,6 @@ final class Complex implements Stringable, ArrayAccess
         }
     }
 
-    // phpcs:enable PSR2.Classes.PropertyDeclaration
-    // phpcs:enable Generic.WhiteSpace.ScopeIndent.IncorrectExact
-
-    /**
-     * Small difference used for comparing values, to circumvent floating point rounding issues.
-     */
-    public const float EPSILON = 1e-10;
-
     // endregion
 
     // region Constructor
@@ -104,9 +105,16 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @param int|float $real The real part.
      * @param int|float $imag The imaginary part.
+     * @throws DomainException If either part is not finite (±INF or NAN).
      */
     public function __construct(int|float $real = 0, int|float $imag = 0)
     {
+        // Check for non-finite values.
+        if (!is_finite($real) || !is_finite($imag)) {
+            throw new DomainException('Cannot create a complex number from non-finite values.');
+        }
+
+        // Set the properties.
         $this->real = $real;
         $this->imaginary = $imag;
     }
@@ -150,7 +158,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for valid magnitude.
         if ($mag < 0) {
-            throw new DomainException('Magnitude must not be negative.');
+            throw new DomainException("Cannot create complex number with negative magnitude: $mag.");
         }
 
         // Get the phase as radians in the normal range (-pi, pi]
@@ -312,7 +320,7 @@ final class Complex implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Arithmetic methods
+    // region Unary arithmetic methods
 
     /**
      * Negate a complex number.
@@ -323,6 +331,30 @@ final class Complex implements Stringable, ArrayAccess
     {
         return new self(-$this->real, -$this->imaginary);
     }
+
+    /**
+     * Calculate the reciprocal of this complex number.
+     *
+     * @return self A new complex number representing the reciprocal.
+     */
+    public function inv(): self
+    {
+        return new self(1)->div($this);
+    }
+
+    /**
+     * Get the complex conjugate of this number.
+     *
+     * @return self A new complex number representing the conjugate.
+     */
+    public function conj(): self
+    {
+        return new self($this->real, -$this->imaginary);
+    }
+
+    // endregion
+
+    // region Binary arithmetic methods
 
     /**
      * Add another complex number to this one.
@@ -401,29 +433,143 @@ final class Complex implements Stringable, ArrayAccess
         return new self(($a * $c + $b * $d) / $f, ($b * $c - $a * $d) / $f);
     }
 
+    // endregion
+
+    // region Power methods
+
     /**
-     * Calculate the reciprocal of this complex number.
+     * Raise this complex number to a power.
+     * This function can be multivalued for certain base/exponent combinations.
+     * For simplicity, only the principal value is returned.
      *
-     * @return self A new complex number representing the reciprocal.
+     * Single-valued cases:
+     * - Any base raised to an integer exponent.
+     * - Real positive base with real exponent.
+     *
+     * Multivalued cases:
+     * - Complex base with fractional exponent: z^(1/n)
+     * - Negative real base with fractional exponent: (-2)^(1/3)
+     * - Any base with complex exponent: z^(a+bi) where b ≠ 0
+     *
+     * @param self|int|float $other The real or complex number to raise this complex number to.
+     * @return self A new complex number representing the result.
+     * @throws DomainException If attempting 0 raised to a negative or complex power.
      */
-    public function inv(): self
+    public function pow(self|int|float $other): self
     {
-        return new self(1)->div($this);
+        // Get $other as a Complex.
+        $other = self::toComplex($other);
+
+        // Handle exponent = 0. Any number to power 0 is 1.
+        // Although mathematically 0^0 is undefined, we return 1 for consistency with pow(0, 0).
+        // This is a common result in many programming languages.
+        // (Principle of least astonishment.)
+        // @see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero
+        if ($other->equal(0)) {
+            return new self(1);
+        }
+
+        // Handle base = 0.
+        if ($this->equal(0)) {
+            // Check for complex exponent.
+            if (!$other->isReal()) {
+                throw new DomainException('Cannot raise zero to a complex power.');
+            }
+
+            // Check for negative real exponent.
+            if ($other->real < 0) {
+                throw new DomainException('Cannot raise zero to a negative power.');
+            }
+
+            // The exponent is a positive real number. 0 raised to any positive real number is 0.
+            return new self();
+        }
+
+        // Handle exponent = 1. Any number to power 1 is itself.
+        if ($other->equal(1)) {
+            return $this;
+        }
+
+        // Handle exponent = 2. Delegate to sqr().
+        if ($other->equal(2)) {
+            return $this->sqr();
+        }
+
+        // Handle exponent = -1. Delegate to inv().
+        if ($other->equal(-1)) {
+            return $this->inv();
+        }
+
+        // Handle base = e. This saves unnecessary calls to ln() and mul().
+        if ($this->equal(M_E)) {
+            return $other->exp();
+        }
+
+        // General solution. Calculate z^w = e^(w * ln(z)).
+        return $other->mul($this->ln())->exp();
     }
 
     /**
-     * Get the complex conjugate of this number.
+     * Calculate the nth roots of this complex number.
+     * Returns all n complex roots using De Moivre's theorem.
      *
-     * @return self A new complex number representing the conjugate.
+     * @param int $n The root to calculate (e.g. 2 for square root, 3 for cube root).
+     * @return list<self> An array of Complex numbers representing all nth roots.
+     * @throws DomainException If n is not a positive integer.
      */
-    public function conj(): self
+    public function roots(int $n): array
     {
-        return new self($this->real, -$this->imaginary);
+        // Check for negative number of roots.
+        if ($n <= 0) {
+            throw new DomainException("Invalid root index: $n. Must be a positive integer.");
+        }
+
+        // Handle special case of 0.
+        if ($this->equal(0)) {
+            return [new self()];
+        }
+
+        // Calculate the magnitude of the roots.
+        $rootMag = $this->magnitude ** (1.0 / $n);
+
+        // Calculate all n roots.
+        $roots = [];
+        $theta = $this->phase / $n;
+        $delta = Floats::TAU / $n;
+        for ($k = 0; $k < $n; $k++) {
+            $rootPhase = $theta + $k * $delta;
+            $roots[] = self::fromPolar($rootMag, $rootPhase);
+        }
+
+        return $roots;
+    }
+
+    /**
+     * Square this complex number.
+     *
+     * Equivalent to pow(2), but more efficient and readable.
+     *
+     * @return self A new complex number representing the square of this number.
+     */
+    public function sqr(): self
+    {
+        return $this->mul($this);
+    }
+
+    /**
+     * Calculate the square root of this complex number.
+     * Only the principal value is returned. For both square roots, call roots(2).
+     *
+     * @return self
+     */
+    public function sqrt(): self
+    {
+        return $this->pow(0.5);
     }
 
     // endregion
 
-    // region Power, roots, and transcendental methods
+    // region Transcendental methods
 
     /**
      * Calculate e^z where z is this complex number.
@@ -453,12 +599,12 @@ final class Complex implements Stringable, ArrayAccess
             return new self(10);
         }
 
-        // Euler's identity with pi: e^iπ = -1
+        // Eulerian identities.
+        // e^iπ = -1
         if ($this->equal(new self(0, M_PI))) {
             return new self(-1);
         }
-
-        // Euler's identity with tau: e^iτ = 1
+        // e^iτ = 1
         if ($this->equal(new self(0, Floats::TAU))) {
             return new self(1);
         }
@@ -477,7 +623,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for ln(0), which is undefined.
         if ($this->equal(0)) {
-            throw new DomainException('The logarithm of 0 is undefined.');
+            throw new DomainException('Cannot compute the logarithm of zero.');
         }
 
         // Use shortcuts where possible.
@@ -524,10 +670,10 @@ final class Complex implements Stringable, ArrayAccess
 
         // Check for invalid base values.
         if ($base->equal(0)) {
-            throw new DomainException('Logarithm base cannot be 0.');
+            throw new DomainException('Cannot compute logarithm with base zero.');
         }
         if ($base->equal(1)) {
-            throw new DomainException('Logarithm base cannot be 1.');
+            throw new DomainException('Cannot compute logarithm with base one.');
         }
 
         // Check for natural logarithm.
@@ -553,138 +699,6 @@ final class Complex implements Stringable, ArrayAccess
 
         // General solution. Compute log_b(z) = ln(z) / ln(b)
         return $this->ln()->div($base->ln());
-    }
-
-    /**
-     * Raise this complex number to a power.
-     * This function can be multivalued for certain base/exponent combinations.
-     * For simplicity, only the principal value is returned.
-     *
-     * Single-valued cases:
-     * - Any base raised to an integer exponent.
-     * - Real positive base with real exponent.
-     *
-     * Multivalued cases:
-     * - Complex base with fractional exponent: z^(1/n)
-     * - Negative real base with fractional exponent: (-2)^(1/3)
-     * - Any base with complex exponent: z^(a+bi) where b ≠ 0
-     *
-     * @param self|int|float $other The real or complex number to raise this complex number to.
-     * @return self A new complex number representing the result.
-     * @throws DomainException If attempting 0 raised to a negative or complex power.
-     */
-    public function pow(self|int|float $other): self
-    {
-        // Get $other as a Complex.
-        $other = self::toComplex($other);
-
-        // Handle exponent = 0. Any number to power 0 is 1.
-        // Although mathematically 0^0 is undefined, we return 1 for consistency with pow(0, 0).
-        // This is a common result in many programming languages.
-        // (Principle of least astonishment.)
-        // @see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero
-        if ($other->equal(0)) {
-            return new self(1);
-        }
-
-        // Handle base = 0.
-        if ($this->equal(0)) {
-            // Check for complex exponent.
-            if (!$other->isReal()) {
-                throw new DomainException('Cannot raise 0 to a complex number.');
-            }
-
-            // Check for negative real exponent.
-            if ($other->real < 0) {
-                throw new DomainException('Cannot raise 0 to a negative real number.');
-            }
-
-            // The exponent is a positive real number. 0 raised to any positive real number is 0.
-            return new self();
-        }
-
-        // Handle exponent = 1. Any number to power 1 is itself.
-        if ($other->equal(1)) {
-            return $this;
-        }
-
-        // Handle exponent = 2. Delegate to sqr().
-        if ($other->equal(2)) {
-            return $this->sqr();
-        }
-
-        // Handle exponent = -1. Delegate to inv().
-        if ($other->equal(-1)) {
-            return $this->inv();
-        }
-
-        // Handle base = e. This saves unnecessary calls to ln() and mul().
-        if ($this->equal(M_E)) {
-            return $other->exp();
-        }
-
-        // General solution. Calculate z^w = e^(w * ln(z)).
-        return $other->mul($this->ln())->exp();
-    }
-
-    /**
-     * Calculate the nth roots of this complex number.
-     * Returns all n complex roots using De Moivre's theorem.
-     *
-     * @param int $n The root to calculate (e.g. 2 for square root, 3 for cube root).
-     * @return list<self> An array of Complex numbers representing all nth roots.
-     * @throws DomainException If n is not a positive integer.
-     */
-    public function roots(int $n): array
-    {
-        // Check for negative number of roots.
-        if ($n <= 0) {
-            throw new DomainException('Root index must be a positive integer.');
-        }
-
-        // Handle special case of 0.
-        if ($this->equal(0)) {
-            return [
-                new self(),
-            ];
-        }
-
-        // Calculate the magnitude of the roots.
-        $rootMag = $this->magnitude ** (1.0 / $n);
-
-        // Calculate all n roots.
-        $roots = [];
-        $theta = $this->phase / $n;
-        $delta = Floats::TAU / $n;
-        for ($k = 0; $k < $n; $k++) {
-            $rootPhase = $theta + $k * $delta;
-            $roots[] = self::fromPolar($rootMag, $rootPhase);
-        }
-
-        return $roots;
-    }
-
-    /**
-     * Square this complex number.
-     *
-     * Equivalent to pow(2), but more efficient and readable.
-     *
-     * @return self A new complex number representing the square of this number.
-     */
-    public function sqr(): self
-    {
-        return $this->mul($this);
-    }
-
-    /**
-     * Calculate the square root of this complex number.
-     * Only the principal value is returned. For both square roots, call roots(2).
-     *
-     * @return self
-     */
-    public function sqrt(): self
-    {
-        return $this->pow(0.5);
     }
 
     // endregion
@@ -1096,7 +1110,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Guard.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Invalid offset: ' . Stringify::abbrev($offset));
+            throw new OutOfRangeException('Invalid offset: ' . Stringify::abbrev($offset) . '.');
         }
 
         // Return the appropriate value.
@@ -1129,4 +1143,6 @@ final class Complex implements Stringable, ArrayAccess
     {
         throw new LogicException('Complex values are immutable.');
     }
+
+    // endregion
 }

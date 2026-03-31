@@ -5,22 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+---
+
 ## [Unreleased]
+
+---
+
+## [1.2.0] - 2026-03-31
 
 ### Added
 
-- **`sqr()` method** — Added to `Complex`, `Rational`, and `Matrix` for squaring values. Uses `mul($this)` for efficiency, equivalent to `pow(2)`.
+- **Matrix**: `setRow()`, `setColumn()` — set a row or column from a Vector or array.
+- **Matrix**: `trace()` — sum of diagonal elements (square matrices only).
+- **Matrix**: `norm()`, `p1Norm()`, `pInfNorm()` — Frobenius, P1, and P-infinity matrix norms.
+- **Vector**: `normalize()` — return a unit vector with the same direction.
+- **Rational**: `toMixedNumber()` — convert to integer part and fractional remainder with trunc/frac semantics.
+- **Complex, Rational, Matrix**: `sqr()` method for squaring values. Uses `mul($this)` for efficiency, equivalent to `pow(2)`.
+- **Complex**: Constructor now validates that both parts are finite (rejects ±INF and NAN).
 
 ### Changed
 
-- Replaced `pow(2)` with `sqr()` in examples and tests where appropriate.
-- `Complex::sqr()` now uses `mul($this)` instead of `pow(2)`.
-- `Rational` constructor now checks for `PHP_INT_MIN` overflow/underflow before calling `simplify()`.
+- **Rational**: Renamed properties `$num` → `$numerator` and `$den` → `$denominator`.
+- **Rational**: Zero denominator now throws `DivisionByZeroError` (was `DomainException`).
+- **Rational**: `floatToRatio()` is now private (use the constructor instead).
+- **Matrix**: Removed `ArrayAccess` interface — bracket syntax was misleading for element-level mutation (`$m[1][1] = 9` silently failed).
+- **Matrix**: `rowCount` is now a stored `private(set)` property (was derived from data).
+- **Vector**: `magnitude` is now cached with a property hook, invalidated on mutation (was recomputed every access).
+- **Vector**: `size` is now a stored `private(set)` property (was recomputed via `count()`).
+- **Exception messages** standardised across all four classes to follow "Cannot X" convention with offending values and concise constraints.
+- Consistent region structure across all four source files.
 
 ### Fixed
 
 - `Rational::floatToRatio()` — sign is now correctly placed on the numerator (not denominator) for the `1/PHP_INT_MAX` boundary case.
 - `Rational::floatToRatio()` — `(float)PHP_INT_MAX` and `(float)PHP_INT_MIN` now return correct boundary values instead of throwing.
+- `Complex.php` — missing `// endregion` for ArrayAccess implementation region.
+- `Matrix` — `rowCount` property was not initialised in constructor after property declaration change.
+
+### Documentation
+
+- Added complexity warnings to `Matrix::inv()` (O(n! × n²)) and `calcDet()` (O(n!)).
+- Added `See Also` sections to all four class docs.
+- Expanded Rational constructor docs with float conversion, irrational approximation, and error examples.
+- Added documentation for all new methods.
+- Removed `ArrayAccess` section from Matrix.md.
+- Contributing section removed from README (link moved to Support).
+
+### Tests
+
+- New tests for `setRow`, `setColumn`, `trace`, `norm`, `p1Norm`, `pInfNorm`, `normalize`, `toMixedNumber`.
+- Complex constructor validation tests (INF, -INF, NAN for both parts).
+- Rational constructor tests for float-to-ratio paths (migrated from removed `floatToRatio()` tests).
+- Created `MatrixLinearAlgebraTest` (moved from `MatrixArithmeticTest`).
+- Removed `ArrayAccess` tests from `MatrixConversionTest`.
+- Added regions to `ComplexTrigonometricTest`, `MatrixElementsTest`, `RationalConstructorTest`.
 
 ## [1.1.0] - 2026-03-21
 

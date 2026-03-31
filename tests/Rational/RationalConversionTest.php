@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Rational;
 
-use DomainException;
 use Galaxon\Math\Rational;
-use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use UnderflowException;
 
 #[CoversClass(Rational::class)]
 class RationalConversionTest extends TestCase
@@ -78,95 +75,6 @@ class RationalConversionTest extends TestCase
     }
 
     /**
-     * Test floatToRatio with common fractions.
-     */
-    public function testFloatToRatioCommonFractions(): void
-    {
-        // 0.5 = 1/2
-        [$num, $den] = Rational::floatToRatio(0.5);
-        $this->assertSame(1, $num);
-        $this->assertSame(2, $den);
-
-        // 0.25 = 1/4
-        [$num, $den] = Rational::floatToRatio(0.25);
-        $this->assertSame(1, $num);
-        $this->assertSame(4, $den);
-
-        // 0.75 = 3/4
-        [$num, $den] = Rational::floatToRatio(0.75);
-        $this->assertSame(3, $num);
-        $this->assertSame(4, $den);
-
-        // 0.333... ≈ 1/3
-        [$num, $den] = Rational::floatToRatio(1 / 3);
-        $this->assertSame(1, $num);
-        $this->assertSame(3, $den);
-
-        // 0.666... ≈ 2/3
-        [$num, $den] = Rational::floatToRatio(2 / 3);
-        $this->assertSame(2, $num);
-        $this->assertSame(3, $den);
-    }
-
-    /**
-     * Test floatToRatio with negative numbers.
-     */
-    public function testFloatToRatioNegative(): void
-    {
-        // -0.5 = -1/2
-        [$num, $den] = Rational::floatToRatio(-0.5);
-        $this->assertSame(-1, $num);
-        $this->assertSame(2, $den);
-
-        // -0.75 = -3/4
-        [$num, $den] = Rational::floatToRatio(-0.75);
-        $this->assertSame(-3, $num);
-        $this->assertSame(4, $den);
-    }
-
-    /**
-     * Test floatToRatio with whole numbers.
-     */
-    public function testFloatToRatioWholeNumbers(): void
-    {
-        // 5.0 = 5/1
-        [$num, $den] = Rational::floatToRatio(5.0);
-        $this->assertSame(5, $num);
-        $this->assertSame(1, $den);
-
-        // -3.0 = -3/1
-        [$num, $den] = Rational::floatToRatio(-3.0);
-        $this->assertSame(-3, $num);
-        $this->assertSame(1, $den);
-
-        // 0.0 = 0/1
-        [$num, $den] = Rational::floatToRatio(0.0);
-        $this->assertSame(0, $num);
-        $this->assertSame(1, $den);
-    }
-
-    /**
-     * Test floatToRatio with mathematical constants.
-     */
-    public function testFloatToRatioConstants(): void
-    {
-        // Test that it produces reasonable approximations
-        [$num, $den] = Rational::floatToRatio(M_PI);
-        $this->assertIsInt($num);
-        $this->assertIsInt($den);
-        $this->assertGreaterThan(0, $den);
-        // Check it's close to π
-        $this->assertEqualsWithDelta(M_PI, $num / $den, 1e-10);
-
-        [$num, $den] = Rational::floatToRatio(M_E);
-        $this->assertIsInt($num);
-        $this->assertIsInt($den);
-        $this->assertGreaterThan(0, $den);
-        // Check it's close to e
-        $this->assertEqualsWithDelta(M_E, $num / $den, 1e-10);
-    }
-
-    /**
      * Test round-trip conversion for exact values.
      */
     public function testRoundTripExact(): void
@@ -183,151 +91,106 @@ class RationalConversionTest extends TestCase
      */
     public function testRoundTripApproximate(): void
     {
-        // Create from float
         $r = new Rational(M_PI);
         $f = $r->toFloat();
 
-        // Should be very close
         $this->assertEqualsWithDelta(M_PI, $f, 1e-10);
     }
 
+    // endregion
+
+    // region toMixedNumber() tests
+
     /**
-     * Test floatToRatio with PHP_INT_MIN float returns -PHP_INT_MAX/1.
+     * Test toMixedNumber with improper positive fraction.
      */
-    public function testFloatToRatioWithPhpIntMin(): void
+    public function testToMixedNumberPositiveImproper(): void
     {
-        // (float)PHP_INT_MIN has absolute value equal to (float)PHP_INT_MAX, handled as edge case.
-        [$num, $den] = Rational::floatToRatio((float)PHP_INT_MIN);
-        $this->assertSame(-PHP_INT_MAX, $num);
-        $this->assertSame(1, $den);
+        $r = new Rational(7, 4);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        $this->assertSame(1, $integer);
+        $this->assertSame(3, $fraction->numerator);
+        $this->assertSame(4, $fraction->denominator);
     }
 
     /**
-     * Test floatToRatio with PHP_INT_MAX float returns PHP_INT_MAX/1.
+     * Test toMixedNumber with improper negative fraction.
      */
-    public function testFloatToRatioWithPhpIntMax(): void
+    public function testToMixedNumberNegativeImproper(): void
     {
-        // (float)PHP_INT_MAX rounds up to 2^63, handled as edge case.
-        [$num, $den] = Rational::floatToRatio((float)PHP_INT_MAX);
-        $this->assertSame(PHP_INT_MAX, $num);
-        $this->assertSame(1, $den);
+        $r = new Rational(-7, 4);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        // -7/4 = -1 + (-3/4) (trunc/frac semantics)
+        $this->assertSame(-1, $integer);
+        $this->assertSame(-3, $fraction->numerator);
+        $this->assertSame(4, $fraction->denominator);
     }
 
     /**
-     * Test floatToRatio with 1/PHP_INT_MIN returns -1/PHP_INT_MAX.
+     * Test toMixedNumber with proper fraction (no integer part).
      */
-    public function testFloatToRatioWithInversePhpIntMin(): void
+    public function testToMixedNumberProperFraction(): void
     {
-        // (float)1/PHP_INT_MIN has absolute value equal to (float)(-1/PHP_INT_MAX), handled as edge case.
-        [$num, $den] = Rational::floatToRatio(1.0 / PHP_INT_MIN);
-        $this->assertSame(-1, $num);
-        $this->assertSame(PHP_INT_MAX, $den);
+        $r = new Rational(3, 4);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        $this->assertSame(0, $integer);
+        $this->assertSame(3, $fraction->numerator);
+        $this->assertSame(4, $fraction->denominator);
     }
 
     /**
-     * Test floatToRatio with 1/PHP_INT_MAX returns the exact boundary value.
+     * Test toMixedNumber with negative proper fraction.
      */
-    public function testFloatToRatioWithInversePhpIntMax(): void
+    public function testToMixedNumberNegativeProperFraction(): void
     {
-        [$num, $den] = Rational::floatToRatio(1.0 / PHP_INT_MAX);
-        $this->assertSame(1, $num);
-        $this->assertSame(PHP_INT_MAX, $den);
+        $r = new Rational(-3, 4);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        // -3/4 = 0 + (-3/4) (trunc/frac semantics)
+        $this->assertSame(0, $integer);
+        $this->assertSame(-3, $fraction->numerator);
+        $this->assertSame(4, $fraction->denominator);
     }
 
     /**
-     * Test floatToRatio with -1/PHP_INT_MAX returns the exact boundary value.
+     * Test toMixedNumber with whole number.
      */
-    public function testFloatToRatioWithNegativeInversePhpIntMax(): void
+    public function testToMixedNumberWholeNumber(): void
     {
-        [$num, $den] = Rational::floatToRatio(-1.0 / PHP_INT_MAX);
-        $this->assertSame(-1, $num);
-        $this->assertSame(PHP_INT_MAX, $den);
+        $r = new Rational(5);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        $this->assertSame(5, $integer);
+        $this->assertSame(0, $fraction->numerator);
     }
 
     /**
-     * Test floatToRatio with value too small throws UnderflowException.
+     * Test toMixedNumber with zero.
      */
-    public function testFloatToRatioTooSmallThrows(): void
+    public function testToMixedNumberZero(): void
     {
-        $this->expectException(UnderflowException::class);
-        // Value smaller than 1/PHP_INT_MAX
-        Rational::floatToRatio(1e-20);
+        $r = new Rational(0);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        $this->assertSame(0, $integer);
+        $this->assertSame(0, $fraction->numerator);
     }
 
     /**
-     * Test floatToRatio with value too large throws OverflowException.
+     * Test that integer + fraction equals original value.
      */
-    public function testFloatToRatioTooLargeThrows(): void
+    public function testToMixedNumberRoundTrip(): void
     {
-        $this->expectException(OverflowException::class);
-        // Value larger than PHP_INT_MAX
-        Rational::floatToRatio((float)PHP_INT_MAX * 2);
+        $r = new Rational(-11, 3);
+        [$integer, $fraction] = $r->toMixedNumber();
+
+        // Reconstruct: integer + fraction should equal original
+        $reconstructed = $fraction->add($integer);
+        $this->assertTrue($r->equal($reconstructed));
     }
 
-    /**
-     * Test floatToRatio with infinity throws DomainException.
-     */
-    public function testFloatToRatioInfinityThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        Rational::floatToRatio(INF);
-    }
-
-    /**
-     * Test floatToRatio with negative infinity throws DomainException.
-     */
-    public function testFloatToRatioNegativeInfinityThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        Rational::floatToRatio(-INF);
-    }
-
-    /**
-     * Test floatToRatio with NAN throws DomainException.
-     */
-    public function testFloatToRatioNanThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        Rational::floatToRatio(NAN);
-    }
-
-    /**
-     * Test floatToRatio with value that causes convergent overflow.
-     *
-     * Note: Code coverage tools can verify this hits the overflow guard, but the test cannot programmatically verify
-     * the exit path.
-     */
-    public function testFloatToRatioConvergentExceedsLimit(): void
-    {
-        // Testing with random floats revealed many cases where the next convergent would exceed PHP_INT_MAX, causing
-        // the algorithm to return the current best approximation. This is one such value.
-        $value = 2.1213650134300899e-10;
-        [$num, $den] = Rational::floatToRatio($value);
-
-        $this->assertEquals(431, $num);
-        $this->assertEquals(2031710701701, $den);
-
-        // Should return best approximation before overflow, and the difference should be small.
-        $this->assertEqualsWithDelta($value, $num / $den, 1e-10);
-    }
-
-    /**
-     * Test floatToRatio with value that terminates with zero remainder.
-     *
-     * Note: Code coverage tools can verify this hits the zero remainder exit, but the test cannot programmatically
-     * verify the exit path.
-     */
-    public function testFloatToRatioZeroRemainder(): void
-    {
-        // Testing with random floats revealed many cases where the test for zero remainder causes the algorithm to
-        // return the current best approximation. This is one such value.
-        $value = 2.176543618258578e-17;
-        [$num, $den] = Rational::floatToRatio($value);
-
-        $this->assertEquals(1, $num);
-        $this->assertEquals(45944404312011256, $den);
-
-        // Should return best approximation before overflow, and the difference should be small.
-        $this->assertEqualsWithDelta($value, $num / $den, 1e-10);
-    }
+    // endregion
 }

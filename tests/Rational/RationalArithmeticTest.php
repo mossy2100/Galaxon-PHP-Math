@@ -21,19 +21,19 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->neg();
 
-        $this->assertSame(-3, $result->num);
-        $this->assertSame(4, $result->den);
+        $this->assertSame(-3, $result->numerator);
+        $this->assertSame(4, $result->denominator);
 
         // Double negation
         $result2 = $result->neg();
-        $this->assertSame(3, $result2->num);
-        $this->assertSame(4, $result2->den);
+        $this->assertSame(3, $result2->numerator);
+        $this->assertSame(4, $result2->denominator);
 
         // Negate zero
         $r2 = new Rational(0);
         $result3 = $r2->neg();
-        $this->assertSame(0, $result3->num);
-        $this->assertSame(1, $result3->den);
+        $this->assertSame(0, $result3->numerator);
+        $this->assertSame(1, $result3->denominator);
     }
 
     /**
@@ -46,16 +46,16 @@ class RationalArithmeticTest extends TestCase
         $r2 = new Rational(1, 3);
         $result = $r1->add($r2);
 
-        $this->assertSame(5, $result->num);
-        $this->assertSame(6, $result->den);
+        $this->assertSame(5, $result->numerator);
+        $this->assertSame(6, $result->denominator);
 
         // 3/4 + 1/4 = 1
         $r3 = new Rational(3, 4);
         $r4 = new Rational(1, 4);
         $result2 = $r3->add($r4);
 
-        $this->assertSame(1, $result2->num);
-        $this->assertSame(1, $result2->den);
+        $this->assertSame(1, $result2->numerator);
+        $this->assertSame(1, $result2->denominator);
     }
 
     /**
@@ -67,8 +67,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(1, 2);
         $result = $r->add(2);
 
-        $this->assertSame(5, $result->num);
-        $this->assertSame(2, $result->den);
+        $this->assertSame(5, $result->numerator);
+        $this->assertSame(2, $result->denominator);
     }
 
     /**
@@ -80,8 +80,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(1, 2);
         $result = $r->add(0.5);
 
-        $this->assertSame(1, $result->num);
-        $this->assertSame(1, $result->den);
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(1, $result->denominator);
     }
 
     /**
@@ -94,16 +94,16 @@ class RationalArithmeticTest extends TestCase
         $r2 = new Rational(1, 4);
         $result = $r1->sub($r2);
 
-        $this->assertSame(1, $result->num);
-        $this->assertSame(2, $result->den);
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(2, $result->denominator);
 
         // 1/2 - 3/4 = -1/4
         $r3 = new Rational(1, 2);
         $r4 = new Rational(3, 4);
         $result2 = $r3->sub($r4);
 
-        $this->assertSame(-1, $result2->num);
-        $this->assertSame(4, $result2->den);
+        $this->assertSame(-1, $result2->numerator);
+        $this->assertSame(4, $result2->denominator);
     }
 
     /**
@@ -115,8 +115,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(5, 2);
         $result = $r->sub(2);
 
-        $this->assertSame(1, $result->num);
-        $this->assertSame(2, $result->den);
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(2, $result->denominator);
     }
 
     /**
@@ -128,22 +128,22 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->inv();
 
-        $this->assertSame(4, $result->num);
-        $this->assertSame(3, $result->den);
+        $this->assertSame(4, $result->numerator);
+        $this->assertSame(3, $result->denominator);
 
         // inv(-2/5) = -5/2
         $r2 = new Rational(-2, 5);
         $result2 = $r2->inv();
 
-        $this->assertSame(-5, $result2->num);
-        $this->assertSame(2, $result2->den);
+        $this->assertSame(-5, $result2->numerator);
+        $this->assertSame(2, $result2->denominator);
 
         // inv(5) = 1/5
         $r3 = new Rational(5);
         $result3 = $r3->inv();
 
-        $this->assertSame(1, $result3->num);
-        $this->assertSame(5, $result3->den);
+        $this->assertSame(1, $result3->numerator);
+        $this->assertSame(5, $result3->denominator);
     }
 
     /**
@@ -166,16 +166,16 @@ class RationalArithmeticTest extends TestCase
         $r2 = new Rational(3, 4);
         $result = $r1->mul($r2);
 
-        $this->assertSame(1, $result->num);
-        $this->assertSame(2, $result->den);
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(2, $result->denominator);
 
         // 3/5 * 5/7 = 3/7
         $r3 = new Rational(3, 5);
         $r4 = new Rational(5, 7);
         $result2 = $r3->mul($r4);
 
-        $this->assertSame(3, $result2->num);
-        $this->assertSame(7, $result2->den);
+        $this->assertSame(3, $result2->numerator);
+        $this->assertSame(7, $result2->denominator);
     }
 
     /**
@@ -187,8 +187,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(2, 3);
         $result = $r->mul(6);
 
-        $this->assertSame(4, $result->num);
-        $this->assertSame(1, $result->den);
+        $this->assertSame(4, $result->numerator);
+        $this->assertSame(1, $result->denominator);
     }
 
     /**
@@ -199,8 +199,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->mul(0);
 
-        $this->assertSame(0, $result->num);
-        $this->assertSame(1, $result->den);
+        $this->assertSame(0, $result->numerator);
+        $this->assertSame(1, $result->denominator);
     }
 
     /**
@@ -213,8 +213,8 @@ class RationalArithmeticTest extends TestCase
         $r2 = new Rational(3, 4);
         $result = $r1->div($r2);
 
-        $this->assertSame(8, $result->num);
-        $this->assertSame(9, $result->den);
+        $this->assertSame(8, $result->numerator);
+        $this->assertSame(9, $result->denominator);
     }
 
     /**
@@ -226,8 +226,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->div(2);
 
-        $this->assertSame(3, $result->num);
-        $this->assertSame(8, $result->den);
+        $this->assertSame(3, $result->numerator);
+        $this->assertSame(8, $result->denominator);
     }
 
     /**
@@ -249,15 +249,15 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(2, 3);
         $result = $r->pow(2);
 
-        $this->assertSame(4, $result->num);
-        $this->assertSame(9, $result->den);
+        $this->assertSame(4, $result->numerator);
+        $this->assertSame(9, $result->denominator);
 
         // (1/2)^3 = 1/8
         $r2 = new Rational(1, 2);
         $result2 = $r2->pow(3);
 
-        $this->assertSame(1, $result2->num);
-        $this->assertSame(8, $result2->den);
+        $this->assertSame(1, $result2->numerator);
+        $this->assertSame(8, $result2->denominator);
     }
 
     /**
@@ -269,15 +269,15 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->pow(0);
 
-        $this->assertSame(1, $result->num);
-        $this->assertSame(1, $result->den);
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(1, $result->denominator);
 
         // 0^0 = 1 (by convention)
         $r2 = new Rational(0);
         $result2 = $r2->pow(0);
 
-        $this->assertSame(1, $result2->num);
-        $this->assertSame(1, $result2->den);
+        $this->assertSame(1, $result2->numerator);
+        $this->assertSame(1, $result2->denominator);
     }
 
     /**
@@ -289,8 +289,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->pow(1);
 
-        $this->assertSame(3, $result->num);
-        $this->assertSame(4, $result->den);
+        $this->assertSame(3, $result->numerator);
+        $this->assertSame(4, $result->denominator);
     }
 
     /**
@@ -302,15 +302,15 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->pow(-1);
 
-        $this->assertSame(4, $result->num);
-        $this->assertSame(3, $result->den);
+        $this->assertSame(4, $result->numerator);
+        $this->assertSame(3, $result->denominator);
 
         // (-2/5)^(-1) = -5/2
         $r2 = new Rational(-2, 5);
         $result2 = $r2->pow(-1);
 
-        $this->assertSame(-5, $result2->num);
-        $this->assertSame(2, $result2->den);
+        $this->assertSame(-5, $result2->numerator);
+        $this->assertSame(2, $result2->denominator);
     }
 
     /**
@@ -322,8 +322,8 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(2, 3);
         $result = $r->pow(-2);
 
-        $this->assertSame(9, $result->num);
-        $this->assertSame(4, $result->den);
+        $this->assertSame(9, $result->numerator);
+        $this->assertSame(4, $result->denominator);
     }
 
     /**
@@ -335,14 +335,14 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(0);
         $result = $r->pow(1);
 
-        $this->assertSame(0, $result->num);
-        $this->assertSame(1, $result->den);
+        $this->assertSame(0, $result->numerator);
+        $this->assertSame(1, $result->denominator);
 
         // 0^5 = 0
         $result2 = $r->pow(5);
 
-        $this->assertSame(0, $result2->num);
-        $this->assertSame(1, $result2->den);
+        $this->assertSame(0, $result2->numerator);
+        $this->assertSame(1, $result2->denominator);
     }
 
     /**
@@ -363,8 +363,8 @@ class RationalArithmeticTest extends TestCase
         // (3/4)² = 9/16
         $r = new Rational(3, 4);
         $result = $r->sqr();
-        $this->assertSame(9, $result->num);
-        $this->assertSame(16, $result->den);
+        $this->assertSame(9, $result->numerator);
+        $this->assertSame(16, $result->denominator);
     }
 
     /**
@@ -375,8 +375,8 @@ class RationalArithmeticTest extends TestCase
         // (-2/3)² = 4/9
         $r = new Rational(-2, 3);
         $result = $r->sqr();
-        $this->assertSame(4, $result->num);
-        $this->assertSame(9, $result->den);
+        $this->assertSame(4, $result->numerator);
+        $this->assertSame(9, $result->denominator);
     }
 
     /**
@@ -397,22 +397,22 @@ class RationalArithmeticTest extends TestCase
         $r = new Rational(3, 4);
         $result = $r->abs();
 
-        $this->assertSame(3, $result->num);
-        $this->assertSame(4, $result->den);
+        $this->assertSame(3, $result->numerator);
+        $this->assertSame(4, $result->denominator);
 
         // abs(-3/4) = 3/4
         $r2 = new Rational(-3, 4);
         $result2 = $r2->abs();
 
-        $this->assertSame(3, $result2->num);
-        $this->assertSame(4, $result2->den);
+        $this->assertSame(3, $result2->numerator);
+        $this->assertSame(4, $result2->denominator);
 
         // abs(0) = 0
         $r3 = new Rational(0);
         $result3 = $r3->abs();
 
-        $this->assertSame(0, $result3->num);
-        $this->assertSame(1, $result3->den);
+        $this->assertSame(0, $result3->numerator);
+        $this->assertSame(1, $result3->denominator);
     }
 
     /**
@@ -494,9 +494,11 @@ class RationalArithmeticTest extends TestCase
         $r2 = $r->add(new Rational(1, 4));
 
         $this->assertNotSame($r, $r2);
-        $this->assertSame(3, $r->num);
-        $this->assertSame(4, $r->den);
-        $this->assertSame(1, $r2->num);
-        $this->assertSame(1, $r2->den);
+        $this->assertSame(3, $r->numerator);
+        $this->assertSame(4, $r->denominator);
+        $this->assertSame(1, $r2->numerator);
+        $this->assertSame(1, $r2->denominator);
     }
+
+    // endregion
 }

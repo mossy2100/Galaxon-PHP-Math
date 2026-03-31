@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Galaxon\Math;
 
-use ArrayAccess;
 use DivisionByZeroError;
 use DomainException;
 use Galaxon\Core\Floats;
@@ -12,17 +11,14 @@ use Galaxon\Core\Numbers;
 use Galaxon\Core\Traits\ApproxEquatable;
 use InvalidArgumentException;
 use LengthException;
-use LogicException;
 use OutOfRangeException;
 use Override;
 use Stringable;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
- *
- * @implements ArrayAccess<int, Vector>
  */
-final class Matrix implements Stringable, ArrayAccess
+final class Matrix implements Stringable
 {
     use ApproxEquatable;
 
@@ -46,9 +42,7 @@ final class Matrix implements Stringable, ArrayAccess
     /**
      * The number of rows in the matrix.
      */
-    public int $rowCount {
-        get => count($this->data);
-    }
+    private(set) int $rowCount;
 
     /**
      * The number of columns in the matrix.
@@ -70,10 +64,11 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if dimensions are non-negative.
         if ($rowCount < 0 || $columnCount < 0) {
-            throw new DomainException('Matrix dimensions must not be negative.');
+            throw new DomainException('Cannot create a matrix with negative dimensions.');
         }
 
         // Initialize matrix properties.
+        $this->rowCount = $rowCount;
         $this->columnCount = $columnCount;
         $this->data = array_fill(0, $rowCount, array_fill(0, $columnCount, 0.0));
     }
@@ -100,14 +95,14 @@ final class Matrix implements Stringable, ArrayAccess
         foreach ($arr as $row) {
             // Check if each row is an array.
             if (!is_array($row)) {
-                throw new InvalidArgumentException('Each row must be an array.');
+                throw new InvalidArgumentException('Cannot create a matrix with non-array rows.');
             }
 
             // Check all rows have the same number of columns.
             if ($columnCount === null) {
                 $columnCount = count($row);
             } elseif (count($row) !== $columnCount) {
-                throw new LengthException('All rows must have the same number of items.');
+                throw new LengthException('Cannot create a matrix with rows of different lengths.');
             }
 
             $dataRow = [];
@@ -116,7 +111,7 @@ final class Matrix implements Stringable, ArrayAccess
             foreach ($row as $value) {
                 // Check if each value is a number.
                 if (!Numbers::isNumber($value)) {
-                    throw new InvalidArgumentException('Matrix elements must be numbers (int or float).');
+                    throw new InvalidArgumentException('Cannot use non-numeric elements in a matrix.');
                 }
 
                 // Convert the value to a float and store it in the matrix.
@@ -163,8 +158,13 @@ final class Matrix implements Stringable, ArrayAccess
     public function get(int $row, int $col): float
     {
         // Check if indexes are within bounds.
-        if ($row < 0 || $row >= $this->rowCount || $col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException('Matrix indexes outside valid range.');
+        if ($row < 0 || $row >= $this->rowCount) {
+            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+        }
+        if ($col < 0 || $col >= $this->columnCount) {
+            throw new OutOfRangeException(
+                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
+            );
         }
 
         return $this->data[$row][$col];
@@ -181,8 +181,13 @@ final class Matrix implements Stringable, ArrayAccess
     public function set(int $row, int $col, int|float $value): void
     {
         // Check if indexes are within bounds.
-        if ($row < 0 || $row >= $this->rowCount || $col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException('Matrix indexes outside valid range.');
+        if ($row < 0 || $row >= $this->rowCount) {
+            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+        }
+        if ($col < 0 || $col >= $this->columnCount) {
+            throw new OutOfRangeException(
+                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
+            );
         }
 
         assert($row < count($this->data) && $col < count($this->data[$row]));
@@ -200,10 +205,51 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if row index is within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException('Row index outside valid range.');
+            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
         }
 
         return Vector::fromArray($this->data[$row]);
+    }
+
+    /**
+     * Set a row from a Vector or array.
+     *
+     * @param int $row Row index (0-based).
+     * @param Vector|array<int|float> $value The row values.
+     * @throws OutOfRangeException If row index is outside valid range.
+     * @throws LengthException If the value has the wrong number of elements.
+     * @throws InvalidArgumentException If any element is not a number.
+     */
+    public function setRow(int $row, Vector|array $value): void
+    {
+        // Convert Vector to array.
+        if ($value instanceof Vector) {
+            $value = $value->toArray();
+        }
+
+        // Check if row index is within bounds.
+        if ($row < 0 || $row >= $this->rowCount) {
+            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+        }
+
+        // Check length.
+        if (count($value) !== $this->columnCount) {
+            throw new LengthException(
+                "Cannot set row: expected {$this->columnCount} elements, got " . count($value) . '.'
+            );
+        }
+
+        // Validate values.
+        $data = [];
+        foreach ($value as $v) {
+            if (!Numbers::isNumber($v)) {
+                throw new InvalidArgumentException('Cannot set row: non-numeric element found.');
+            }
+            $data[] = (float)$v;
+        }
+
+        // Set values.
+        $this->data[$row] = $data;
     }
 
     /**
@@ -217,7 +263,9 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if column index is within bounds.
         if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException('Column index outside valid range.');
+            throw new OutOfRangeException(
+                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
+            );
         }
 
         $column = [];
@@ -226,6 +274,52 @@ final class Matrix implements Stringable, ArrayAccess
         }
 
         return Vector::fromArray($column);
+    }
+
+    /**
+     * Set a column from a Vector or array.
+     *
+     * @param int $col Column index (0-based).
+     * @param Vector|array<int|float> $value The column values.
+     * @throws OutOfRangeException If column index is outside valid range.
+     * @throws LengthException If the value has the wrong number of elements.
+     * @throws InvalidArgumentException If any element is not a number.
+     */
+    public function setColumn(int $col, Vector|array $value): void
+    {
+        // Convert Vector to array.
+        if ($value instanceof Vector) {
+            $value = $value->toArray();
+        }
+
+        // Check if column index is within bounds.
+        if ($col < 0 || $col >= $this->columnCount) {
+            throw new OutOfRangeException(
+                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
+            );
+        }
+
+        // Check length.
+        if (count($value) !== $this->rowCount) {
+            throw new LengthException(
+                "Cannot set column: expected {$this->rowCount} elements, got " . count($value) . '.'
+            );
+        }
+
+        // Validate values.
+        $values = [];
+        foreach ($value as $v) {
+            if (!Numbers::isNumber($v)) {
+                throw new InvalidArgumentException('Cannot set column: non-numeric element found.');
+            }
+            $values[] = (float)$v;
+        }
+
+        // Set values.
+        for ($row = 0; $row < $this->rowCount; $row++) {
+            assert($row < count($this->data) && $col < count($this->data[$row]));
+            $this->data[$row][$col] = $values[$row];
+        }
     }
 
     // endregion
@@ -324,7 +418,7 @@ final class Matrix implements Stringable, ArrayAccess
 
     // endregion
 
-    // region Arithmetic methods
+    // region Unary arithmetic methods
 
     /**
      * Negate this matrix.
@@ -339,6 +433,47 @@ final class Matrix implements Stringable, ArrayAccess
     }
 
     /**
+     * Calculate the inverse of this matrix using cofactor expansion with the adjugate matrix.
+     *
+     * Warning: This algorithm has O(n! × n²) time complexity due to the underlying cofactor
+     * expansion used for determinant calculation. It is suitable for small matrices (up to ~10x10)
+     * but will be extremely slow for larger ones.
+     *
+     * @return self New matrix representing the inverse.
+     * @throws DomainException If matrix is not square or not invertible.
+     */
+    public function inv(): self
+    {
+        // Check if matrix is square.
+        if (!$this->isSquare()) {
+            throw new DomainException('Cannot invert a non-square matrix.');
+        }
+
+        // Calculate the inverse using cofactor expansion and the adjugate matrix.
+        $det = $this->det();
+        if ($det === 0.0) {
+            throw new DomainException('Cannot invert matrix with a zero determinant.');
+        }
+
+        $n = $this->rowCount;
+        $adjugate = new self($n, $n);
+
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = 0; $j < $n; $j++) {
+                $minor = $this->getMinor($i, $j);
+                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
+                $adjugate->set($j, $i, $cofactor / $det); // Note: transposed
+            }
+        }
+
+        return $adjugate;
+    }
+
+    // endregion
+
+    // region Binary arithmetic methods
+
+    /**
      * Add another matrix to this one.
      *
      * @param self $other Matrix to add.
@@ -349,7 +484,7 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
-            throw new LengthException('Matrices must have the same dimensions for addition.');
+            throw new LengthException('Cannot add matrices of different dimensions.');
         }
 
         // Add the matrices.
@@ -373,7 +508,7 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
-            throw new LengthException('Matrices must have the same dimensions for subtraction.');
+            throw new LengthException('Cannot subtract matrices of different dimensions.');
         }
 
         // Subtract the matrices.
@@ -428,9 +563,7 @@ final class Matrix implements Stringable, ArrayAccess
         // Multiply a matrix by a matrix.
         // Check if dimensions are compatible for multiplication.
         if ($this->columnCount !== $other->rowCount) {
-            throw new LengthException(
-                'The number of columns in the first matrix must equal the number of rows in the second matrix.'
-            );
+            throw new LengthException('Cannot multiply matrices with incompatible dimensions.');
         }
 
         // Multiply the matrices.
@@ -461,7 +594,7 @@ final class Matrix implements Stringable, ArrayAccess
         // Check if dividing by a scalar.
         if (Numbers::isNumber($other)) {
             // Guard against division by zero.
-            if (Numbers::equal($other, 0)) {
+            if (Numbers::isZero($other)) {
                 throw new DivisionByZeroError('Cannot divide by zero.');
             }
 
@@ -481,39 +614,6 @@ final class Matrix implements Stringable, ArrayAccess
         return $result;
     }
 
-    /**
-     * Calculate the inverse of this matrix.
-     *
-     * @return self New matrix representing the inverse.
-     * @throws DomainException If matrix is not square or not invertible.
-     */
-    public function inv(): self
-    {
-        // Check if matrix is square.
-        if (!$this->isSquare()) {
-            throw new DomainException('Inverse can only be calculated for square matrices.');
-        }
-
-        // Calculate the inverse using cofactor expansion and the adjugate matrix.
-        $det = $this->det();
-        if ($det === 0.0) {
-            throw new DomainException('Matrix is not invertible (determinant is zero).');
-        }
-
-        $n = $this->rowCount;
-        $adjugate = new self($n, $n);
-
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                $minor = $this->getMinor($i, $j);
-                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
-                $adjugate->set($j, $i, $cofactor / $det); // Note: transposed
-            }
-        }
-
-        return $adjugate;
-    }
-
     // endregion
 
     // region Power methods
@@ -529,7 +629,7 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
-            throw new DomainException('Power can only be calculated for square matrices.');
+            throw new DomainException('Cannot raise a non-square matrix to a power.');
         }
 
         // Handle zero power.
@@ -568,7 +668,7 @@ final class Matrix implements Stringable, ArrayAccess
     public function sqr(): self
     {
         if (!$this->isSquare()) {
-            throw new DomainException('Square can only be calculated for square matrices.');
+            throw new DomainException('Cannot square a non-square matrix.');
         }
 
         $result = $this->mul($this);
@@ -607,10 +707,91 @@ final class Matrix implements Stringable, ArrayAccess
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
-            throw new DomainException('Determinant can only be calculated for square matrices.');
+            throw new DomainException('Cannot compute determinant of a non-square matrix.');
         }
 
         return $this->calcDet($this->data);
+    }
+
+    /**
+     * Calculate the trace of this matrix (sum of diagonal elements).
+     *
+     * @return float The trace.
+     * @throws DomainException If matrix is not square.
+     */
+    public function trace(): float
+    {
+        if (!$this->isSquare()) {
+            throw new DomainException('Cannot compute trace of a non-square matrix.');
+        }
+
+        $sum = 0.0;
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            $sum += $this->data[$i][$i];
+        }
+
+        return $sum;
+    }
+
+    // endregion
+
+    // region Norm methods
+
+    /**
+     * Calculate the Frobenius norm (square root of the sum of all squared elements).
+     *
+     * This is the matrix analogue of the Euclidean norm for vectors.
+     *
+     * @return float The Frobenius norm.
+     */
+    public function norm(): float
+    {
+        $sum = 0.0;
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $sum += $this->data[$i][$j] ** 2;
+            }
+        }
+
+        return sqrt($sum);
+    }
+
+    /**
+     * Calculate the P1 norm (maximum absolute column sum).
+     *
+     * @return float The P1 norm.
+     */
+    public function p1Norm(): float
+    {
+        $max = 0.0;
+        for ($j = 0; $j < $this->columnCount; $j++) {
+            $colSum = 0.0;
+            for ($i = 0; $i < $this->rowCount; $i++) {
+                $colSum += abs($this->data[$i][$j]);
+            }
+            $max = max($max, $colSum);
+        }
+
+        return $max;
+    }
+
+    /**
+     * Calculate the P-infinity norm (maximum absolute row sum).
+     *
+     * @return float The P-infinity norm.
+     */
+    public function pInfNorm(): float
+    {
+        $max = 0.0;
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            $rowSum = 0.0;
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $rowSum += abs($this->data[$i][$j]);
+            }
+            $max = max($max, $rowSum);
+        }
+
+        return $max;
     }
 
     // endregion
@@ -618,7 +799,11 @@ final class Matrix implements Stringable, ArrayAccess
     // region Helper methods
 
     /**
-     * Recursive helper method to calculate determinant.
+     * Recursive helper method to calculate determinant using cofactor expansion.
+     *
+     * Warning: This algorithm has O(n!) time complexity. It is suitable for small matrices
+     * (up to ~10x10) but will be extremely slow for larger ones. For high-performance
+     * determinant calculation, consider LU decomposition (O(n³)).
      *
      * @param list<list<float>> $matrix Matrix data.
      * @return float Determinant of the matrix.
@@ -732,91 +917,6 @@ final class Matrix implements Stringable, ArrayAccess
         $result .= '└' . str_repeat(' ', $innerWidth) . '┘';
 
         return $result;
-    }
-
-    // endregion
-
-    // region ArrayAccess methods
-
-    /**
-     * Check if a row index exists.
-     *
-     * @param mixed $offset Row index to check.
-     * @return bool
-     */
-    public function offsetExists(mixed $offset): bool
-    {
-        return is_int($offset) && $offset >= 0 && $offset < $this->rowCount;
-    }
-
-    /**
-     * Get a row as a Vector.
-     *
-     * @param mixed $offset Row index to get.
-     * @return Vector The row vector.
-     * @throws OutOfRangeException If the offset is invalid.
-     */
-    public function offsetGet(mixed $offset): Vector
-    {
-        // Check offset exists.
-        if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Row index must be an integer within the valid range.');
-        }
-
-        assert(is_int($offset));
-        return $this->getRow($offset);
-    }
-
-    /**
-     * Set a row from a Vector or array.
-     *
-     * @param mixed $offset Row index to set.
-     * @param mixed $value Vector or array of numbers.
-     * @throws OutOfRangeException If the offset is invalid.
-     * @throws InvalidArgumentException If the value is not a Vector or array, or the value contains non-numeric values.
-     * @throws LengthException If the value has the wrong number of elements.
-     */
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        // Check offset exists.
-        if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Row index must be an integer within the valid range.');
-        }
-        assert(is_int($offset));
-
-        // Convert Vector to array.
-        if ($value instanceof Vector) {
-            $value = $value->toArray();
-        }
-
-        if (!is_array($value)) {
-            throw new InvalidArgumentException('Row must be a Vector or array.');
-        }
-
-        if (count($value) !== $this->columnCount) {
-            throw new LengthException("Row must have exactly {$this->columnCount} elements.");
-        }
-
-        $data = [];
-        foreach ($value as $v) {
-            if (!Numbers::isNumber($v)) {
-                throw new InvalidArgumentException('Row elements must be numbers (int or float).');
-            }
-            $data[] = (float)$v;
-        }
-
-        $this->data[$offset] = $data;
-    }
-
-    /**
-     * Unset is not supported for matrices.
-     *
-     * @param mixed $offset Row index.
-     * @throws LogicException Always throws.
-     */
-    public function offsetUnset(mixed $offset): void
-    {
-        throw new LogicException('Cannot unset rows in a matrix.');
     }
 
     // endregion

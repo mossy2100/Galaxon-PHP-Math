@@ -6,6 +6,8 @@ namespace Galaxon\Math\Tests\Matrix;
 
 use Galaxon\Math\Matrix;
 use Galaxon\Math\Vector;
+use InvalidArgumentException;
+use LengthException;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -13,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixElementsTest extends TestCase
 {
+    // region get() tests
+
     /**
      * Test getting a valid element.
      */
@@ -57,6 +61,10 @@ class MatrixElementsTest extends TestCase
         $m->get(0, 2);
     }
 
+    // endregion
+
+    // region set() tests
+
     /**
      * Test setting a valid element.
      */
@@ -97,6 +105,10 @@ class MatrixElementsTest extends TestCase
         $m->set(0, -1, 1);
     }
 
+    // endregion
+
+    // region getRow() tests
+
     /**
      * Test getRow returns the correct Vector.
      */
@@ -134,6 +146,74 @@ class MatrixElementsTest extends TestCase
         $m->getRow(-1);
     }
 
+    // endregion
+
+    // region setRow() tests
+
+    /**
+     * Test setRow with an array.
+     */
+    public function testSetRowWithArray(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $m->setRow(0, [7, 8, 9]);
+
+        $this->assertSame([7.0, 8.0, 9.0], $m->getRow(0)->toArray());
+        $this->assertSame([4.0, 5.0, 6.0], $m->getRow(1)->toArray());
+    }
+
+    /**
+     * Test setRow with a Vector.
+     */
+    public function testSetRowWithVector(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $m->setRow(1, Vector::fromArray([10, 11, 12]));
+
+        $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
+        $this->assertSame([10.0, 11.0, 12.0], $m->getRow(1)->toArray());
+    }
+
+    /**
+     * Test setRow with out of range index throws OutOfRangeException.
+     */
+    public function testSetRowOutOfRangeThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(OutOfRangeException::class);
+        $m->setRow(2, [1, 2, 3]);
+    }
+
+    /**
+     * Test setRow with wrong length throws LengthException.
+     */
+    public function testSetRowWrongLengthThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(LengthException::class);
+        $m->setRow(0, [1, 2]);
+    }
+
+    /**
+     * Test setRow with non-numeric elements throws InvalidArgumentException.
+     */
+    public function testSetRowNonNumericThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(InvalidArgumentException::class);
+        $m->setRow(0, [1, 'two', 3]); // @phpstan-ignore argument.type
+    }
+
+    // endregion
+
+    // region getColumn() tests
+
     /**
      * Test getColumn returns the correct Vector.
      */
@@ -170,6 +250,74 @@ class MatrixElementsTest extends TestCase
         $this->expectException(OutOfRangeException::class);
         $m->getColumn(-1);
     }
+
+    // endregion
+
+    // region setColumn() tests
+
+    /**
+     * Test setColumn with an array.
+     */
+    public function testSetColumnWithArray(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $m->setColumn(1, [20, 50]);
+
+        $this->assertSame([1.0, 20.0, 3.0], $m->getRow(0)->toArray());
+        $this->assertSame([4.0, 50.0, 6.0], $m->getRow(1)->toArray());
+    }
+
+    /**
+     * Test setColumn with a Vector.
+     */
+    public function testSetColumnWithVector(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $m->setColumn(2, Vector::fromArray([30, 60]));
+
+        $this->assertSame([1.0, 2.0, 30.0], $m->getRow(0)->toArray());
+        $this->assertSame([4.0, 5.0, 60.0], $m->getRow(1)->toArray());
+    }
+
+    /**
+     * Test setColumn with out of range index throws OutOfRangeException.
+     */
+    public function testSetColumnOutOfRangeThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(OutOfRangeException::class);
+        $m->setColumn(3, [1, 2]);
+    }
+
+    /**
+     * Test setColumn with wrong length throws LengthException.
+     */
+    public function testSetColumnWrongLengthThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(LengthException::class);
+        $m->setColumn(0, [1, 2, 3]);
+    }
+
+    /**
+     * Test setColumn with non-numeric elements throws InvalidArgumentException.
+     */
+    public function testSetColumnNonNumericThrows(): void
+    {
+        $m = new Matrix(2, 3);
+        $this->expectException(InvalidArgumentException::class);
+        $m->setColumn(0, [1, 'two']); // @phpstan-ignore argument.type
+    }
+
+    // endregion
+
+    // region isSquare() tests
 
     /**
      * Test isSquare with a square matrix.
@@ -215,4 +363,6 @@ class MatrixElementsTest extends TestCase
         $m = new Matrix(2, 3);
         $this->assertFalse($m->isSquare(2));
     }
+
+    // endregion
 }

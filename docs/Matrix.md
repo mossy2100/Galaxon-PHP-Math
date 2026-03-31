@@ -12,9 +12,8 @@ The `Matrix` class provides a complete implementation of matrix arithmetic with 
 - Matrix power with binary exponentiation (including negative powers via inverse)
 - Transpose, determinant, and inverse operations
 - Element and row/column access with bounds checking
-- ArrayAccess interface for row-level get/set operations
 - String representation using box-drawing characters
-- Support for 0x0 and 0xn empty matrices
+- Support for 0⨉0 and 0⨉n empty matrices
 
 Matrix data is stored privately to prevent non-rectangular or non-numeric mutation.
 
@@ -190,6 +189,30 @@ $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 $row = $m->getRow(0);  // Vector(1, 2, 3)
 ```
 
+### setRow()
+
+```php
+public function setRow(int $row, Vector|array $value): void
+```
+
+Set a row from a Vector or array. Integer values are cast to float.
+
+**Parameters:**
+- `$row` (int) - Row index (0-based)
+- `$value` (Vector|array) - The row values
+
+**Throws:**
+- `OutOfRangeException` if row index is outside the valid range.
+- `LengthException` if the value has the wrong number of elements.
+- `InvalidArgumentException` if any element is not a number.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$m->setRow(0, [7, 8, 9]);
+$m->setRow(1, Vector::fromArray([10, 11, 12]));
+```
+
 ### getColumn()
 
 ```php
@@ -209,6 +232,30 @@ Get a column as a Vector.
 ```php
 $m = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
 $col = $m->getColumn(0);  // Vector(1, 3, 5)
+```
+
+### setColumn()
+
+```php
+public function setColumn(int $col, Vector|array $value): void
+```
+
+Set a column from a Vector or array. Integer values are cast to float.
+
+**Parameters:**
+- `$col` (int) - Column index (0-based)
+- `$value` (Vector|array) - The column values
+
+**Throws:**
+- `OutOfRangeException` if column index is outside the valid range.
+- `LengthException` if the value has the wrong number of elements.
+- `InvalidArgumentException` if any element is not a number.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$m->setColumn(1, [20, 50]);
+// Matrix is now [[1, 20, 3], [4, 50, 6]]
 ```
 
 ---
@@ -319,7 +366,7 @@ var_dump($m1->approxEqual('string'));  // false
 
 ---
 
-## Arithmetic Methods
+## Unary Arithmetic Methods
 
 ### neg()
 
@@ -337,6 +384,33 @@ $m = Matrix::fromArray([[1, -2], [3, -4]]);
 $result = $m->neg();
 // [[-1, 2], [-3, 4]]
 ```
+
+### inv()
+
+```php
+public function inv(): self
+```
+
+Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and invertible (non-zero determinant).
+
+**Note:** The underlying algorithm has O(n! × n²) time complexity. It is suitable for small matrices (up to ~10×10) but will be extremely slow for larger ones.
+
+**Returns:** `self` - New matrix representing the inverse.
+
+**Throws:** `DomainException` if the matrix is not square or not invertible (determinant is zero).
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$inv = $m->inv();
+
+// Verify: M × M⁻¹ = I
+$identity = $m->mul($inv);
+```
+
+---
+
+## Binary Arithmetic Methods
 
 ### add()
 
@@ -451,27 +525,6 @@ $result = $a->div($b);
 // [[0.5, 0], [0, 0.5]]
 ```
 
-### inv()
-
-```php
-public function inv(): self
-```
-
-Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and invertible (non-zero determinant).
-
-**Returns:** `self` - New matrix representing the inverse.
-
-**Throws:** `DomainException` if the matrix is not square or not invertible (determinant is zero).
-
-**Examples:**
-```php
-$m = Matrix::fromArray([[1, 2], [3, 4]]);
-$inv = $m->inv();
-
-// Verify: M × M⁻¹ = I
-$identity = $m->mul($inv);
-```
-
 ---
 
 ## Power Methods
@@ -561,6 +614,81 @@ $i = Matrix::identity(3);
 echo $i->det();  // 1.0
 ```
 
+### trace()
+
+```php
+public function trace(): float
+```
+
+Calculate the trace of this matrix (sum of diagonal elements). The matrix must be square.
+
+**Returns:** `float` - The trace.
+
+**Throws:** `DomainException` if the matrix is not square.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->trace();  // 5.0
+
+$i = Matrix::identity(3);
+echo $i->trace();  // 3.0
+```
+
+---
+
+## Norm methods
+### norm()
+
+```php
+public function norm(): float
+```
+
+Calculate the Frobenius norm (square root of the sum of all squared elements). This is the matrix analogue of the Euclidean norm for vectors.
+
+**Returns:** `float` - The Frobenius norm.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->norm();  // 5.477... (sqrt(30))
+
+$i = Matrix::identity(3);
+echo $i->norm();  // 1.732... (sqrt(3))
+```
+
+### p1Norm()
+
+```php
+public function p1Norm(): float
+```
+
+Calculate the P1 norm (maximum absolute column sum).
+
+**Returns:** `float` - The P1 norm.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, -2], [3, 4]]);
+echo $m->p1Norm();  // 6.0 (max of |1|+|3|=4, |-2|+|4|=6)
+```
+
+### pInfNorm()
+
+```php
+public function pInfNorm(): float
+```
+
+Calculate the P-infinity norm (maximum absolute row sum).
+
+**Returns:** `float` - The P-infinity norm.
+
+**Examples:**
+```php
+$m = Matrix::fromArray([[1, -2], [3, 4]]);
+echo $m->pInfNorm();  // 7.0 (max of |1|+|-2|=3, |3|+|4|=7)
+```
+
 ---
 
 ## Conversion Methods
@@ -593,10 +721,10 @@ Convert the matrix to a string representation using box-drawing characters. Valu
 ```php
 $m = Matrix::fromArray([[1, 2], [3, 4]]);
 echo $m;
-// ┌           ┐
-// │ 1.0  2.0  │
-// │ 3.0  4.0  │
-// └           ┘
+// ┌          ┐
+// │ 1.0  2.0 │
+// │ 3.0  4.0 │
+// └          ┘
 
 // Empty matrices
 $e = new Matrix(0, 0);
@@ -604,36 +732,6 @@ echo $e;
 // ┌ ┐
 // └ ┘
 ```
-
----
-
-## ArrayAccess Methods
-
-The `ArrayAccess` interface operates on rows. Reading a row returns a `Vector`; setting a row accepts a `Vector` or array.
-
-```php
-$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-
-// Read access (returns Vector)
-$row = $m[0];  // Vector(1, 2, 3)
-
-// Check existence
-var_dump(isset($m[0]));  // true
-var_dump(isset($m[5]));  // false
-
-// Set a row
-$m[0] = Vector::fromArray([7, 8, 9]);
-$m[1] = [10, 11, 12];
-
-// Cannot unset rows
-unset($m[0]);  // Throws LogicException
-```
-
-**Throws:**
-- `OutOfRangeException` if the row index is outside the valid range.
-- `InvalidArgumentException` if the value is not a Vector or array, or contains non-numeric values.
-- `LengthException` if the value has the wrong number of elements.
-- `LogicException` if attempting to unset a row.
 
 ---
 
@@ -707,3 +805,11 @@ $fib = Matrix::fromArray([[1, 1], [1, 0]]);
 $f10 = $fib->pow(10);
 echo $f10->get(0, 0);  // 89 (the 10th Fibonacci number)
 ```
+
+---
+
+## See Also
+
+- **[Vector](Vector.md)** - Numeric vectors, used as rows/columns and for matrix-vector multiplication
+- **[Complex](Complex.md)** - Complex number arithmetic
+- **[Rational](Rational.md)** - Exact rational number arithmetic

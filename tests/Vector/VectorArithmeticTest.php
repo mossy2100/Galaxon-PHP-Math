@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Math\Tests\Vector;
 
 use DivisionByZeroError;
+use Galaxon\Core\Traits\FloatAssertions;
 use Galaxon\Math\Vector;
 use LengthException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -13,6 +14,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Vector::class)]
 class VectorArithmeticTest extends TestCase
 {
+    use FloatAssertions;
+
     /**
      * Test negating a vector.
      */
@@ -204,4 +207,49 @@ class VectorArithmeticTest extends TestCase
         $this->expectException(LengthException::class);
         $a->cross($b);
     }
+
+    // endregion
+
+    // region normalize() tests
+
+    /**
+     * Test normalize produces a unit vector.
+     */
+    public function testNormalizeProducesUnitVector(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+        $unit = $v->normalize();
+
+        $this->assertNotNull($unit->magnitude);
+        $this->assertApproxEqual(1.0, $unit->magnitude);
+        $this->assertApproxEqual(3.0 / 5.0, $unit->get(0));
+        $this->assertApproxEqual(4.0 / 5.0, $unit->get(1));
+    }
+
+    /**
+     * Test normalize on a unit vector returns equivalent vector.
+     */
+    public function testNormalizeUnitVector(): void
+    {
+        $v = Vector::fromArray([1, 0, 0]);
+        $unit = $v->normalize();
+
+        $this->assertNotNull($unit->magnitude);
+        $this->assertApproxEqual(1.0, $unit->magnitude);
+        $this->assertSame(1.0, $unit->get(0));
+        $this->assertSame(0.0, $unit->get(1));
+        $this->assertSame(0.0, $unit->get(2));
+    }
+
+    /**
+     * Test normalize on zero vector throws DivisionByZeroError.
+     */
+    public function testNormalizeZeroVectorThrows(): void
+    {
+        $v = new Vector(3);
+        $this->expectException(DivisionByZeroError::class);
+        $v->normalize();
+    }
+
+    // endregion
 }

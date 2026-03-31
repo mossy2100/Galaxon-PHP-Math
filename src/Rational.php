@@ -40,17 +40,13 @@ final class Rational implements Stringable
 
     /**
      * The numerator.
-     *
-     * @var int
      */
-    private(set) int $num;
+    private(set) int $numerator;
 
     /**
      * The denominator.
-     *
-     * @var int
      */
-    private(set) int $den;
+    private(set) int $denominator;
 
     // endregion
 
@@ -61,20 +57,21 @@ final class Rational implements Stringable
      *
      * @param int|float $num The numerator. Defaults to 0.
      * @param int|float $den The denominator. Defaults to 1.
-     * @throws DomainException If the denominator is zero, or a float argument is ±INF or NAN.
+     * @throws DivisionByZeroError If the denominator is zero.
+     * @throws DomainException If a float argument is ±INF or NAN.
      * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
      * @throws OverflowException If the value is too large to represent as a Rational.
      */
     public function __construct(int|float $num = 0, int|float $den = 1)
     {
         // Check for zero denominator.
-        if (Numbers::equal($den, 0)) {
-            throw new DomainException('The denominator cannot be zero.');
+        if (Numbers::isZero($den)) {
+            throw new DivisionByZeroError('Cannot create a rational number with a zero denominator.');
         }
 
-        // Check for infinite or NAN.
-        if ((is_float($num) && !is_finite($num)) || (is_float($den) && !is_finite($den))) {
-            throw new DomainException('Cannot convert an infinity or NAN to a rational number.');
+        // Check for non-finite values.
+        if (!is_finite($num) || !is_finite($den)) {
+            throw new DomainException('Cannot create a rational number from a non-finite value.');
         }
 
         // Initialize result variables.
@@ -126,8 +123,8 @@ final class Rational implements Stringable
         }
 
         // Set the properties.
-        $this->num = $num2;
-        $this->den = $den2;
+        $this->numerator = $num2;
+        $this->denominator = $den2;
     }
 
     // endregion
@@ -150,37 +147,44 @@ final class Rational implements Stringable
      * - " 123.456", "-456.789 ", etc.
      * - " 1/2", "-3/4 ", " 5 / 6", etc.
      *
-     * @param string $s The string to parse.
+     * @param string $str The string to parse.
      * @return self The parsed rational number.
      * @throws FormatException If the string cannot be parsed into a rational number.
      * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
      * @throws OverflowException If the value is too large to represent as a Rational.
      */
-    public static function parse(string $s): self
+    public static function parse(string $str): self
     {
+        $str = trim($str);
+
+        // Handle empty string
+        if ($str === '') {
+            throw new FormatException('Cannot parse empty string as rational number.');
+        }
+
         // Check for a string that looks like an integer.
-        $n = filter_var($s, FILTER_VALIDATE_INT);
+        $n = filter_var($str, FILTER_VALIDATE_INT);
         if (is_int($n)) {
             return new self($n);
         }
 
         // Check for a string that looks like a float.
-        $n = filter_var($s, FILTER_VALIDATE_FLOAT);
+        $n = filter_var($str, FILTER_VALIDATE_FLOAT);
         if (is_float($n)) {
             return new self($n);
         }
 
         // Check for a string that looks like a fraction (int/int).
-        $parts = explode('/', $s);
+        $parts = explode('/', $str);
         if (count($parts) === 2) {
-            $n = filter_var($parts[0], FILTER_VALIDATE_INT);
-            $d = filter_var($parts[1], FILTER_VALIDATE_INT);
+            $n = filter_var(trim($parts[0]), FILTER_VALIDATE_INT);
+            $d = filter_var(trim($parts[1]), FILTER_VALIDATE_INT);
             if (is_int($n) && is_int($d)) {
                 return new self($n, $d);
             }
         }
 
-        throw new FormatException("Invalid rational number: $s");
+        throw new FormatException("Cannot parse '$str' as rational number.");
     }
 
     /**
@@ -233,12 +237,12 @@ final class Rational implements Stringable
             throw new IncomparableTypesException($this, $other);
         }
 
-        // Convert int to Rational, if it can be done without calling floatToRational().
+        // Convert int to Rational, if it can be done without calling floatToRatio().
         if (is_int($other) && $other > PHP_INT_MIN) {
             $other = new self($other);
         }
 
-        // Convert float to Rational if it can be done without calling floatToRational().
+        // Convert float to Rational if it can be done without calling floatToRatio().
         if (is_float($other)) {
             $iOther = Floats::tryConvertToInt($other);
             if ($iOther !== null && $iOther > PHP_INT_MIN) {
@@ -247,21 +251,21 @@ final class Rational implements Stringable
         }
 
         // If $other is still an int or float, it's quicker (and should be sufficiently precise) to compare $this and
-        // $other as floats than it would be to call floatToRational() and compare two Rationals.
+        // $other as floats than it would be to call floatToRatio() and compare two Rationals.
         if (!$other instanceof self) {
             $left = $this->toFloat();
             $right = (float)$other;
         } else {
             /** @var self $other */
-            if ($this->den === $other->den) {
+            if ($this->denominator === $other->denominator) {
                 // If the denominators are equal, just compare numerators.
-                $left = $this->num;
-                $right = $other->num;
+                $left = $this->numerator;
+                $right = $other->numerator;
             } else {
                 try {
                     // Cross multiply: compare a*d with b*c for a/b vs c/d.
-                    $left = Integers::mul($this->num, $other->den);
-                    $right = Integers::mul($this->den, $other->num);
+                    $left = Integers::mul($this->numerator, $other->denominator);
+                    $right = Integers::mul($this->denominator, $other->numerator);
                 } catch (OverflowException) {
                     // In case of overflow, compare equivalent floating point values.
                     // NB: This could produce a result of 0 (equal) if two different rationals convert to the same
@@ -317,7 +321,17 @@ final class Rational implements Stringable
 
     // endregion
 
-    // region Arithmetic methods
+    // region Unary arithmetic methods
+
+    /**
+     * Calculate the absolute value of this rational number.
+     *
+     * @return self A new rational number representing the absolute value.
+     */
+    public function abs(): self
+    {
+        return new self(abs($this->numerator), $this->denominator);
+    }
 
     /**
      * Calculate the negative of this rational number.
@@ -326,8 +340,31 @@ final class Rational implements Stringable
      */
     public function neg(): self
     {
-        return new self(-$this->num, $this->den);
+        return new self(-$this->numerator, $this->denominator);
     }
+
+    /**
+     * Calculate the reciprocal of this rational number.
+     *
+     * @return self A new rational number representing the reciprocal.
+     * @throws DivisionByZeroError If the value is zero.
+     */
+    public function inv(): self
+    {
+        // Guard.
+        if ($this->numerator === 0) {
+            throw new DivisionByZeroError('Cannot take reciprocal of zero.');
+        }
+
+        // Preserve sign: if num is negative, swap and negate.
+        return $this->numerator > 0
+            ? new self($this->denominator, $this->numerator)
+            : new self(-$this->denominator, -$this->numerator);
+    }
+
+    // endregion
+
+    // region Binary arithmetic methods
 
     /**
      * Add another value to this rational number.
@@ -341,10 +378,10 @@ final class Rational implements Stringable
         $other = self::toRational($other);
 
         // (a/b) + (c/d) = (ad + bc) / (bd)
-        $f = Integers::mul($this->num, $other->den);
-        $g = Integers::mul($this->den, $other->num);
+        $f = Integers::mul($this->numerator, $other->denominator);
+        $g = Integers::mul($this->denominator, $other->numerator);
         $h = Integers::add($f, $g);
-        $k = Integers::mul($this->den, $other->den);
+        $k = Integers::mul($this->denominator, $other->denominator);
 
         return new self($h, $k);
     }
@@ -376,13 +413,13 @@ final class Rational implements Stringable
         // Cross-cancel before multiplying: (a/b) * (c/d)
         // Cancel gcd(a,d) from a and d
         // Cancel gcd(b,c) from b and c
-        $gcd1 = Integers::gcd($this->num, $other->den);
-        $gcd2 = Integers::gcd($this->den, $other->num);
+        $gcd1 = Integers::gcd($this->numerator, $other->denominator);
+        $gcd2 = Integers::gcd($this->denominator, $other->numerator);
 
-        $a = intdiv($this->num, $gcd1);
-        $b = intdiv($this->den, $gcd2);
-        $c = intdiv($other->num, $gcd2);
-        $d = intdiv($other->den, $gcd1);
+        $a = intdiv($this->numerator, $gcd1);
+        $b = intdiv($this->denominator, $gcd2);
+        $c = intdiv($other->numerator, $gcd2);
+        $d = intdiv($other->denominator, $gcd1);
 
         // Now multiply the reduced terms: (a/b) * (c/d) = ac/bd
         $h = Integers::mul($a, $c);
@@ -405,30 +442,11 @@ final class Rational implements Stringable
     {
         // Guard.
         $other = self::toRational($other);
-        if ($other->num === 0) {
+        if ($other->numerator === 0) {
             throw new DivisionByZeroError('Cannot divide by zero.');
         }
 
         return $this->mul($other->inv());
-    }
-
-    /**
-     * Calculate the reciprocal of this rational number.
-     *
-     * @return self A new rational number representing the reciprocal.
-     * @throws DivisionByZeroError If the value is zero.
-     */
-    public function inv(): self
-    {
-        // Guard.
-        if ($this->num === 0) {
-            throw new DivisionByZeroError('Cannot take reciprocal of zero.');
-        }
-
-        // Preserve sign: if num is negative, swap and negate.
-        return $this->num > 0
-            ? new self($this->den, $this->num)
-            : new self(-$this->den, -$this->num);
     }
 
     // endregion
@@ -452,7 +470,7 @@ final class Rational implements Stringable
         }
 
         // Handle 0 base.
-        if ($this->num === 0) {
+        if ($this->numerator === 0) {
             // 0 to the power of a negative exponent is invalid (effectively division by zero).
             if ($exponent < 0) {
                 throw new DomainException('Cannot raise zero to a negative power.');
@@ -483,7 +501,7 @@ final class Rational implements Stringable
         }
 
         // General solution. Calculate the new numerator and denominator with overflow checks.
-        return new self(Integers::pow($this->num, $exponent), Integers::pow($this->den, $exponent));
+        return new self(Integers::pow($this->numerator, $exponent), Integers::pow($this->denominator, $exponent));
     }
 
     /**
@@ -500,17 +518,7 @@ final class Rational implements Stringable
 
     // endregion
 
-    // region Magnitude and rounding methods
-
-    /**
-     * Calculate the absolute value of this rational number.
-     *
-     * @return self A new rational number representing the absolute value.
-     */
-    public function abs(): self
-    {
-        return new self(abs($this->num), $this->den);
-    }
+    // region Rounding methods
 
     /**
      * Find the integer closest to the rational number.
@@ -522,16 +530,16 @@ final class Rational implements Stringable
      */
     public function round(): int
     {
-        if ($this->den === 1) {
-            return $this->num;
+        if ($this->denominator === 1) {
+            return $this->numerator;
         }
 
-        $q = intdiv($this->num, $this->den);
-        $r = $this->num % $this->den;
+        $q = intdiv($this->numerator, $this->denominator);
+        $r = $this->numerator % $this->denominator;
 
         // Round away from zero if remainder ≥ half denominator.
-        if (abs($r) * 2 >= $this->den) {
-            $result = $this->num > 0 ? $q + 1 : $q - 1;
+        if (abs($r) * 2 >= $this->denominator) {
+            $result = $this->numerator > 0 ? $q + 1 : $q - 1;
         } else {
             $result = $q;
         }
@@ -546,11 +554,14 @@ final class Rational implements Stringable
      */
     public function floor(): int
     {
-        if ($this->den === 1) {
-            return $this->num;
+        if ($this->denominator === 1) {
+            return $this->numerator;
         }
-        $q = intdiv($this->num, $this->den);
-        return $this->num < 0 ? $q - 1 : $q;
+        // PHP's intdiv() truncates toward zero, so for negative fractions the quotient is already
+        // rounded up (toward zero). We need to subtract 1 to floor it (toward negative infinity).
+        // For positive fractions, intdiv() already truncates down, which is the floor.
+        $q = intdiv($this->numerator, $this->denominator);
+        return $this->numerator < 0 ? $q - 1 : $q;
     }
 
     /**
@@ -560,16 +571,66 @@ final class Rational implements Stringable
      */
     public function ceil(): int
     {
-        if ($this->den === 1) {
-            return $this->num;
+        if ($this->denominator === 1) {
+            return $this->numerator;
         }
-        $q = intdiv($this->num, $this->den);
-        return $this->num > 0 ? $q + 1 : $q;
+        // PHP's intdiv() truncates toward zero, so for positive fractions the quotient is already
+        // rounded down (toward zero). We need to add 1 to ceil it (toward positive infinity).
+        // For negative fractions, intdiv() already truncates up, which is the ceiling.
+        $q = intdiv($this->numerator, $this->denominator);
+        return $this->numerator > 0 ? $q + 1 : $q;
     }
 
     // endregion
 
-    // region Helper methods (private static)
+    // region Conversion methods
+
+    /**
+     * Convert the rational number to a float.
+     *
+     * @return float The equivalent float.
+     */
+    public function toFloat(): float
+    {
+        return $this->numerator / $this->denominator;
+    }
+
+    /**
+     * Convert to a mixed number representation: an integer part and a fractional part.
+     *
+     * Uses trunc/frac semantics: the integer part truncates toward zero, and the fractional part carries the same sign
+     * as the original. In this way, the two can be added to reconstruct the original value.
+     *
+     * For example:
+     *     9/4 → [ 2,  1/4] (i.e.  2 + 1/4    =  9/4).
+     *    -9/4 → [-2, -1/4] (i.e. -2 + (-1/4) = -9/4).
+     *
+     * For proper fractions (|numerator| < denominator), the integer part is 0.
+     *
+     * @return array{int, self} A tuple of [integer part, fractional remainder].
+     */
+    public function toMixedNumber(): array
+    {
+        $integer = intdiv($this->numerator, $this->denominator);
+        $remainder = $this->numerator % $this->denominator;
+
+        return [$integer, new self($remainder, $this->denominator)];
+    }
+
+    /**
+     * Convert the rational number to a string. (Stringable implementation.)
+     *
+     * @return string The string representation of the rational number.
+     */
+    #[Override]
+    public function __toString(): string
+    {
+        return $this->numerator . ($this->denominator === 1 ? '' : '/' . $this->denominator);
+    }
+
+    // endregion
+
+    // region Helper methods
 
     /**
      * Convert a fraction to its canonical form.
@@ -637,11 +698,13 @@ final class Rational implements Stringable
      * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
      * @throws OverflowException If the value is too large to represent as a Rational.
      */
-    public static function floatToRatio(float $value): array
+    private static function floatToRatio(float $value): array
     {
         // Check for infinite or NAN.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot convert ±INF or NAN to a rational number.');
+            // @codeCoverageIgnoreStart
+            throw new DomainException('Cannot convert a non-finite value to a rational number.');
+            // @codeCoverageIgnoreEnd
         }
 
         $absValue = abs($value);
@@ -727,31 +790,6 @@ final class Rational implements Stringable
             // Calculate next approximation.
             $x = 1.0 / $rem;
         }
-    }
-
-    // endregion
-
-    // region Conversion methods
-
-    /**
-     * Convert the rational number to a float.
-     *
-     * @return float The equivalent float.
-     */
-    public function toFloat(): float
-    {
-        return $this->num / $this->den;
-    }
-
-    /**
-     * Convert the rational number to a string. (Stringable implementation.)
-     *
-     * @return string The string representation of the rational number.
-     */
-    #[Override]
-    public function __toString(): string
-    {
-        return $this->num . ($this->den === 1 ? '' : '/' . $this->den);
     }
 
     // endregion

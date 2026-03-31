@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Galaxon\Math\Tests\Complex;
 
+use DomainException;
 use Galaxon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -45,6 +46,51 @@ class ComplexFactoryTest extends TestCase
         $z2 = new Complex(3.5, 4);
         $this->assertSame(3.5, $z2->real);
         $this->assertSame(4.0, $z2->imaginary);
+    }
+
+    /**
+     * Test constructor throws for INF real part.
+     */
+    public function testConstructorInfRealThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        new Complex(INF, 0);
+    }
+
+    /**
+     * Test constructor throws for INF imaginary part.
+     */
+    public function testConstructorInfImaginaryThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        new Complex(0, INF);
+    }
+
+    /**
+     * Test constructor throws for NAN real part.
+     */
+    public function testConstructorNanRealThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        new Complex(NAN, 0);
+    }
+
+    /**
+     * Test constructor throws for NAN imaginary part.
+     */
+    public function testConstructorNanImaginaryThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        new Complex(0, NAN);
+    }
+
+    /**
+     * Test constructor throws for negative infinity.
+     */
+    public function testConstructorNegativeInfThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        new Complex(-INF, -INF);
     }
 
     /**
