@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `ArrayAccess` tests from `MatrixConversionTest`.
 - Added regions to `ComplexTrigonometricTest`, `MatrixElementsTest`, `RationalConstructorTest`.
 
+---
+
 ## [1.1.0] - 2026-03-21
 
 ### Added
@@ -99,6 +101,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Vector::div()** - Added division by zero protection
 - **Matrix** constructor - Corrected exception type for negative dimensions
 
+---
+
 ## [1.0.0] - 2026-01-05
 
 ### First Stable Release
@@ -132,6 +136,8 @@ This is the first stable release of Galaxon Math, ready for publication on Packa
 - Fixed GitHub URLs in README.md (`PHP-Math` → `Galaxon-PHP-Math`)
 - Removed FloatWithError reference from README.md (class is in Quantities package)
 
+---
+
 ## [0.2.0] - 2025-12-09
 
 ### Changed (Breaking Changes)
@@ -152,6 +158,8 @@ This is the first stable release of Galaxon Math, ready for publication on Packa
 - Updated dependencies: PHPStan 2.1.33, PHPUnit 12.5.2, nikic/php-parser 5.7.0, theseer/tokenizer 2.0.1
 - Added slevomat/coding-standard 8.25.1 to CodingStandard package
 - Enhanced composer scripts with verbose output flags (`phpcbf -vp`)
+
+---
 
 ## [0.1.0] - 2025-01-18
 
