@@ -141,7 +141,7 @@ $z3 = Complex::parse("i");
 $z4 = Complex::parse("4i+3");
 ```
 
-**Throws:** `FormatException` if the string is invalid.
+**Throws:** [`FormatException`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string is invalid.
 
 ---
 

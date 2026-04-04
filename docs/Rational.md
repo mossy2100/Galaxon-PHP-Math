@@ -129,7 +129,7 @@ $r4 = Rational::parse(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 ```
 
 **Throws:**
-- `FormatException` if the string cannot be parsed
+- [`FormatException`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string cannot be parsed
 - `OverflowException` if the value is too large to represent as a Rational
 - `UnderflowException` if the value is non-zero but too small to represent as a Rational
 
