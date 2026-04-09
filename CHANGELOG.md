@@ -13,7 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`Complex::__toString()`** — Now routes both real and imaginary parts through `Floats::format()` instead of casting directly to string. IEEE-754 representation noise from arithmetic (e.g. `0.1 + 0.2 == 0.30000000000000004`) is suppressed: `(string)(new Complex(0.1 + 0.2, 0))` now renders as `'0.3'` instead of `'0.30000000000000004'`. Pinned outputs for clean values (`'5'`, `'-3.14'`, `'3 + 4i'`, etc.) are unchanged.
 - **`Matrix::__toString()`** — Cells are now formatted via `Floats::format()` up front, so column-width calculations and rendering both use the cleaned strings. Without this, a single noisy cell like `0.1 + 0.2` would dominate the column width with its 17-digit representation. `Vector::__toString()` inherits the fix automatically via its delegation to `Matrix`.
-- **`composer.json`** — Bumped `galaxon/core` constraint to `^1.6`. Required for `Floats::format()` and for the trait namespace reorganisation (`Galaxon\Core\Traits\Comparison\*`) shipped in Core v1.6.0.
+- **`composer.json`** — Bumped `galaxon/core` constraint to `^1.6`. Required for `Floats::format()` and for the trait namespace reorganisation shipped in Core v1.6.0.
+- **Trait namespace updates** — Updated `use` statements throughout the package to match Core v1.6.0's trait reorganisation:
+  - `Galaxon\Core\Traits\ApproxComparable` → `Galaxon\Core\Traits\Comparison\ApproxComparable` (in `Vector`)
+  - `Galaxon\Core\Traits\ApproxEquatable` → `Galaxon\Core\Traits\Comparison\ApproxEquatable` (in `Rational`)
+  - `Galaxon\Core\Traits\FloatAssertions` → `Galaxon\Core\Traits\Asserts\FloatAssertions` (in `MatrixLinearAlgebraTest`, `VectorArithmeticTest`)
+- **Documentation** — Updated "See Also" links in `Complex.md`, `Matrix.md`, `Rational.md`, and `Vector.md` to point at the new `Traits/Comparison/` paths for `ApproxEquatable`/`ApproxComparable`.
 
 ### Tests
 
