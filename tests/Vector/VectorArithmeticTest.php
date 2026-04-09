@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Math\Tests\Vector;
 
 use DivisionByZeroError;
-use Galaxon\Core\Traits\FloatAssertions;
+use Galaxon\Core\Traits\Asserts\FloatAssertions;
 use Galaxon\Math\Vector;
 use LengthException;
 use PHPUnit\Framework\Attributes\CoversClass;

@@ -153,7 +153,7 @@ $r4 = Rational::toRational(new Rational(2, 3)); // Returns same instance
 
 ## Comparison Methods
 
-The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the [`ApproxComparable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/ApproxComparable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the [`ApproxComparable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
 
 ### equal()
 

@@ -73,4 +73,29 @@ class MatrixConversionTest extends TestCase
         // Lines 1 and 2 are data rows (index 1 and 2 of the array).
         $this->assertSame(strlen($lines[1]), strlen($lines[2]));
     }
+
+    /**
+     * Test that __toString() suppresses floating-point representation noise from arithmetic
+     * by routing each cell through Floats::format() instead of casting directly to string.
+     * Without this, IEEE-754 quirks like 0.1 + 0.2 == 0.30000000000000004 would render as
+     * 17-digit garbage and dominate the column-width calculation.
+     */
+    public function testToStringSuppressesFloatingPointNoise(): void
+    {
+        $m = Matrix::fromArray([
+            [0.1 + 0.2, 1],
+            [2, 0.1 + 0.2],
+        ]);
+        $str = (string)$m;
+
+        // Cells should render as '0.3', not '0.30000000000000004'.
+        $this->assertStringContainsString('0.3', $str);
+        $this->assertStringNotContainsString('0.30000000000000004', $str);
+
+        // Column width should be governed by the longest cleanly-formatted cell ('0.3' = 3
+        // characters), not by the 19-character noise representation. Each data row should be
+        // shorter than what raw float-to-string would produce.
+        $lines = explode("\n", $str);
+        $this->assertLessThan(20, strlen($lines[1]));
+    }
 }

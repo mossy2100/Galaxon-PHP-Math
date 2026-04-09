@@ -11,7 +11,7 @@ use Galaxon\Core\Exceptions\IncomparableTypesException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Integers;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\ApproxComparable;
+use Galaxon\Core\Traits\Comparison\ApproxComparable;
 use OverflowException;
 use Override;
 use Stringable;

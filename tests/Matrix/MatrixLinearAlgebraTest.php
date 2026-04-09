@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Galaxon\Math\Tests\Matrix;
 
 use DomainException;
-use Galaxon\Core\Traits\FloatAssertions;
+use Galaxon\Core\Traits\Asserts\FloatAssertions;
 use Galaxon\Math\Matrix;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

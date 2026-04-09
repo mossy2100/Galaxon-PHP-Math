@@ -8,7 +8,7 @@ use DivisionByZeroError;
 use DomainException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\ApproxEquatable;
+use Galaxon\Core\Traits\Comparison\ApproxEquatable;
 use InvalidArgumentException;
 use LengthException;
 use OutOfRangeException;
@@ -889,11 +889,17 @@ final class Matrix implements Stringable
             return '┌ ┐' . "\n" . '└ ┘';
         }
 
-        // Calculate the maximum width needed for formatting.
+        // Format every cell up front so column widths are calculated against the same strings
+        // that get rendered. Floats::format() trims floating-point representation noise (so
+        // 0.1 + 0.2 displays as '0.3' instead of '0.30000000000000004').
+        $cells = [];
         $maxWidth = 0;
         for ($i = 0; $i < $this->rowCount; $i++) {
+            $cells[$i] = [];
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $maxWidth = max($maxWidth, strlen((string)$this->data[$i][$j]));
+                $cell = Floats::format($this->data[$i][$j]);
+                $cells[$i][$j] = $cell;
+                $maxWidth = max($maxWidth, strlen($cell));
             }
         }
 
@@ -908,7 +914,7 @@ final class Matrix implements Stringable
                 if ($j > 0) {
                     $result .= '  ';
                 }
-                $result .= str_pad((string)$this->data[$i][$j], $maxWidth, ' ', STR_PAD_LEFT);
+                $result .= str_pad($cells[$i][$j], $maxWidth, ' ', STR_PAD_LEFT);
             }
             $result .= ' │' . "\n";
         }

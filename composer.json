@@ -27,7 +27,7 @@
     },
     "require": {
         "php": "^8.4",
-        "galaxon/core": "^1.0"
+        "galaxon/core": "^1.6"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",

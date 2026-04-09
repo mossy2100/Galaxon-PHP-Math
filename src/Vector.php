@@ -10,7 +10,7 @@ use DomainException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Stringify;
-use Galaxon\Core\Traits\ApproxEquatable;
+use Galaxon\Core\Traits\Comparison\ApproxEquatable;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;

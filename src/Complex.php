@@ -11,7 +11,7 @@ use Galaxon\Core\Exceptions\FormatException;
 use Galaxon\Core\Floats;
 use Galaxon\Core\Numbers;
 use Galaxon\Core\Stringify;
-use Galaxon\Core\Traits\ApproxEquatable;
+use Galaxon\Core\Traits\Comparison\ApproxEquatable;
 use LogicException;
 use OutOfRangeException;
 use Override;
@@ -1061,7 +1061,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Handle case for 0 imaginary part.
         if ($this->isReal()) {
-            return (string)$this->real;
+            return Floats::format($this->real);
         }
 
         // Handle case for 0 real part and non-zero imaginary part.
@@ -1072,14 +1072,14 @@ final class Complex implements Stringable, ArrayAccess
             if ($this->imaginary === -1.0) {
                 return '-i';
             }
-            return $this->imaginary . 'i';
+            return Floats::format($this->imaginary) . 'i';
         }
 
         // Construct the string for the a + bi or a - bi form.
         $op = $this->imaginary > 0 ? ' + ' : ' - ';
         $abs = abs($this->imaginary);
-        $imag = $abs === 1.0 ? '' : $abs;
-        return $this->real . $op . $imag . 'i';
+        $imag = $abs === 1.0 ? '' : Floats::format($abs);
+        return Floats::format($this->real) . $op . $imag . 'i';
     }
 
     // endregion

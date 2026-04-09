@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`Complex::__toString()`** — Now routes both real and imaginary parts through `Floats::format()` instead of casting directly to string. IEEE-754 representation noise from arithmetic (e.g. `0.1 + 0.2 == 0.30000000000000004`) is suppressed: `(string)(new Complex(0.1 + 0.2, 0))` now renders as `'0.3'` instead of `'0.30000000000000004'`. Pinned outputs for clean values (`'5'`, `'-3.14'`, `'3 + 4i'`, etc.) are unchanged.
+- **`Matrix::__toString()`** — Cells are now formatted via `Floats::format()` up front, so column-width calculations and rendering both use the cleaned strings. Without this, a single noisy cell like `0.1 + 0.2` would dominate the column width with its 17-digit representation. `Vector::__toString()` inherits the fix automatically via its delegation to `Matrix`.
+- **`composer.json`** — Bumped `galaxon/core` constraint to `^1.6`. Required for `Floats::format()` and for the trait namespace reorganisation (`Galaxon\Core\Traits\Comparison\*`) shipped in Core v1.6.0.
+
+### Tests
+
+- Added `testToStringSuppressesFloatingPointNoise` to `ComplexConversionTest` and `MatrixConversionTest`, pinning the regression so future refactors that revert to raw float-to-string casts will fail loudly.
+
 ---
 
 ## [1.2.0] - 2026-03-31
