@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Run PHPStan static analysis at a given level.
+#
+# Usage:
+#   scripts/analyze      # level 9 (default)
+#   scripts/analyze 5    # level 5
+#
+set -euo pipefail
+
+level="${1:-9}"
+
+cd "$(dirname "$0")/.."
+
+exec vendor/bin/phpstan analyze -l "$level"
